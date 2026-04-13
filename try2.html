@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Rush: Student Edition</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4c3;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+        #game-container {
+            width: 100%;
+            max-width: 950px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        #header {
+            background: #33691e;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .stats span { margin-left: 20px; }
+        #main-area { display: flex; height: 550px; }
+        #queue-panel {
+            width: 35%;
+            background: #e8f5e9;
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 1px solid #c8e6c9;
+        }
+        #queue-panel h3 { margin-top: 0; color: #2e7d32; border-bottom: 2px solid #a5d6a7; padding-bottom: 5px; }
+        
+        #exam-panel {
+            width: 65%;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            overflow-y: auto;
+        }
+        .patient-card {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            border-left: 5px solid #4caf50;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        .patient-card:hover { background: #c8e6c9; transform: translateX(2px); }
+        .patient-card.selected { background: #a5d6a7; border-left-color: #1b5e20; }
+        .patient-card.urgent { border-left-color: #d32f2f; animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse {
+            0% { background: white; }
+            50% { background: #ffcdd2; }
+            100% { background: white; }
+        }
+
+        .exam-info { margin-bottom: 15px; line-height: 1.6; font-size: 1.1rem; }
+        .exam-info strong { color: #33691e; }
+        .exam-title { font-size: 1.5rem; color: #263238; margin-top: 0; border-bottom: 2px solid #eeeeee; padding-bottom: 10px; }
+        
+        .prescription-area { margin-top: auto; background: #f5f5f5; padding: 20px; border-radius: 8px; }
+        
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .choice-btn {
+            background: #e0e0e0;
+            border: 2px solid #bdbdbd;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .choice-btn:hover { background: #dcedc8; border-color: #8bc34a; }
+        
+        .divider { text-align: center; margin: 10px 0; font-weight: bold; color: #757575; }
+
+        input[type="text"] {
+            width: calc(100% - 110px);
+            padding: 12px;
+            border: 2px solid #b0bec5;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+            display: inline-block;
+        }
+        button.action-btn {
+            background: #33691e; color: white; border: none; padding: 12px 15px;
+            font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer;
+            width: 100px; display: inline-block; vertical-align: top;
+        }
+        button.action-btn:hover { background: #1b5e20; }
+
+        /* Overlays */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 10;
+            text-align: center; padding: 20px; box-sizing: border-box;
+        }
+        .hidden { display: none !important; }
+        
+        /* Solution Modal specifically */
+        #solution-modal {
+            background: rgba(0,0,0,0.8);
+        }
+        .solution-box {
+            background: white; padding: 30px; border-radius: 10px;
+            max-width: 600px; width: 90%; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .solution-box h2 { margin-top: 0; }
+        .solution-box p { font-size: 1.1rem; line-height: 1.5; text-align: left;}
+        .solution-box button {
+            background: #33691e; color: white; border: none; padding: 12px 30px;
+            font-size: 1.1rem; border-radius: 5px; cursor: pointer; margin-top: 15px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen" class="overlay">
+        <h1 style="color: #33691e; font-size: 2.5rem;">💊 Pharmacy Rush: Clinical Rx</h1>
+        <p style="font-size: 1.2rem; max-width: 600px;">Patients will arrive with specific conditions. Diagnose the correct medication. <br><br><strong>Rules:</strong><br>- Select the right drug via the choices OR type it (Generic or Trade name).<br>- Typos are okay! (1 letter missing/wrong is forgiven).<br>- If 7 patients pile up, game over.</p>
+        <button class="action-btn" style="width: auto; padding: 15px 40px;" onclick="startGame()">Start Shift</button>
+    </div>
+
+    <div id="game-over-screen" class="overlay hidden">
+        <h1 style="color: #c62828;">Game Over</h1>
+        <p id="end-message">The queue got too long!</p>
+        <h2 style="color: #33691e;">Final Score: <span id="final-score">0</span></h2>
+        <button class="action-btn" style="width: auto; padding: 15px 40px;" onclick="resetGame()">Try Again</button>
+    </div>
+
+    <div id="solution-modal" class="overlay hidden">
+        <div class="solution-box">
+            <h2 id="sol-title">Result</h2>
+            <div id="sol-content"></div>
+            <button onclick="closeSolution()">Next Patient</button>
+        </div>
+    </div>
+
+    <div id="header">
+        <div>🏥 University Pharmacy Clinic</div>
+        <div class="stats">
+            <span>Score: <span id="score-display">0</span></span>
+            <span>Strikes: <span id="strike-display">0</span>/3</span>
+            <span>Queue limit: <span id="queue-count">0</span>/7</span>
+        </div>
+    </div>
+
+    <div id="main-area">
+        <div id="queue-panel">
+            <h3>Waiting Area</h3>
+            <div id="queue-list"></div>
+        </div>
+
+        <div id="exam-panel">
+            <div id="empty-exam">
+                <h2 style="color:#b0bec5; text-align:center; margin-top:100px;">Select a patient from the queue.</h2>
+            </div>
+            
+            <div id="active-exam" class="hidden">
+                <h2 class="exam-title">Patient Needs Consultation</h2>
+                <div class="exam-info">
+                    <strong>Condition/Symptoms:</strong> <span id="pat-condition"></span><br><br>
+                    <strong>Cautions to note:</strong> <span id="pat-cautions" style="color:#d32f2f;"></span>
+                </div>
+                
+                <div class="prescription-area">
+                    <label style="font-weight:bold; color:#455a64; display:block; margin-bottom:10px;">Select Medication:</label>
+                    <div class="choice-grid" id="choice-grid">
+                        </div>
+                    
+                    <div class="divider">OR TYPE IT MANUALLY</div>
+                    
+                    <input type="text" id="drug-input" placeholder="Enter generic or trade name..." autocomplete="off">
+                    <button class="action-btn" onclick="submitManual()">Dispense</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Database built entirely from the provided PDF document
+    const database = [
+        { generic: "Carboxymethylcellulose", trade: "Cellufresh", condition: "Dry eye, irritation, exposure-related discomfort", cautions: "Transient blur, mild stinging; preservative sensitivity", action: "Ocular lubricant/tear substitute" },
+        { generic: "Cyclosporine", trade: "Restasis", condition: "Chronic inflammatory dry eye", cautions: "Burning, redness, blurred vision", action: "Calcineurin inhibitor" },
+        { generic: "Tobramycin", trade: "Tobrex", condition: "Superficial bacterial eye infection", cautions: "Local irritation, hypersensitivity", action: "Aminoglycoside antibiotic" },
+        { generic: "Latanoprost", trade: "Xalatan", condition: "Open-angle glaucoma / ocular hypertension", cautions: "Conjunctival hyperemia, eyelash growth, iris/skin darkening (irreversible)", action: "Prostaglandin F2a analog" },
+        { generic: "Docusate", trade: "Dewax", condition: "Impacted earwax", cautions: "Transient irritation, discomfort", action: "Cerumen-softening surfactant" },
+        { generic: "Oxymetazoline", trade: "Iliadin", condition: "Nasal congestion", cautions: "Rebound congestion, dryness, irritation", action: "a-adrenergic agonist" },
+        { generic: "Cetirizine", trade: "Zyrtec", condition: "Allergic rhinitis, urticaria", cautions: "Minimal sedation, minimal anticholinergic effects", action: "2nd-generation peripheral H1 antihistamine" },
+        { generic: "Salbutamol", trade: "Ventolin", condition: "Rapid relief of bronchospasm; pre-exercise prophylaxis", cautions: "Tremor, tachycardia, palpitations, hypokalemia", action: "Short-acting B2-agonist" },
+        { generic: "Budesonide", trade: "Pulmicort", condition: "Controller therapy for asthma", cautions: "Oral candidiasis, dysphonia, cough", action: "Inhaled corticosteroid" },
+        { generic: "Montelukast", trade: "Singulair", condition: "Asthma prophylaxis; allergic rhinitis; exercise-induced bronchospasm prevention", cautions: "Headache; neuropsychiatric effects", action: "Leukotriene receptor antagonist" },
+        { generic: "Dextromethorphan", trade: "Romilar", condition: "Dry, nonproductive cough", cautions: "Drowsiness, dizziness, nausea; serotonin syndrome with serotonergic drugs", action: "Central antitussive" },
+        { generic: "Varenicline", trade: "Champix", condition: "Smoking cessation", cautions: "N/V, insomnia, abnormal dreams, headache", action: "Partial agonist of a4B2 nicotinic receptor" },
+        { generic: "Clotrimazole", trade: "Candid", condition: "Otomycosis / fungal otitis externa", cautions: "Local irritation, burning", action: "Imidazole antifungal" },
+        { generic: "Chlorpheniramine", trade: "None", condition: "Allergic rhinitis, urticaria, pruritus", cautions: "Sedation, anticholinergic effects", action: "Sedating H1 antihistamine" }
+    ];
+
+    let queue = [];
+    let score = 0;
+    let strikes = 0;
+    let selectedPatientId = null;
+    let patientCounter = 0;
+    let spawnTimer;
+    let baseSpawnRate = 12000; // 12 seconds
+    let gameActive = false;
+    let currentOptions = [];
+
+    // Levenshtein Distance for fuzzy matching (1 typo allowed)
+    function getEditDistance(a, b) {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        var matrix = [];
+        for (var i = 0; i <= b.length; i++) { matrix[i] = [i]; }
+        for (var j = 0; j <= a.length; j++) { matrix[0][j] = j; }
+        for (var i = 1; i <= b.length; i++) {
+            for (var j = 1; j <= a.length; j++) {
+                if (b.charAt(i-1) == a.charAt(j-1)) {
+                    matrix[i][j] = matrix[i-1][j-1];
+                } else {
+                    matrix[i][j] = Math.min(matrix[i-1][j-1] + 1, Math.min(matrix[i][j-1] + 1, matrix[i-1][j] + 1));
+                }
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    function isMatch(input, target) {
+        if (!target || target === "None") return false;
+        input = input.toLowerCase().trim();
+        target = target.toLowerCase().trim();
+        
+        // Exact match or contains (for long strings)
+        if (input === target || target.includes(input) && input.length > 4) return true;
+        // Fuzzy match (1 character typo)
+        return getEditDistance(input, target) <= 1;
+    }
+
+    document.getElementById('drug-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') submitManual();
+    });
+
+    function startGame() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+        gameActive = true; score = 0; strikes = 0; queue = [];
+        updateStats();
+        spawnPatient();
+        startSpawner();
+    }
+
+    function resetGame() {
+        clearInterval(spawnTimer);
+        clearExamPanel();
+        startGame();
+    }
+
+    function startSpawner() {
+        clearInterval(spawnTimer);
+        let currentRate = Math.max(6000, baseSpawnRate - (score * 500)); 
+        spawnTimer = setInterval(() => {
+            if (gameActive) spawnPatient();
+        }, currentRate);
+    }
+
+    function pauseGame() { gameActive = false; clearInterval(spawnTimer); }
+    function resumeGame() { gameActive = true; startSpawner(); }
+
+    function spawnPatient() {
+        if (queue.length >= 7) { triggerGameOver("The waiting room reached 7 patients!"); return; }
+        const template = database[Math.floor(Math.random() * database.length)];
+        const newPatient = { id: 'pat_' + patientCounter++, ...template };
+        queue.push(newPatient);
+        renderQueue();
+        updateStats();
+    }
+
+    function renderQueue() {
+        const elQueueList = document.getElementById('queue-list');
+        elQueueList.innerHTML = '';
+        queue.forEach((pat, index) => {
+            const card = document.createElement('div');
+            card.className = 'patient-card';
+            if (pat.id === selectedPatientId) card.classList.add('selected');
+            if (index === 0 && queue.length >= 5) card.classList.add('urgent');
+            card.innerHTML = `<strong>Patient #${pat.id.split('_')[1]}</strong><br><small>${pat.condition.substring(0, 30)}...</small>`;
+            card.onclick = () => selectPatient(pat.id);
+            elQueueList.appendChild(card);
+        });
+    }
+
+    function selectPatient(id) {
+        selectedPatientId = id;
+        renderQueue();
+        const patient = queue.find(p => p.id === id);
+        if (!patient) return;
+
+        document.getElementById('empty-exam').classList.add('hidden');
+        document.getElementById('active-exam').classList.remove('hidden');
+        
+        document.getElementById('pat-condition').innerText = patient.condition;
+        document.getElementById('pat-cautions').innerText = patient.cautions;
+        document.getElementById('drug-input').value = '';
+        
+        generateChoices(patient);
+    }
+
+    function clearExamPanel() {
+        selectedPatientId = null;
+        document.getElementById('empty-exam').classList.remove('hidden');
+        document.getElementById('active-exam').classList.add('hidden');
+        renderQueue();
+    }
+
+    function generateChoices(correctPatient) {
+        let options = [correctPatient];
+        let available = database.filter(d => d.generic !== correctPatient.generic);
+        
+        // Pick 3 random wrong answers
+        for(let i=0; i<3; i++) {
+            let randIdx = Math.floor(Math.random() * available.length);
+            options.push(available[randIdx]);
+            available.splice(randIdx, 1);
+        }
+        
+        // Shuffle
+        options.sort(() => Math.random() - 0.5);
+        currentOptions = options;
+
+        const grid = document.getElementById('choice-grid');
+        grid.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            // Show trade name if available, else generic
+            let label = opt.generic;
+            if (opt.trade !== "None") label += ` (${opt.trade})`;
+            btn.innerText = label;
+            btn.onclick = () => processAnswer(opt.generic === correctPatient.generic, opt.generic, correctPatient);
+            grid.appendChild(btn);
+        });
+    }
+
+    function submitManual() {
+        if (!selectedPatientId) return;
+        const patient = queue.find(p => p.id === selectedPatientId);
+        const input = document.getElementById('drug-input').value;
+        
+        if (input.trim() === '') return;
+
+        // Check generic OR trade name with fuzzy matching
+        let isCorrect = isMatch(input, patient.generic) || isMatch(input, patient.trade);
+        processAnswer(isCorrect, input, patient);
+    }
+
+    function processAnswer(isCorrect, userAnswer, patient) {
+        pauseGame(); // Pause queue while reading solution
+
+        const modal = document.getElementById('solution-modal');
+        const title = document.getElementById('sol-title');
+        const content = document.getElementById('sol-content');
+
+        if (isCorrect) {
+            score++;
+            title.innerText = "✅ Correct Diagnosis!";
+            title.style.color = "#2e7d32";
+            queue = queue.filter(p => p.id !== selectedPatientId); // Remove from queue
+        } else {
+            strikes++;
+            title.innerText = "❌ Incorrect Diagnosis";
+            title.style.color = "#c62828";
+        }
+
+        // Display the specific patient solution
+        content.innerHTML = `
+            <p><strong>Patient Condition:</strong> ${patient.condition}</p>
+            <p><strong>Correct Drug:</strong> ${patient.generic} ${patient.trade !== 'None' ? `(Trade: ${patient.trade})` : ''}</p>
+            <p><strong>Mechanism of Action:</strong> ${patient.action}</p>
+            <p><strong>Cautions to remember:</strong> ${patient.cautions}</p>
+        `;
+
+        modal.classList.remove('hidden');
+        updateStats();
+
+        if (strikes >= 3) {
+            setTimeout(() => { triggerGameOver("You made 3 clinical errors! Shift ended."); }, 2000);
+        }
+    }
+
+    function closeSolution() {
+        document.getElementById('solution-modal').classList.add('hidden');
+        clearExamPanel();
+        if (strikes < 3) resumeGame();
+    }
+
+    function updateStats() {
+        document.getElementById('score-display').innerText = score;
+        document.getElementById('strike-display').innerText = strikes;
+        const elQCount = document.getElementById('queue-count');
+        elQCount.innerText = queue.length;
+        elQCount.style.color = queue.length >= 5 ? '#c62828' : 'inherit';
+    }
+
+    function triggerGameOver(reason) {
+        pauseGame();
+        document.getElementById('end-message').innerText = reason;
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('solution-modal').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>

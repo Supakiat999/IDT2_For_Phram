@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Rush: Clinical Simulator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e0f7fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+        #game-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        #header {
+            background: #00695c;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .stats span { margin-left: 20px; }
+        #main-area {
+            display: flex;
+            height: 500px;
+        }
+        #queue-panel {
+            width: 35%;
+            background: #eceff1;
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 1px solid #cfd8dc;
+        }
+        #queue-panel h3 { margin-top: 0; color: #455a64; border-bottom: 2px solid #b0bec5; padding-bottom: 5px; }
+        
+        #exam-panel {
+            width: 65%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+        .patient-card {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            border-left: 5px solid #00897b;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        .patient-card:hover { background: #e0f2f1; transform: translateX(2px); }
+        .patient-card.selected { background: #b2dfdb; border-left-color: #004d40; }
+        .patient-card.urgent { border-left-color: #d32f2f; animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse {
+            0% { background: white; }
+            50% { background: #ffcdd2; }
+            100% { background: white; }
+        }
+
+        .exam-info { margin-bottom: 15px; line-height: 1.6; }
+        .exam-info strong { color: #00695c; }
+        .exam-title { font-size: 1.5rem; color: #263238; margin-top: 0; border-bottom: 2px solid #eeeeee; padding-bottom: 10px; }
+        
+        .prescription-area { margin-top: auto; background: #f5f5f5; padding: 20px; border-radius: 8px; }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 2px solid #b0bec5;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus { border-color: #00897b; outline: none; }
+        
+        button.action-btn {
+            background: #00897b;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        button.action-btn:hover { background: #00695c; }
+        
+        #feedback { margin-top: 10px; font-weight: bold; text-align: center; min-height: 24px;}
+        .success { color: #2e7d32; }
+        .error { color: #c62828; }
+
+        /* Overlays */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .hidden { display: none !important; }
+        .overlay h1 { color: #00695c; font-size: 3rem; margin-bottom: 10px; }
+        .overlay p { font-size: 1.2rem; color: #546e7a; max-width: 600px; margin-bottom: 30px; }
+        .overlay button {
+            background: #ff7043; color: white; border: none; padding: 15px 40px;
+            font-size: 1.2rem; font-weight: bold; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s;
+        }
+        .overlay button:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen" class="overlay">
+        <h1>💊 Pharmacy Rush</h1>
+        <p>You are the sole pharmacist on duty. Patients will slowly walk in and pile up in the queue. Review their conditions, watch out for allergies and history, and type the correct <strong>Generic Drug</strong> to dispense.</p>
+        <p style="color:#d32f2f; font-weight:bold;">Don't let the queue reach 7 patients, or you're fired!</p>
+        <button onclick="startGame()">Start Shift</button>
+    </div>
+
+    <div id="game-over-screen" class="overlay hidden">
+        <h1 id="end-title" style="color: #c62828;">Game Over</h1>
+        <p id="end-message">The queue got too long!</p>
+        <h2 style="color: #00695c;">Final Score: <span id="final-score">0</span></h2>
+        <button onclick="resetGame()">Try Again</button>
+    </div>
+
+    <div id="header">
+        <div>🏥 City Pharmacy</div>
+        <div class="stats">
+            <span>Score: <span id="score-display">0</span></span>
+            <span>Strikes: <span id="strike-display">0</span>/3</span>
+            <span>Queue limit: <span id="queue-count">0</span>/7</span>
+        </div>
+    </div>
+
+    <div id="main-area">
+        <div id="queue-panel">
+            <h3>Waiting Area</h3>
+            <div id="queue-list">
+                </div>
+        </div>
+
+        <div id="exam-panel">
+            <div id="empty-exam">
+                <h2 style="color:#b0bec5; text-align:center; margin-top:100px;">Select a patient from the queue to examine them.</h2>
+            </div>
+            
+            <div id="active-exam" class="hidden">
+                <h2 class="exam-title" id="pat-name">Patient Name</h2>
+                <div class="exam-info">
+                    <strong>Age:</strong> <span id="pat-age"></span><br>
+                    <strong>Condition/Symptoms:</strong> <span id="pat-condition"></span><br>
+                    <strong>Medical History:</strong> <span id="pat-history"></span><br>
+                    <strong>Allergies:</strong> <span id="pat-allergies" style="color:#d32f2f; font-weight:bold;"></span>
+                </div>
+                
+                <div class="prescription-area">
+                    <label for="drug-input" style="font-weight:bold; color:#455a64; display:block; margin-bottom:5px;">Prescribe Generic Medication:</label>
+                    <input type="text" id="drug-input" placeholder="e.g. amlodipine" autocomplete="off">
+                    <button class="action-btn" onclick="dispenseMedication()">Dispense Medication</button>
+                    <div id="feedback"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Patient Database
+    const database = [
+        { name: "Mr. Henderson", age: 58, condition: "New Hypertension (BP 150/95)", history: "Mild Asthma", allergies: "None", answers: ["amlodipine", "losartan", "valsartan", "lisinopril", "nifedipine"], hint: "Avoid Beta-blockers due to Asthma. Use CCB, ARB, or ACEi." },
+        { name: "Sarah", age: 24, condition: "Painful, frequent urination (Uncomplicated UTI)", history: "On Oral Contraceptives", allergies: "Sulfa drugs (Bactrim)", answers: ["nitrofurantoin", "fosfomycin", "cephalexin"], hint: "Avoid SMX-TMP due to Sulfa allergy." },
+        { name: "John", age: 45, condition: "Newly diagnosed Type 2 Diabetes (HbA1c 8.2%)", history: "Obesity", allergies: "None", answers: ["metformin"], hint: "First-line oral anti-diabetic." },
+        { name: "Emily", age: 30, condition: "Severe heartburn and acid reflux daily", history: "None", allergies: "None", answers: ["omeprazole", "pantoprazole", "famotidine", "lansoprazole", "ranitidine"], hint: "PPI or H2 Blocker." },
+        { name: "Robert", age: 62, condition: "Hyperlipidemia (LDL 160)", history: "Post-Myocardial Infarction 1 yr ago", allergies: "None", answers: ["atorvastatin", "rosuvastatin", "simvastatin", "pravastatin"], hint: "Needs a Statin." },
+        { name: "Linda", age: 50, condition: "Hypothyroidism (High TSH, Low T4)", history: "Fatigue, weight gain", allergies: "None", answers: ["levothyroxine"], hint: "Synthetic thyroid hormone replacement." },
+        { name: "Tom", age: 28, condition: "Acute Asthma Exacerbation (Wheezing)", history: "Asthma", allergies: "None", answers: ["albuterol", "salbutamol"], hint: "SABA rescue inhaler." },
+        { name: "Angela", age: 65, condition: "Acute Gout Attack (Swollen red toe)", history: "CKD Stage 2", allergies: "None", answers: ["colchicine", "prednisone", "indomethacin"], hint: "Treat acute flare." },
+        { name: "Mike", age: 12, condition: "Anaphylaxis (Stung by a bee, throat swelling)", history: "None", allergies: "Bee venom", answers: ["epinephrine", "adrenaline"], hint: "Immediate life-saving injection." },
+        { name: "David", age: 70, condition: "Benign Prostatic Hyperplasia (Difficulty urinating)", history: "Hypertension", allergies: "None", answers: ["tamsulosin", "finasteride", "doxazosin"], hint: "Alpha-blocker or 5-ARI." }
+    ];
+
+    // Game Variables
+    let queue = [];
+    let score = 0;
+    let strikes = 0;
+    let selectedPatientId = null;
+    let patientCounter = 0;
+    let spawnTimer;
+    let baseSpawnRate = 8000; // 8 seconds per patient
+    let maxQueue = 7;
+    let gameActive = false;
+
+    // DOM Elements
+    const elScore = document.getElementById('score-display');
+    const elStrikes = document.getElementById('strike-display');
+    const elQueueCount = document.getElementById('queue-count');
+    const elQueueList = document.getElementById('queue-list');
+    const elStartScreen = document.getElementById('start-screen');
+    const elGameOverScreen = document.getElementById('game-over-screen');
+    const elEmptyExam = document.getElementById('empty-exam');
+    const elActiveExam = document.getElementById('active-exam');
+    const elDrugInput = document.getElementById('drug-input');
+    const elFeedback = document.getElementById('feedback');
+
+    // Handle Enter Key in input
+    elDrugInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            dispenseMedication();
+        }
+    });
+
+    function startGame() {
+        elStartScreen.classList.add('hidden');
+        gameActive = true;
+        score = 0;
+        strikes = 0;
+        queue = [];
+        updateStats();
+        spawnPatient(); // Spawn first patient immediately
+        startSpawner();
+    }
+
+    function resetGame() {
+        elGameOverScreen.classList.add('hidden');
+        clearInterval(spawnTimer);
+        clearExamPanel();
+        startGame();
+    }
+
+    function startSpawner() {
+        clearInterval(spawnTimer);
+        // Spawns get slightly faster as score goes up, min limit 4 seconds
+        let currentRate = Math.max(4000, baseSpawnRate - (score * 200)); 
+        spawnTimer = setInterval(() => {
+            if (gameActive) spawnPatient();
+        }, currentRate);
+    }
+
+    function spawnPatient() {
+        if (queue.length >= maxQueue) {
+            triggerGameOver("The waiting room is overflowing! You couldn't handle the rush.");
+            return;
+        }
+
+        // Pick random patient template
+        const template = database[Math.floor(Math.random() * database.length)];
+        
+        const newPatient = {
+            id: 'pat_' + patientCounter++,
+            ...template,
+            timeWaiting: 0
+        };
+
+        queue.push(newPatient);
+        renderQueue();
+        updateStats();
+    }
+
+    function renderQueue() {
+        elQueueList.innerHTML = '';
+        queue.forEach((pat, index) => {
+            const card = document.createElement('div');
+            card.className = 'patient-card';
+            if (pat.id === selectedPatientId) card.classList.add('selected');
+            
+            // Highlight if queue is getting full (position in queue)
+            if (index === 0 && queue.length >= 5) card.classList.add('urgent');
+
+            card.innerHTML = `<strong>${pat.name}</strong><br><small>${pat.condition.substring(0, 25)}...</small>`;
+            card.onclick = () => selectPatient(pat.id);
+            elQueueList.appendChild(card);
+        });
+    }
+
+    function selectPatient(id) {
+        selectedPatientId = id;
+        renderQueue(); // Update selected styling
+
+        const patient = queue.find(p => p.id === id);
+        if (!patient) return;
+
+        elEmptyExam.classList.add('hidden');
+        elActiveExam.classList.remove('hidden');
+        
+        document.getElementById('pat-name').innerText = patient.name;
+        document.getElementById('pat-age').innerText = patient.age;
+        document.getElementById('pat-condition').innerText = patient.condition;
+        document.getElementById('pat-history').innerText = patient.history;
+        document.getElementById('pat-allergies').innerText = patient.allergies;
+        
+        elDrugInput.value = '';
+        elFeedback.innerHTML = '';
+        elDrugInput.focus();
+    }
+
+    function clearExamPanel() {
+        selectedPatientId = null;
+        elEmptyExam.classList.remove('hidden');
+        elActiveExam.classList.add('hidden');
+        renderQueue();
+    }
+
+    function dispenseMedication() {
+        if (!gameActive || !selectedPatientId) return;
+
+        const patientIndex = queue.findIndex(p => p.id === selectedPatientId);
+        if (patientIndex === -1) return;
+
+        const patient = queue[patientIndex];
+        const input = elDrugInput.value.trim().toLowerCase();
+
+        if (input === '') {
+            showFeedback("Please enter a medication name.", "error");
+            return;
+        }
+
+        // Check if the input exists in the answers array (fuzzy match)
+        const isCorrect = patient.answers.some(ans => input.includes(ans));
+
+        if (isCorrect) {
+            // Success
+            showFeedback("Correct! Patient treated.", "success");
+            score++;
+            queue.splice(patientIndex, 1); // Remove from queue
+            clearExamPanel();
+            updateStats();
+            startSpawner(); // Adjust speed based on new score
+        } else {
+            // Failure
+            strikes++;
+            showFeedback(`Incorrect. Try again! Hint: ${patient.hint}`, "error");
+            updateStats();
+            elDrugInput.value = '';
+            elDrugInput.focus();
+
+            if (strikes >= 3) {
+                triggerGameOver("You made too many clinical errors (3 Strikes). License suspended!");
+            }
+        }
+    }
+
+    function showFeedback(msg, type) {
+        elFeedback.innerText = msg;
+        elFeedback.className = type;
+    }
+
+    function updateStats() {
+        elScore.innerText = score;
+        elStrikes.innerText = strikes;
+        elQueueCount.innerText = queue.length;
+        if (queue.length >= 6) {
+            elQueueCount.style.color = '#c62828';
+            elQueueCount.style.fontWeight = 'bold';
+        } else {
+            elQueueCount.style.color = 'inherit';
+            elQueueCount.style.fontWeight = 'normal';
+        }
+    }
+
+    function triggerGameOver(reason) {
+        gameActive = false;
+        clearInterval(spawnTimer);
+        document.getElementById('end-message').innerText = reason;
+        document.getElementById('final-score').innerText = score;
+        elGameOverScreen.classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
