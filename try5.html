@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Rush: Clinical Simulator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #e0f7fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 90vh;
+        }
+        #game-container {
+            width: 100%;
+            max-width: 950px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            position: relative;
+        }
+        #header {
+            background: #00695c;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .stats span { margin-left: 20px; }
+        #main-area {
+            display: flex;
+            height: 550px;
+        }
+        #queue-panel {
+            width: 35%;
+            background: #eceff1;
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 1px solid #cfd8dc;
+        }
+        #queue-panel h3 { margin-top: 0; color: #455a64; border-bottom: 2px solid #b0bec5; padding-bottom: 5px; }
+        
+        #exam-panel {
+            width: 65%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            overflow-y: auto;
+        }
+        .patient-card {
+            background: white;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            border-left: 5px solid #00897b;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        .patient-card:hover { background: #e0f2f1; transform: translateX(2px); }
+        .patient-card.selected { background: #b2dfdb; border-left-color: #004d40; }
+        .patient-card.urgent { border-left-color: #d32f2f; animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse {
+            0% { background: white; }
+            50% { background: #ffcdd2; }
+            100% { background: white; }
+        }
+
+        .exam-info { margin-bottom: 15px; line-height: 1.6; }
+        .exam-info strong { color: #00695c; }
+        .exam-title { font-size: 1.5rem; color: #263238; margin-top: 0; border-bottom: 2px solid #eeeeee; padding-bottom: 10px; }
+        
+        .prescription-area { margin-top: auto; background: #f5f5f5; padding: 20px; border-radius: 8px; }
+        
+        /* New Styles for Choices */
+        .choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .choice-btn {
+            background: #e0f2f1;
+            border: 2px solid #b2dfdb;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #004d40;
+            transition: all 0.2s;
+        }
+        .choice-btn:hover { background: #b2dfdb; border-color: #00695c; }
+        .divider { text-align: center; margin: 10px 0; font-weight: bold; color: #78909c; font-size: 0.9rem; }
+
+        .input-group { display: flex; gap: 10px; }
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #b0bec5;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus { border-color: #00897b; outline: none; }
+        
+        button.action-btn {
+            background: #00897b; color: white; border: none; padding: 12px 20px;
+            font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer;
+            transition: background 0.2s;
+        }
+        button.action-btn:hover { background: #00695c; }
+
+        /* Overlays & Modals */
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.95); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 10;
+            text-align: center; padding: 20px; box-sizing: border-box;
+        }
+        .hidden { display: none !important; }
+        .overlay h1 { color: #00695c; font-size: 3rem; margin-bottom: 10px; }
+        .overlay p { font-size: 1.2rem; color: #546e7a; max-width: 600px; margin-bottom: 30px; }
+        .overlay button.start-btn {
+            background: #ff7043; color: white; border: none; padding: 15px 40px;
+            font-size: 1.2rem; font-weight: bold; border-radius: 50px; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.1s;
+        }
+        .overlay button.start-btn:active { transform: scale(0.95); }
+
+        /* Difficulty Buttons */
+        .diff-controls { display: flex; gap: 15px; margin-bottom: 30px; }
+        .diff-btn {
+            background: transparent; border: 2px solid #00695c; color: #00695c;
+            padding: 10px 20px; border-radius: 30px; font-weight: bold; cursor: pointer;
+        }
+        .diff-btn.active { background: #00695c; color: white; }
+
+        /* Solution Box */
+        .solution-box {
+            background: white; padding: 30px; border-radius: 10px; text-align: left;
+            max-width: 700px; width: 90%; border: 2px solid #00695c; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .solution-box h2 { margin-top: 0; border-bottom: 2px solid #e0f2f1; padding-bottom: 10px; }
+        .drug-list { font-weight: bold; color: #00695c; background: #e0f7fa; padding: 10px; border-radius: 5px;}
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen" class="overlay">
+        <h1>💊 Pharmacy Rush</h1>
+        <p>Review the patient's conditions, history, and <strong>allergies</strong>. Some conditions have <strong>multiple correct drugs</strong>. Select any valid drug via the buttons or type it manually.</p>
+        
+        <div style="font-weight: bold; color: #00695c; margin-bottom: 10px;">Select Shift Difficulty:</div>
+        <div class="diff-controls">
+            <button class="diff-btn" id="btn-easy" onclick="setDifficulty('easy')">Easy</button>
+            <button class="diff-btn active" id="btn-med" onclick="setDifficulty('med')">Standard</button>
+            <button class="diff-btn" id="btn-hard" onclick="setDifficulty('hard')">Rush</button>
+        </div>
+
+        <button class="start-btn" onclick="startGame()">Start Shift</button>
+    </div>
+
+    <div id="game-over-screen" class="overlay hidden">
+        <h1 id="end-title" style="color: #c62828;">Game Over</h1>
+        <p id="end-message">The queue got too long!</p>
+        <h2 style="color: #00695c;">Final Score: <span id="final-score">0</span></h2>
+        <button class="start-btn" onclick="resetGame()">Try Again</button>
+    </div>
+
+    <div id="solution-modal" class="overlay hidden" style="background: rgba(224, 247, 250, 0.95);">
+        <div class="solution-box">
+            <h2 id="sol-title">Result</h2>
+            <div id="sol-content" style="line-height: 1.6; font-size: 1.1rem; color: #455a64;"></div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="action-btn" onclick="closeSolution()">Next Patient</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="header">
+        <div>🏥 City Pharmacy</div>
+        <div class="stats">
+            <span>Score: <span id="score-display">0</span></span>
+            <span>Strikes: <span id="strike-display">0</span>/3</span>
+            <span>Queue limit: <span id="queue-count">0</span>/10</span>
+        </div>
+    </div>
+
+    <div id="main-area">
+        <div id="queue-panel">
+            <h3>Waiting Area</h3>
+            <div id="queue-list"></div>
+        </div>
+
+        <div id="exam-panel">
+            <div id="empty-exam">
+                <h2 style="color:#b0bec5; text-align:center; margin-top:100px;">Select a patient from the queue to examine them.</h2>
+            </div>
+            
+            <div id="active-exam" class="hidden">
+                <h2 class="exam-title" id="pat-name">Patient Name</h2>
+                <div class="exam-info">
+                    <strong>Age:</strong> <span id="pat-age"></span><br>
+                    <strong>Condition/Symptoms:</strong> <span id="pat-condition"></span><br>
+                    <strong>Medical History:</strong> <span id="pat-history"></span><br>
+                    <strong>Allergies:</strong> <span id="pat-allergies" style="color:#d32f2f; font-weight:bold;"></span><br>
+                    <strong>Cautions:</strong> <span id="pat-cautions" style="color:#e65100;"></span>
+                </div>
+                
+                <div class="prescription-area">
+                    <label style="font-weight:bold; color:#455a64; display:block; margin-bottom:10px;">Select Valid Medication:</label>
+                    
+                    <div class="choice-grid" id="choice-grid"></div>
+                    
+                    <div class="divider">OR TYPE MANUALLY</div>
+                    
+                    <div class="input-group">
+                        <input type="text" id="drug-input" placeholder="Generic or Trade Name..." autocomplete="off">
+                        <button class="action-btn" onclick="submitManual()">Dispense</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const names = ["Mr. Henderson", "Sarah", "John", "Emily", "Robert", "Linda", "Tom", "Angela", "Mike", "David", "Porjai", "Moota", "Jenny","Nun", "Tata", "Prae", "Aj.BD", "AJ.Vorasit", "Aj.Pornchai"];
+    
+    // Complete database - many items share identical conditions
+    const database = [
+        // OPHTHALMIC
+        { generic: "Carboxymethylcellulose", trade: "Cellufresh", condition: "Dry eye, irritation, exposure-related discomfort", history: "Contact lens wearer", allergies: "None", cautions: "Transient blur, mild stinging; preservative sensitivity", action: "Ocular lubricant/tear substitute" },
+        { generic: "Hydroxypropyl methylcellulose", trade: "Genteal", condition: "Dry eye, irritation, exposure-related discomfort", history: "Office worker (screen time)", allergies: "None", cautions: "Transient blur, mild stinging; preservative sensitivity", action: "Ocular lubricant/tear substitute" },
+        { generic: "Hyaluronate", trade: "Vislube", condition: "Dry eye, irritation, exposure-related discomfort", history: "Post-LASIK surgery", allergies: "None", cautions: "Transient blur, mild stinging; preservative sensitivity", action: "Ocular lubricant/tear substitute" },
+        { generic: "Cyclosporine", trade: "Restasis", condition: "Chronic inflammatory dry eye", history: "Sjogren's Syndrome", allergies: "None", cautions: "Burning, redness, blurred vision", action: "Calcineurin inhibitor" },
+        { generic: "Diquafosol", trade: "Diquas", condition: "Dry eye disease", history: "Rheumatoid Arthritis", allergies: "None", cautions: "Eye irritation, conjunctival hyperemia, blurred vision", action: "P2Y2 receptor agonist" },
+        { generic: "Antazoline/tetrahydrozoline", trade: "Hista-Oph", condition: "Short-term relief of allergic conjunctivitis", history: "Seasonal allergies", allergies: "None", cautions: "Stinging, rebound redness, mydriasis, elevated IOP", action: "H1 antihistamine + vasoconstrictor" },
+        { generic: "Ketotifen", trade: "Zaditen", condition: "Allergic conjunctivitis", history: "None", allergies: "Pollen", cautions: "Transient irritation, dry eye, headache", action: "H1 antihistamine + mast-cell stabilizer" },
+        { generic: "Olopatadine", trade: "Patanol", condition: "Allergic conjunctivitis", history: "Asthma", allergies: "Dust mites", cautions: "Transient burning, dry eye, headache", action: "Selective H1 antihistamine + mast-cell stabilizer" },
+        { generic: "Sodium cromoglycate", trade: "Vividrin", condition: "Allergic conjunctivitis", history: "Eczema", allergies: "None", cautions: "Mild stinging, blurred vision", action: "Mast-cell stabilizer" },
+        { generic: "Tobramycin", trade: "Tobrex", condition: "Superficial bacterial eye infection", history: "None", allergies: "Penicillin", cautions: "Local irritation, hypersensitivity", action: "Aminoglycoside antibiotic" },
+        { generic: "Moxifloxacin", trade: "Vigamox", condition: "Superficial bacterial eye infection", history: "Frequent conjunctivitis", allergies: "None", cautions: "Irritation, dysgeusia, hypersensitivity", action: "Fluoroquinolone antibiotic" },
+        { generic: "Chloramphenicol", trade: "None", condition: "Superficial bacterial eye infection", history: "None", allergies: "None", cautions: "Local burning; blood dyscrasia", action: "Broad-spectrum antibacterial" },
+        { generic: "Neomycin/gramicidin/Polymyxin B", trade: "PolyOph", condition: "Superficial bacterial eye infection", history: "None", allergies: "None", cautions: "Local irritation, hypersensitivity", action: "Topical antibiotic combination" },
+        { generic: "Tobramycin/Dexamethasone", trade: "Tobradex", condition: "Steroid-responsive ocular inflammation with bacterial infection risk", history: "Recent eye trauma", allergies: "None", cautions: "Local irritation, hypersensitivity, healing, superinfection, IOP, cataract with prolonged use", action: "Antibiotic + corticosteroid" },
+        { generic: "Prednisolone", trade: "None", condition: "Uveitis/post-op or severe ocular inflammation", history: "Uveitis", allergies: "None", cautions: "healing, superinfection, elevated IOP, cataract with prolonged use", action: "Corticosteroid; anti-inflammatory" },
+        { generic: "Brimonidine", trade: "Alphagan", condition: "Open-angle glaucoma / ocular hypertension", history: "Hypertension", allergies: "None", cautions: "Dry mouth, fatigue, allergy, red eye", action: "a2-agonist" },
+        { generic: "Latanoprost", trade: "Xalatan", condition: "Open-angle glaucoma / ocular hypertension", history: "Glaucoma family history", allergies: "None", cautions: "Conjunctival hyperemia, eyelash growth, iris/skin darkening (irreversible)", action: "Prostaglandin F2a analog" },
+        { generic: "Betaxolol", trade: "Betoptic", condition: "Open-angle glaucoma / ocular hypertension", history: "None", allergies: "None", cautions: "Bradycardia, hypotension, bronchospasm, dry eye", action: "B1-selective blocker" },
+        { generic: "Dorzolamide/Timolol", trade: "Cosopt", condition: "Open-angle glaucoma / ocular hypertension", history: "COPD", allergies: "Sulfa", cautions: "Stinging, bitter taste, bradycardia, bronchospasm", action: "Carbonic anhydrase linhibitor + nonselective B-blocker" },
+        { generic: "Pilocarpine", trade: "IsoptoCarpine", condition: "Acute angle-closure glaucoma (adjunct)", history: "Cataracts", allergies: "None", cautions: "Brow ache, blurred vision, impaired night vision, miosis", action: "Muscarinic agonist." },
+
+        // OTIC
+        { generic: "Clotrimazole", trade: "Candid", condition: "Otomycosis / fungal otitis externa", history: "Frequent swimmer", allergies: "None", cautions: "Local irritation, burning", action: "Imidazole antifungal" },
+        { generic: "Ofloxacin", trade: "Tarivid", condition: "Bacterial otitis externa; otorrhea with tympanostomy tube/ perforation", history: "Recurrent ear infections", allergies: "None", cautions: "Itching, discomfort, dizziness", action: "Fluoroquinolone antibiotic" },
+        { generic: "Dexamethasone/neomycin", trade: "DexOph", condition: "Inflamed otitis externa or conjunctivitis with suspected bacterial infection", history: "None", allergies: "Neomycin", cautions: "Local irritation, neomycin allergy; ototoxicity risk if TM perforated", action: "Topical corticosteroid + aminoglycoside antibiotic" },
+        { generic: "Docusate", trade: "Dewax", condition: "Impacted earwax", history: "Hearing aid user", allergies: "None", cautions: "Transient irritation, discomfort", action: "Cerumen-softening surfactant" },
+
+        // NASAL
+        { generic: "Oxymetazoline", trade: "Iliadin", condition: "Nasal congestion", history: "Common cold", allergies: "None", cautions: "Rebound congestion, dryness, irritation", action: "a-adrenergic agonist" },
+        { generic: "Naphazoline/Chlorpheniramine", trade: "Nasol", condition: "Nasal congestion w/ rhinorrhea", history: "None", allergies: "None", cautions: "Rebound congestion, dryness, irritation, drowsiness", action: "a-adrenergic agonist + H1 antihistamine" },
+        { generic: "Pseudoephedrine", trade: "None", condition: "Nasal/sinus congestion", history: "Hypertension", allergies: "None", cautions: "Insomnia, palpitations, tremor, elevated BP, urinary retention", action: "a-adrenergic agonist" },
+        { generic: "Mometasone", trade: "Nasonex", condition: "Allergic rhinitis; nasal polyps", history: "Nasal polyps", allergies: "None", cautions: "Epistaxis, irritation, sore throat", action: "Intranasal corticosteroid" },
+        { generic: "Budesonide", trade: "Rhinocort", condition: "Allergic rhinitis", history: "Asthma", allergies: "None", cautions: "Epistaxis, irritation, sore throat", action: "Intranasal corticosteroid" },
+        { generic: "Azelastine/Fluticasone", trade: "Dymista", condition: "Moderate-severe allergic rhinitis", history: "Chronic sinusitis", allergies: "None", cautions: "Bitter taste, epistaxis, sedation (mild), irritation", action: "Intranasal antihistamine + corticosteroid" },
+
+        // ANTIHISTAMINES
+        { generic: "Chlorpheniramine", trade: "None", condition: "Allergic rhinitis, urticaria, pruritus", history: "Insomnia", allergies: "None", cautions: "Sedation, anticholinergic effects", action: "Sedating H1 antihistamine" },
+        { generic: "Hydroxyzine", trade: "Atarax", condition: "Allergic rhinitis, urticaria, pruritus, anxiolytic", history: "Anxiety disorder", allergies: "None", cautions: "Sedation, anticholinergic effects, QT prolongation", action: "Sedating H1 antihistamine" },
+        { generic: "Diphenhydramine", trade: "Benadryl", condition: "Allergic rhinitis, urticaria, pruritus; short-term sleep aid", history: "None", allergies: "Peanuts", cautions: "Sedation, anticholinergic effects", action: "Sedating H1 antihistamine" },
+        { generic: "Dimenhydrinate", trade: "Dramamine", condition: "Motion sickness, vertigo", history: "Frequent traveler", allergies: "None", cautions: "Sedation, anticholinergic effects", action: "Sedating H1 antihistamine" },
+        { generic: "Loratadine", trade: "Claritine", condition: "Allergic rhinitis, urticaria", history: "Bus driver", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects", action: "non-sedating H1 antihistamine" },
+        { generic: "Cetirizine", trade: "Zyrtec", condition: "Allergic rhinitis, urticaria.", history: "Eczema", allergies: "Cat dander", cautions: "Minimal sedation, minimal anticholinergic effects", action: "2nd-generation peripheral H1 antihistamine" },
+        { generic: "Fexofenadine", trade: "Telfast", condition: "Allergic rhinitis, urticaria", history: "Commercial Pilot", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects", action: "2nd-generation H1 antihistamine" },
+        { generic: "Bilastine", trade: "Bilaxten", condition: "Allergic rhinitis, urticaria", history: "None", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects", action: "2nd-generation H1 antihistamine" },
+        { generic: "Desloratadine", trade: "Aerius", condition: "Allergic rhinitis, urticaria.", history: "None", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects", action: "2nd-generation H1 antihistamine" },
+        { generic: "Levocetirizine", trade: "Xyzal", condition: "Allergic rhinitis, urticaria", history: "None", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects.", action: "2nd-generation H1 antihistamine" },
+
+        // RESPIRATORY
+        { generic: "Salbutamol", trade: "Ventolin", condition: "Rapid relief of bronchospasm; pre-exercise prophylaxis", history: "Exercise-induced asthma", allergies: "None", cautions: "Tremor, tachycardia, palpitations, hypokalemia", action: "Short-acting B2-agonist" },
+        { generic: "Tiotropium", trade: "Spiriva", condition: "Maintenance treatment of COPD; add-on in asthma.", history: "Smoker (30 pack-years)", allergies: "None", cautions: "Dry mouth, urinary retention, constipation", action: "Long-acting muscarinic antagonist" },
+        { generic: "Budesonide", trade: "Pulmicort", condition: "Controller therapy for asthma", history: "Asthma", allergies: "None", cautions: "Oral candidiasis, dysphonia, cough", action: "Inhaled corticosteroid" },
+        { generic: "Budesonide/Formoterol", trade: "Symbicort", condition: "Maintenance asthma/COPD; MART/SMART in asthma", history: "Severe Asthma", allergies: "None", cautions: "Oral candidiasis, dysphonia, cough, tremor, tachycardia, palpitations, hypokalemia", action: "ICS + rapid-onset LABA" },
+        { generic: "Fluticasone/Salmeterol", trade: "Seretide", condition: "Maintenance asthma/COPD", history: "COPD", allergies: "None", cautions: "Oral candidiasis, dysphonia, cough, tremor, tachycardia, palpitations, hypokalemia", action: "ICS + LABA" },
+        { generic: "Ipratropium/Fenoterol", trade: "Berodual", condition: "Acute bronchospasm/COPD symptom relief", history: "None", allergies: "None", cautions: "Dry mouth, tremor, palpitations", action: "Short-acting antimuscarinic + B2-agonist bronchodilator" },
+        { generic: "Tiotropium/Olodaterol", trade: "Spiolto", condition: "Maintenance COPD", history: "Severe COPD", allergies: "None", cautions: "Dry mouth, tremor, palpitations", action: "LAMA+LABA bronchodilator" },
+        { generic: "Umeclidinium/Vitanterol", trade: "Anoro", condition: "Maintenance COPD", history: "COPD", allergies: "None", cautions: "Dry mouth, tremor, palpitations", action: "LAMA + LABA bronchodilator" },
+        { generic: "Fluticasone/Umeclidinium/Vitanterol", trade: "Trelegy", condition: "Triple maintenance therapy for COPD or severe asthma", history: "Refractory COPD", allergies: "None", cautions: "Oral candidiasis, dysphonia, dry mouth, tremor, palpitations", action: "ICS + LAMA + LABA" },
+        { generic: "Montelukast", trade: "Singulair", condition: "Asthma prophylaxis; allergic rhinitis; exercise-induced bronchospasm prevention", history: "Allergic Asthma", allergies: "None", cautions: "Headache; neuropsychiatric effects", action: "Leukotriene receptor antagonist" },
+        { generic: "Theophylline", trade: "Nuelin SR", condition: "Selected asthma/COPD (limited role)", history: "COPD", allergies: "None", cautions: "Nausea, insomnia, tremor, arrhythmia, seizures at high levels", action: "Methylxanthine bronchodilator/PDE inhibition" },
+        { generic: "Omalizumab", trade: "Xolair", condition: "Moderate-severe allergic asthma; chronic spontaneous urticaria", history: "Severe persistent asthma", allergies: "None", cautions: "Injection reactions, headache, anaphylaxis (rare)", action: "Anti-IgE monoclonal antibody" },
+
+        // COUGH
+        { generic: "N-acetyl cysteine", trade: "NAC long", condition: "Productive cough with thick sputum", history: "Bronchitis", allergies: "None", cautions: "N/V, GI upset, unpleasant odor/taste, bronchospasm (inhaled)", action: "Mucolytic" },
+        { generic: "Carbocysteine", trade: "Flemex", condition: "Productive cough with thick sputum", history: "Heavy Smoker", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic" },
+        { generic: "Erdosteine", trade: "Erdas", condition: "Productive cough with thick sputum", history: "None", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic" },
+        { generic: "Bromhexine", trade: "Bisolvon", condition: "Productive cough with thick sputum", history: "URTI", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic" },
+        { generic: "Ambroxol", trade: "Mucosolvan", condition: "Productive cough with thick sputum", history: "None", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic" },
+        { generic: "Guaifenesin", trade: "Fenesin", condition: "Productive cough with thick sputum", history: "None", allergies: "None", cautions: "N/V, GI upset", action: "Expectorant" },
+        { generic: "Dextromethophan", trade: "Romilar", condition: "Dry, nonproductive cough", history: "Currently on SSRIs", allergies: "None", cautions: "Drowsiness, dizziness, nausea; serotonin syndrome with serotonergic drugs", action: "Central antitussive (NMDA antagonist/sigma agonist)" },
+
+        // SMOKING
+        { generic: "Nicotine gum", trade: "Nicorette Gum", condition: "Smoking cessation", history: "Smoker trying to quit", allergies: "None", cautions: "Hiccups, jaw soreness, dyspepsia", action: "Nicotine replacement" },
+        { generic: "Nicotine patch", trade: "Nicorette Invisipatch", condition: "Smoking cessation", history: "Smoker trying to quit", allergies: "Adhesive allergy", cautions: "Skin irritation, vivid dreams, insomnia", action: "Nicotine replacement" },
+        { generic: "Varenidine", trade: "Champix", condition: "Smoking cessation", history: "Trying to quit smoking", allergies: "None", cautions: "N/V, insomnia, abnormal dreams, headache", action: "Partial agonist of a4B2 nicotinic receptor" },
+        { generic: "Nortriptyline", trade: "None", condition: "Smoking cessation", history: "Depression", allergies: "None", cautions: "Dry mouth, constipation, sedation, orthostasis, arrhythmia", action: "Tricylic antidepressant" },
+        { generic: "Cytisine", trade: "Cytisine GPO", condition: "Smoking cessation", history: "Smoker (10 years)", allergies: "None", cautions: "N/V, insomnia, abnormal dreams, headache", action: "Partial agonist of a482 nicotinic receptor" }
+    ];
+
+    let queue = [];
+    let score = 0;
+    let strikes = 0;
+    let selectedPatientId = null;
+    let patientCounter = 0;
+    let spawnTimer;
+    let maxQueue = 10;
+    let gameActive = false;
+
+    let currentDifficulty = 'med';
+    const diffSettings = {
+        'easy': { baseRate: 12000, minRate: 6000, decrement: 200 },
+        'med':  { baseRate: 8000, minRate: 3500, decrement: 300 },
+        'hard': { baseRate: 4500, minRate: 2000, decrement: 400 }
+    };
+
+    function setDifficulty(level) {
+        currentDifficulty = level;
+        document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`btn-${level}`).classList.add('active');
+    }
+
+    // Fuzzy Match
+    function getEditDistance(a, b) {
+        if (a.length === 0) return b.length;
+        if (b.length === 0) return a.length;
+        var matrix = [];
+        for (var i = 0; i <= b.length; i++) matrix[i] = [i];
+        for (var j = 0; j <= a.length; j++) matrix[0][j] = j;
+        for (var i = 1; i <= b.length; i++) {
+            for (var j = 1; j <= a.length; j++) {
+                if (b.charAt(i-1) == a.charAt(j-1)) matrix[i][j] = matrix[i-1][j-1];
+                else matrix[i][j] = Math.min(matrix[i-1][j-1] + 1, Math.min(matrix[i][j-1] + 1, matrix[i-1][j] + 1));
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    function isMatch(input, target) {
+        if (!target || target === "None") return false;
+        input = input.toLowerCase().trim();
+        target = target.toLowerCase().trim();
+        if (input === target || (target.includes(input) && input.length > 4)) return true;
+        return getEditDistance(input, target) <= 1;
+    }
+
+    document.getElementById('drug-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') submitManual();
+    });
+
+    function startGame() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+        gameActive = true; score = 0; strikes = 0; queue = [];
+        updateStats();
+        spawnPatient();
+        startSpawner();
+    }
+
+    function resetGame() {
+        clearInterval(spawnTimer);
+        clearExamPanel();
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+    }
+
+    function startSpawner() {
+        clearInterval(spawnTimer);
+        let settings = diffSettings[currentDifficulty];
+        let currentRate = Math.max(settings.minRate, settings.baseRate - (score * settings.decrement)); 
+        spawnTimer = setInterval(() => { if (gameActive) spawnPatient(); }, currentRate);
+    }
+
+    function spawnPatient() {
+        if (queue.length >= maxQueue) { triggerGameOver("The waiting room reached 10 patients!"); return; }
+        
+        const template = database[Math.floor(Math.random() * database.length)];
+        const randomName = names[Math.floor(Math.random() * names.length)];
+        const randomAge = Math.floor(Math.random() * 50) + 18; 
+        
+        const newPatient = {
+            id: 'pat_' + patientCounter++,
+            name: randomName,
+            age: randomAge,
+            ...template
+        };
+
+        queue.push(newPatient);
+        renderQueue();
+        updateStats();
+    }
+
+    function renderQueue() {
+        const elQueueList = document.getElementById('queue-list');
+        elQueueList.innerHTML = '';
+        queue.forEach((pat, index) => {
+            const card = document.createElement('div');
+            card.className = 'patient-card';
+            if (pat.id === selectedPatientId) card.classList.add('selected');
+            if (index === 0 && queue.length >= 7) card.classList.add('urgent');
+
+            card.innerHTML = `<strong>${pat.name} (Age: ${pat.age})</strong><br><small>${pat.condition.substring(0, 25)}...</small>`;
+            card.onclick = () => selectPatient(pat.id);
+            elQueueList.appendChild(card);
+        });
+    }
+
+    function selectPatient(id) {
+        selectedPatientId = id;
+        renderQueue();
+        const patient = queue.find(p => p.id === id);
+        if (!patient) return;
+
+        document.getElementById('empty-exam').classList.add('hidden');
+        document.getElementById('active-exam').classList.remove('hidden');
+        
+        document.getElementById('pat-name').innerText = patient.name;
+        document.getElementById('pat-age').innerText = patient.age;
+        document.getElementById('pat-condition').innerText = patient.condition;
+        document.getElementById('pat-history').innerText = patient.history;
+        document.getElementById('pat-allergies').innerText = patient.allergies;
+        document.getElementById('pat-cautions').innerText = patient.cautions;
+        document.getElementById('drug-input').value = '';
+        
+        generateChoices(patient);
+        document.getElementById('drug-input').focus();
+    }
+
+    function clearExamPanel() {
+        selectedPatientId = null;
+        document.getElementById('empty-exam').classList.remove('hidden');
+        document.getElementById('active-exam').classList.add('hidden');
+        renderQueue();
+    }
+
+    function generateChoices(correctPatient) {
+        // Find ALL drugs that treat this condition
+        let validDrugsForCondition = database.filter(d => d.condition === correctPatient.condition);
+        
+        // Randomly pick ONE correct drug to display on a button
+        let correctOption = validDrugsForCondition[Math.floor(Math.random() * validDrugsForCondition.length)];
+        let options = [correctOption];
+        
+        // Filter out ALL drugs that treat this condition to ensure only ONE correct button
+        let available = database.filter(d => d.condition !== correctPatient.condition);
+        
+        for(let i=0; i<3; i++) {
+            let randIdx = Math.floor(Math.random() * available.length);
+            options.push(available[randIdx]);
+            available.splice(randIdx, 1);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        const grid = document.getElementById('choice-grid');
+        grid.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = opt.trade !== "None" ? `${opt.generic} (${opt.trade})` : opt.generic;
+            // Validate if the clicked button's condition matches the patient's condition
+            btn.onclick = () => processAnswer(opt.condition === correctPatient.condition, opt, correctPatient);
+            grid.appendChild(btn);
+        });
+    }
+
+    function submitManual() {
+        if (!selectedPatientId) return;
+        const patient = queue.find(p => p.id === selectedPatientId);
+        const input = document.getElementById('drug-input').value;
+        if (input.trim() === '') return;
+
+        // Find ALL valid drugs for this condition
+        let validDrugs = database.filter(d => d.condition === patient.condition);
+        
+        // Check if input matches ANY of the valid drugs
+        let matchedDrug = validDrugs.find(d => isMatch(input, d.generic) || isMatch(input, d.trade));
+
+        processAnswer(!!matchedDrug, matchedDrug, patient);
+    }
+
+    function processAnswer(isCorrect, submittedDrug, originalPatient) {
+        gameActive = false; 
+        clearInterval(spawnTimer);
+
+        const modal = document.getElementById('solution-modal');
+        const title = document.getElementById('sol-title');
+        const content = document.getElementById('sol-content');
+
+        // Find all alternative drugs that could have treated this condition
+        let validDrugs = database.filter(d => d.condition === originalPatient.condition);
+        let validNamesList = validDrugs.map(d => d.trade !== "None" ? `${d.generic} (${d.trade})` : d.generic).join(" &nbsp;|&nbsp; ");
+
+        if (isCorrect) {
+            score++;
+            title.innerHTML = "✅ <span style='color: #2e7d32;'>Correct Dispensation</span>";
+            queue = queue.filter(p => p.id !== selectedPatientId);
+        } else {
+            strikes++;
+            title.innerHTML = "❌ <span style='color: #c62828;'>Clinical Error</span>";
+        }
+
+        content.innerHTML = `
+            <div style="margin-bottom: 15px;">
+                <strong>Valid Drugs for this condition:</strong><br>
+                <div class="drug-list">${validNamesList}</div>
+            </div>
+            <strong>Mechanism:</strong> ${originalPatient.action}<br><br>
+            <strong>Cautions to remember:</strong> ${originalPatient.cautions}
+        `;
+
+        modal.classList.remove('hidden');
+        updateStats();
+
+        if (strikes >= 3) {
+            setTimeout(() => { triggerGameOver("You reached 3 strikes. Shift terminated."); }, 2000);
+        }
+    }
+
+    function closeSolution() {
+        document.getElementById('solution-modal').classList.add('hidden');
+        clearExamPanel();
+        if (strikes < 3) {
+            gameActive = true;
+            startSpawner();
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('score-display').innerText = score;
+        document.getElementById('strike-display').innerText = strikes;
+        
+        const elQCount = document.getElementById('queue-count');
+        elQCount.innerText = queue.length;
+        elQCount.style.color = queue.length >= 7 ? '#ffeb3b' : 'inherit';
+    }
+
+    function triggerGameOver(reason) {
+        gameActive = false;
+        clearInterval(spawnTimer);
+        document.getElementById('end-message').innerText = reason;
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('solution-modal').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.remove('hidden');
+    }
+</script>
+
+</body>
+</html>
