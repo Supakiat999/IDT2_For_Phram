@@ -160,6 +160,30 @@
         }
         .solution-box h2 { margin-top: 0; border-bottom: 2px solid #e0f2f1; padding-bottom: 10px; }
         .drug-list { font-weight: bold; color: #00695c; background: #e0f7fa; padding: 10px; border-radius: 5px;}
+
+        .selected-drug-box {
+            background: #fff8e1;
+            color: #5d4037;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #ffb300;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .wrong-drug-box {
+            background: #ffebee;
+            color: #b71c1c;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #c62828;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .reference-note {
+            font-size: 0.9rem;
+            color: #607d8b;
+            margin-top: 12px;
+        }
         
         .creator-credit {
             font-size: 0.85rem;
@@ -234,7 +258,7 @@
         <div class="diff-controls">
             <button class="diff-btn" id="btn-easy" onclick="setDifficulty('easy')">Easy</button>
             <button class="diff-btn active" id="btn-med" onclick="setDifficulty('med')">Standard</button>
-            <button class="diff-btn" id="btn-hard" onclick="setDifficulty('hard')">Rush</button>
+            <button class="diff-btn" id="btn-hard" onclick="setDifficulty('hard')">Rush (Hard Choices)</button>
         </div>
 
         <button class="start-btn" onclick="startGame()">Start Shift</button>
@@ -326,10 +350,10 @@
         { generic: "Neomycin/gramicidin/Polymyxin B", trade: "PolyOph", condition: "Superficial bacterial eye infection", history: "None", allergies: "None", cautions: "Local irritation, hypersensitivity", action: "Topical antibiotic combination" },
         { generic: "Tobramycin/Dexamethasone", trade: "Tobradex", condition: "Steroid-responsive ocular inflammation with bacterial infection risk", history: "Recent eye trauma", allergies: "None", cautions: "Local irritation, hypersensitivity, healing, superinfection, IOP, cataract with prolonged use", action: "Antibiotic + corticosteroid" },
         { generic: "Prednisolone", trade: "None", condition: "Uveitis/post-op or severe ocular inflammation", history: "Uveitis", allergies: "None", cautions: "healing, superinfection, elevated IOP, cataract with prolonged use", action: "Corticosteroid; anti-inflammatory" },
-        { generic: "Brimonidine", trade: "Alphagan", condition: "Open-angle glaucoma / ocular hypertension", history: "Hypertension", allergies: "None", cautions: "Dry mouth, fatigue, allergy, red eye", action: "a2-agonist" },
-        { generic: "Latanoprost", trade: "Xalatan", condition: "Open-angle glaucoma / ocular hypertension", history: "Glaucoma family history", allergies: "None", cautions: "Conjunctival hyperemia, eyelash growth, iris/skin darkening (irreversible)", action: "Prostaglandin F2a analog" },
-        { generic: "Betaxolol", trade: "Betoptic", condition: "Open-angle glaucoma / ocular hypertension", history: "None", allergies: "None", cautions: "Bradycardia, hypotension, bronchospasm, dry eye", action: "B1-selective blocker" },
-        { generic: "Dorzolamide/Timolol", trade: "Cosopt", condition: "Open-angle glaucoma / ocular hypertension", history: "COPD", allergies: "Sulfa", cautions: "Stinging, bitter taste, bradycardia, bronchospasm", action: "Carbonic anhydrase linhibitor + nonselective B-blocker" },
+        { generic: "Brimonidine", trade: "Alphagan", condition: "Open-angle glaucoma / ocular hypertension", history: "Hypertension", allergies: "None", cautions: "Dry mouth, fatigue, allergy, red eye", action: "α2-agonist" },
+        { generic: "Latanoprost", trade: "Xalatan", condition: "Open-angle glaucoma / ocular hypertension", history: "Glaucoma family history", allergies: "None", cautions: "Conjunctival hyperemia, eyelash growth, iris/skin darkening (irreversible)", action: "Prostaglandin F2α analog" },
+        { generic: "Betaxolol", trade: "Betoptic", condition: "Open-angle glaucoma / ocular hypertension", history: "None", allergies: "None", cautions: "Bradycardia, hypotension, bronchospasm, dry eye", action: "β1-selective blocker" },
+        { generic: "Dorzolamide/Timolol", trade: "Cosopt", condition: "Open-angle glaucoma / ocular hypertension", history: "COPD", allergies: "Sulfa", cautions: "Stinging, bitter taste, bradycardia, bronchospasm", action: "Carbonic anhydrase inhibitor + nonselective B-blocker" },
         { generic: "Pilocarpine", trade: "IsoptoCarpine", condition: "Acute angle-closure glaucoma (adjunct)", history: "Cataracts", allergies: "None", cautions: "Brow ache, blurred vision, impaired night vision, miosis", action: "Muscarinic agonist." },
 
         // OTIC
@@ -339,9 +363,9 @@
         { generic: "Docusate", trade: "Dewax", condition: "Impacted earwax", history: "Hearing aid user", allergies: "None", cautions: "Transient irritation, discomfort", action: "Cerumen-softening surfactant" },
 
         // NASAL
-        { generic: "Oxymetazoline", trade: "Iliadin", condition: "Nasal congestion", history: "Common cold", allergies: "None", cautions: "Rebound congestion, dryness, irritation", action: "a-adrenergic agonist" },
-        { generic: "Naphazoline/Chlorpheniramine", trade: "Nasol", condition: "Nasal congestion w/ rhinorrhea", history: "None", allergies: "None", cautions: "Rebound congestion, dryness, irritation, drowsiness", action: "a-adrenergic agonist + H1 antihistamine" },
-        { generic: "Pseudoephedrine", trade: "None", condition: "Nasal/sinus congestion", history: "Hypertension", allergies: "None", cautions: "Insomnia, palpitations, tremor, elevated BP, urinary retention", action: "a-adrenergic agonist" },
+        { generic: "Oxymetazoline", trade: "Iliadin", condition: "Nasal congestion", history: "Common cold", allergies: "None", cautions: "Rebound congestion, dryness, irritation", action: "α-adrenergic agonist" },
+        { generic: "Naphazoline/Chlorpheniramine", trade: "Nasol", condition: "Nasal congestion w/ rhinorrhea", history: "None", allergies: "None", cautions: "Rebound congestion, dryness, irritation, drowsiness", action: "α-adrenergic agonist + H1 antihistamine" },
+        { generic: "Pseudoephedrine", trade: "None", condition: "Nasal/sinus congestion", history: "Hypertension", allergies: "None", cautions: "Insomnia, palpitations, tremor, elevated BP, urinary retention", action: "α-adrenergic agonist" },
         { generic: "Mometasone", trade: "Nasonex", condition: "Allergic rhinitis; nasal polyps", history: "Nasal polyps", allergies: "None", cautions: "Epistaxis, irritation, sore throat", action: "Intranasal corticosteroid" },
         { generic: "Budesonide", trade: "Rhinocort", condition: "Allergic rhinitis", history: "Asthma", allergies: "None", cautions: "Epistaxis, irritation, sore throat", action: "Intranasal corticosteroid" },
         { generic: "Azelastine/Fluticasone", trade: "Dymista", condition: "Moderate-severe allergic rhinitis", history: "Chronic sinusitis", allergies: "None", cautions: "Bitter taste, epistaxis, sedation (mild), irritation", action: "Intranasal antihistamine + corticosteroid" },
@@ -359,12 +383,12 @@
         { generic: "Levocetirizine", trade: "Xyzal", condition: "Allergic rhinitis, urticaria", history: "None", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects.", action: "2nd-generation H1 antihistamine" },
 
         // RESPIRATORY
-        { generic: "Salbutamol", trade: "Ventolin", condition: "Rapid relief of bronchospasm; pre-exercise prophylaxis", history: "Exercise-induced asthma", allergies: "None", cautions: "Tremor, tachycardia, palpitations, hypokalemia", action: "Short-acting B2-agonist" },
+        { generic: "Salbutamol", trade: "Ventolin", condition: "Rapid relief of bronchospasm; pre-exercise prophylaxis", history: "Exercise-induced asthma", allergies: "None", cautions: "Tremor, tachycardia, palpitations, hypokalemia", action: "Short-acting β2-agonist" },
         { generic: "Tiotropium", trade: "Spiriva", condition: "Maintenance treatment of COPD; add-on in asthma.", history: "Smoker (30 pack-years)", allergies: "None", cautions: "Dry mouth, urinary retention, constipation", action: "Long-acting muscarinic antagonist" },
         { generic: "Budesonide", trade: "Pulmicort", condition: "Controller therapy for asthma", history: "Asthma", allergies: "None", cautions: "Oral candidiasis, dysphonia, cough", action: "Inhaled corticosteroid" },
         { generic: "Budesonide/Formoterol", trade: "Symbicort", condition: "Maintenance asthma/COPD; MART/SMART in asthma", history: "Severe Asthma", allergies: "None", cautions: "Oral candidiasis, dysphonia, cough, tremor, tachycardia, palpitations, hypokalemia", action: "ICS + rapid-onset LABA" },
         { generic: "Fluticasone/Salmeterol", trade: "Seretide", condition: "Maintenance asthma/COPD", history: "COPD", allergies: "None", cautions: "Oral candidiasis, dysphonia, cough, tremor, tachycardia, palpitations, hypokalemia", action: "ICS + LABA" },
-        { generic: "Ipratropium/Fenoterol", trade: "Berodual", condition: "Acute bronchospasm/COPD symptom relief", history: "None", allergies: "None", cautions: "Dry mouth, tremor, palpitations", action: "Short-acting antimuscarinic + B2-agonist bronchodilator" },
+        { generic: "Ipratropium/Fenoterol", trade: "Berodual", condition: "Acute bronchospasm/COPD symptom relief", history: "None", allergies: "None", cautions: "Dry mouth, tremor, palpitations", action: "Short-acting antimuscarinic + β2-agonist bronchodilator" },
         { generic: "Tiotropium/Olodaterol", trade: "Spiolto", condition: "Maintenance COPD", history: "Severe COPD", allergies: "None", cautions: "Dry mouth, tremor, palpitations", action: "LAMA+LABA bronchodilator" },
         { generic: "Umeclidinium/Vitanterol", trade: "Anoro", condition: "Maintenance COPD", history: "COPD", allergies: "None", cautions: "Dry mouth, tremor, palpitations", action: "LAMA + LABA bronchodilator" },
         { generic: "Fluticasone/Umeclidinium/Vitanterol", trade: "Trelegy", condition: "Triple maintenance therapy for COPD or severe asthma", history: "Refractory COPD", allergies: "None", cautions: "Oral candidiasis, dysphonia, dry mouth, tremor, palpitations", action: "ICS + LAMA + LABA" },
@@ -375,18 +399,18 @@
         // COUGH
         { generic: "N-acetyl cysteine", trade: "NAC long", condition: "Productive cough with thick sputum", history: "Bronchitis", allergies: "None", cautions: "N/V, GI upset, unpleasant odor/taste, bronchospasm (inhaled)", action: "Mucolytic" },
         { generic: "Carbocysteine", trade: "Flemex", condition: "Productive cough with thick sputum", history: "Heavy Smoker", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic" },
-        { generic: "Erdosteine", trade: "Erdas", condition: "Productive cough with thick sputum", history: "None", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic" },
+        { generic: "Erdosteine", trade: "Erdos", condition: "Productive cough with thick sputum", history: "None", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic" },
         { generic: "Bromhexine", trade: "Bisolvon", condition: "Productive cough with thick sputum", history: "URTI", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic" },
         { generic: "Ambroxol", trade: "Mucosolvan", condition: "Productive cough with thick sputum", history: "None", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic" },
         { generic: "Guaifenesin", trade: "Fenesin", condition: "Productive cough with thick sputum", history: "None", allergies: "None", cautions: "N/V, GI upset", action: "Expectorant" },
-        { generic: "Dextromethophan", trade: "Romilar", condition: "Dry, nonproductive cough", history: "Currently on SSRIs", allergies: "None", cautions: "Drowsiness, dizziness, nausea; serotonin syndrome with serotonergic drugs", action: "Central antitussive (NMDA antagonist/sigma agonist)" },
+        { generic: "Dextromethorphan", trade: "Romilar", condition: "Dry, nonproductive cough", history: "Currently on SSRIs", allergies: "None", cautions: "Drowsiness, dizziness, nausea; serotonin syndrome with serotonergic drugs", action: "Central antitussive (NMDA antagonist/sigma agonist)" },
 
         // SMOKING
         { generic: "Nicotine gum", trade: "Nicorette Gum", condition: "Smoking cessation", history: "Smoker trying to quit", allergies: "None", cautions: "Hiccups, jaw soreness, dyspepsia", action: "Nicotine replacement" },
         { generic: "Nicotine patch", trade: "Nicorette Invisipatch", condition: "Smoking cessation", history: "Smoker trying to quit", allergies: "Adhesive allergy", cautions: "Skin irritation, vivid dreams, insomnia", action: "Nicotine replacement" },
-        { generic: "Varenidine", trade: "Champix", condition: "Smoking cessation", history: "Trying to quit smoking", allergies: "None", cautions: "N/V, insomnia, abnormal dreams, headache", action: "Partial agonist of a4B2 nicotinic receptor" },
+        { generic: "Varenicline", trade: "Champix", condition: "Smoking cessation", history: "Trying to quit smoking", allergies: "None", cautions: "N/V, insomnia, abnormal dreams, headache", action: "Partial agonist of a4B2 nicotinic receptor" },
         { generic: "Nortriptyline", trade: "None", condition: "Smoking cessation", history: "Depression", allergies: "None", cautions: "Dry mouth, constipation, sedation, orthostasis, arrhythmia", action: "Tricylic antidepressant" },
-        { generic: "Cytisine", trade: "Cytisine GPO", condition: "Smoking cessation", history: "Smoker (10 years)", allergies: "None", cautions: "N/V, insomnia, abnormal dreams, headache", action: "Partial agonist of a482 nicotinic receptor" }
+        { generic: "Cytisine", trade: "Cytisine GPO", condition: "Smoking cessation", history: "Smoker (10 years)", allergies: "None", cautions: "N/V, insomnia, abnormal dreams, headache", action: "Partial agonist of α4β2 nicotinic receptor" }
     ];
 
     let queue = [];
@@ -433,6 +457,252 @@
         if (input === target || (target.includes(input) && input.length > 4)) return true;
         return getEditDistance(input, target) <= 1;
     }
+
+
+    /*
+       PDF-based reference layer.
+       The original database is kept above, but this layer corrects/standardizes:
+       - action/mechanism
+       - cautions
+       - dosage/execution
+       - clinical category/subgroup for harder distractors
+    */
+    const pdfReferenceData = [
+        // OPHTHALMIC: dry eye / ocular surface
+        { generic: "Carboxymethylcellulose", trade: "Cellufresh", condition: "Dry eye, irritation, exposure-related discomfort", action: "Ocular lubricant/tear substitute", cautions: "Transient blur, mild stinging; preservative sensitivity", dosage: "1–2 drops q 4–6 hr PRN", system: "Ophthalmic", category: "Ophthalmic lubricants", subgroup: "Dry eye" },
+        { generic: "Hydroxypropyl methylcellulose", trade: "Genteal", condition: "Dry eye, irritation, exposure-related discomfort", action: "Ocular lubricant/tear substitute", cautions: "Transient blur, mild stinging; preservative sensitivity", dosage: "1–2 drops q 4–6 hr PRN", system: "Ophthalmic", category: "Ophthalmic lubricants", subgroup: "Dry eye" },
+        { generic: "Hyaluronate", trade: "Vislube", condition: "Dry eye, irritation, exposure-related discomfort", action: "Ocular lubricant/tear substitute", cautions: "Transient blur, mild stinging; preservative sensitivity", dosage: "1–2 drops q 4–6 hr PRN", system: "Ophthalmic", category: "Ophthalmic lubricants", subgroup: "Dry eye" },
+        { generic: "Cyclosporine", trade: "Restasis", condition: "Chronic inflammatory dry eye", action: "Calcineurin inhibitor", cautions: "Burning, redness, blurred vision", dosage: "1 drop BID", system: "Ophthalmic", category: "Ophthalmic dry eye anti-inflammatory", subgroup: "Dry eye" },
+        { generic: "Diquafosol", trade: "Diquas", condition: "Dry eye disease", action: "P2Y2 receptor agonist", cautions: "Eye irritation, conjunctival hyperemia, blurred vision", dosage: "1 drop 6×/day", system: "Ophthalmic", category: "Ophthalmic dry eye secretagogue", subgroup: "Dry eye" },
+
+        // OPHTHALMIC: allergic conjunctivitis
+        { generic: "Antazoline/tetrahydrozoline", trade: "Hista-Oph", condition: "Short-term relief of allergic conjunctivitis", action: "H1 antihistamine + vasoconstrictor", cautions: "Stinging, rebound redness, mydriasis, elevated IOP", dosage: "1 drop q 4–6 hr PRN", system: "Ophthalmic", category: "Ophthalmic allergy", subgroup: "Allergic conjunctivitis" },
+        { generic: "Ketotifen", trade: "Zaditen", condition: "Allergic conjunctivitis", action: "H1 antihistamine + mast-cell stabilizer", cautions: "Transient irritation, dry eye, headache", dosage: "1 drop BID", system: "Ophthalmic", category: "Ophthalmic allergy", subgroup: "Allergic conjunctivitis" },
+        { generic: "Olopatadine", trade: "Patanol", condition: "Allergic conjunctivitis", action: "Selective H1 antihistamine + mast-cell stabilizer", cautions: "Transient burning, dry eye, headache", dosage: "0.1%: 1 drop BID; 0.2%/0.7%: 1 drop daily", system: "Ophthalmic", category: "Ophthalmic allergy", subgroup: "Allergic conjunctivitis" },
+        { generic: "Sodium cromoglycate", trade: "Vividrin", condition: "Allergic conjunctivitis", action: "Mast-cell stabilizer", cautions: "Mild stinging, blurred vision", dosage: "1–2 drops QID", system: "Ophthalmic", category: "Ophthalmic allergy", subgroup: "Allergic conjunctivitis" },
+
+        // OPHTHALMIC: infection / steroid / glaucoma
+        { generic: "Tobramycin", trade: "Tobrex", condition: "Superficial bacterial eye infection", action: "Aminoglycoside antibiotic", cautions: "Local irritation, hypersensitivity", dosage: "1–2 drops q 4–6 h; severe infection q 1–2 h initially", system: "Ophthalmic", category: "Ophthalmic antibiotic", subgroup: "Bacterial eye infection" },
+        { generic: "Tobramycin/Dexamethasone", trade: "Tobradex", condition: "Steroid-responsive ocular inflammation with bacterial infection risk", action: "Antibiotic + corticosteroid", cautions: "Local irritation, hypersensitivity, decreased healing, superinfection, elevated IOP, cataract with prolonged use", dosage: "1 drop q 4–6 h", system: "Ophthalmic", category: "Ophthalmic antibiotic-steroid", subgroup: "Bacterial eye infection" },
+        { generic: "Moxifloxacin", trade: "Vigamox", condition: "Superficial bacterial eye infection", action: "Fluoroquinolone antibiotic", cautions: "Irritation, dysgeusia, hypersensitivity", dosage: "1 drop TID for ~7 days", system: "Ophthalmic", category: "Ophthalmic antibiotic", subgroup: "Bacterial eye infection" },
+        { generic: "Chloramphenicol", trade: "None", condition: "Superficial bacterial eye infection", action: "Broad-spectrum antibacterial", cautions: "Local burning; blood dyscrasia", dosage: "Drops: 1 drop q 2 h for 48 h, then q 4–6 h for 5 days; ointment: 1 strip QID", system: "Ophthalmic", category: "Ophthalmic antibiotic", subgroup: "Bacterial eye infection" },
+        { generic: "Prednisolone", trade: "None", condition: "Uveitis/post-op or severe ocular inflammation", action: "Corticosteroid; anti-inflammatory", cautions: "Decreased healing, superinfection, elevated IOP, cataract with prolonged use", dosage: "1 drop 2–4×/day", system: "Ophthalmic", category: "Ophthalmic corticosteroid", subgroup: "Ocular inflammation" },
+        { generic: "Neomycin/gramicidin/Polymyxin B", trade: "PolyOph", condition: "Superficial bacterial eye infection", action: "Topical antibiotic combination", cautions: "Local irritation, hypersensitivity", dosage: "1–2 drops q 4–6 h", system: "Ophthalmic", category: "Ophthalmic antibiotic", subgroup: "Bacterial eye infection" },
+        { generic: "Brimonidine", trade: "Alphagan", condition: "Open-angle glaucoma / ocular hypertension", action: "α2-agonist", cautions: "Dry mouth, fatigue, allergy, red eye", dosage: "1 drop TID", system: "Ophthalmic", category: "Glaucoma", subgroup: "Open-angle glaucoma" },
+        { generic: "Pilocarpine", trade: "IsoptoCarpine", condition: "Acute angle-closure glaucoma (adjunct)", action: "Muscarinic agonist", cautions: "Brow ache, blurred vision, impaired night vision, miosis", dosage: "1 drop QID", system: "Ophthalmic", category: "Glaucoma", subgroup: "Angle-closure glaucoma" },
+        { generic: "Latanoprost", trade: "Xalatan", condition: "Open-angle glaucoma / ocular hypertension", action: "Prostaglandin F2α analog", cautions: "Conjunctival hyperemia, eyelash growth, iris/skin darkening (irreversible)", dosage: "1 drop OD", system: "Ophthalmic", category: "Glaucoma", subgroup: "Open-angle glaucoma" },
+        { generic: "Betaxolol", trade: "Betoptic", condition: "Open-angle glaucoma / ocular hypertension", action: "β1-selective blocker", cautions: "Bradycardia, hypotension, bronchospasm, dry eye", dosage: "1 drop BID", system: "Ophthalmic", category: "Glaucoma", subgroup: "Open-angle glaucoma" },
+        { generic: "Dorzolamide/Timolol", trade: "Cosopt", condition: "Open-angle glaucoma / ocular hypertension", action: "Carbonic anhydrase inhibitor + nonselective β-blocker", cautions: "Stinging, bitter taste, bradycardia, bronchospasm", dosage: "1 drop BID", system: "Ophthalmic", category: "Glaucoma", subgroup: "Open-angle glaucoma" },
+
+        // OTIC
+        { generic: "Clotrimazole", trade: "Candid", condition: "Otomycosis / fungal otitis externa", action: "Imidazole antifungal", cautions: "Local irritation, burning", dosage: "2–3 drops BID–TID", system: "Otic", category: "Otic antifungal", subgroup: "Otitis externa" },
+        { generic: "Ofloxacin", trade: "Tarivid", condition: "Bacterial otitis externa; otorrhea with tympanostomy tube/perforation", action: "Fluoroquinolone antibiotic", cautions: "Itching, discomfort, dizziness", dosage: "10 drops daily or 5 drops BID for 7–10 days", system: "Otic", category: "Otic antibiotic", subgroup: "Otitis externa" },
+        { generic: "Dexamethasone/neomycin", trade: "DexOph", condition: "Inflamed otitis externa or conjunctivitis with suspected bacterial infection", action: "Topical corticosteroid + aminoglycoside antibiotic", cautions: "Local irritation, neomycin allergy; ototoxicity risk if TM perforated", dosage: "2–3 drops TID–QID", system: "Otic/Ophthalmic", category: "Otic or ophthalmic antibiotic-steroid", subgroup: "Otitis externa" },
+        { generic: "Docusate", trade: "Dewax", condition: "Impacted earwax", action: "Cerumen-softening surfactant", cautions: "Transient irritation, discomfort", dosage: "1 mL (5–10 drops) for 10–15 min, then irrigate", system: "Otic", category: "Cerumenolytic", subgroup: "Earwax" },
+
+        // NASAL
+        { generic: "Oxymetazoline", trade: "Iliadin", condition: "Nasal congestion", action: "α-adrenergic agonist", cautions: "Rebound congestion, dryness, irritation", dosage: "1–2 sprays/nostril BID PRN", system: "Nasal", category: "Nasal decongestant", subgroup: "Nasal congestion" },
+        { generic: "Naphazoline/Chlorpheniramine", trade: "Nasol", condition: "Nasal congestion with rhinorrhea", action: "α-adrenergic agonist + H1 antihistamine", cautions: "Rebound congestion, dryness, irritation, drowsiness", dosage: "1 spray/nostril 3–4×/day PRN", system: "Nasal", category: "Nasal decongestant-antihistamine", subgroup: "Nasal congestion" },
+        { generic: "Pseudoephedrine", trade: "None", condition: "Nasal/sinus congestion", action: "α-adrenergic agonist", cautions: "Insomnia, palpitations, tremor, elevated BP, urinary retention", dosage: "60 mg q 4–6 h PRN or 120 mg BID (ER)", system: "Nasal/Systemic", category: "Systemic decongestant", subgroup: "Nasal congestion" },
+        { generic: "Mometasone", trade: "Nasonex", condition: "Allergic rhinitis; nasal polyps", action: "Intranasal corticosteroid", cautions: "Epistaxis, irritation, sore throat", dosage: "2 sprays/nostril daily, then lowest effective dose", system: "Nasal", category: "Intranasal corticosteroid", subgroup: "Allergic rhinitis" },
+        { generic: "Budesonide", trade: "Rhinocort", condition: "Allergic rhinitis", action: "Intranasal corticosteroid", cautions: "Epistaxis, irritation, sore throat", dosage: "2 sprays/nostril daily, then lowest effective dose", system: "Nasal", category: "Intranasal corticosteroid", subgroup: "Allergic rhinitis" },
+        { generic: "Azelastine/Fluticasone", trade: "Dymista", condition: "Moderate-severe allergic rhinitis", action: "Intranasal antihistamine + corticosteroid", cautions: "Bitter taste, epistaxis, sedation (mild), irritation", dosage: "1 spray/nostril BID", system: "Nasal", category: "Intranasal antihistamine-corticosteroid", subgroup: "Allergic rhinitis" },
+
+        // ORAL ANTIHISTAMINES
+        { generic: "Chlorpheniramine", trade: "None", condition: "Allergic rhinitis, urticaria, pruritus", action: "Sedating H1 antihistamine", cautions: "Sedation, anticholinergic effects", dosage: "4 mg q 4–6 h PRN", system: "Oral antihistamine", category: "Sedating antihistamine", subgroup: "Allergic rhinitis/urticaria" },
+        { generic: "Hydroxyzine", trade: "Atarax", condition: "Allergic rhinitis, urticaria, pruritus, anxiolytic", action: "Sedating H1 antihistamine", cautions: "Sedation, anticholinergic effects, QT prolongation", dosage: "10–25 mg TID–QID PRN", system: "Oral antihistamine", category: "Sedating antihistamine", subgroup: "Allergic rhinitis/urticaria" },
+        { generic: "Dimenhydrinate", trade: "Dramamine", condition: "Motion sickness, vertigo", action: "Sedating H1 antihistamine", cautions: "Sedation, anticholinergic effects", dosage: "50–100 mg q 4–6 h PRN", system: "Oral antihistamine", category: "Sedating antihistamine", subgroup: "Motion sickness/vertigo" },
+        { generic: "Diphenhydramine", trade: "Benadryl", condition: "Allergic rhinitis, urticaria, pruritus; short-term sleep aid", action: "Sedating H1 antihistamine", cautions: "Sedation, anticholinergic effects", dosage: "25–50 mg q 4–6 h PRN", system: "Oral antihistamine", category: "Sedating antihistamine", subgroup: "Allergic rhinitis/urticaria" },
+        { generic: "Loratadine", trade: "Claritine", condition: "Allergic rhinitis, urticaria", action: "Non-sedating H1 antihistamine", cautions: "Minimal sedation, minimal anticholinergic effects", dosage: "10 mg once daily", system: "Oral antihistamine", category: "Second-generation antihistamine", subgroup: "Allergic rhinitis/urticaria" },
+        { generic: "Cetirizine", trade: "Zyrtec", condition: "Allergic rhinitis, urticaria", action: "2nd-generation peripheral H1 antihistamine", cautions: "Minimal sedation, minimal anticholinergic effects", dosage: "10 mg once daily", system: "Oral antihistamine", category: "Second-generation antihistamine", subgroup: "Allergic rhinitis/urticaria" },
+        { generic: "Fexofenadine", trade: "Telfast", condition: "Allergic rhinitis, urticaria", action: "2nd-generation H1 antihistamine", cautions: "Minimal sedation, minimal anticholinergic effects", dosage: "60 mg BID or 180 mg OD", system: "Oral antihistamine", category: "Second-generation antihistamine", subgroup: "Allergic rhinitis/urticaria" },
+        { generic: "Bilastine", trade: "Bilaxten", condition: "Allergic rhinitis, urticaria", action: "2nd-generation H1 antihistamine", cautions: "Minimal sedation, minimal anticholinergic effects", dosage: "20 mg once daily", system: "Oral antihistamine", category: "Second-generation antihistamine", subgroup: "Allergic rhinitis/urticaria" },
+        { generic: "Desloratadine", trade: "Aerius", condition: "Allergic rhinitis, urticaria", action: "2nd-generation H1 antihistamine", cautions: "Minimal sedation, minimal anticholinergic effects", dosage: "5 mg once daily", system: "Oral antihistamine", category: "Second-generation antihistamine", subgroup: "Allergic rhinitis/urticaria" },
+        { generic: "Levocetirizine", trade: "Xyzal", condition: "Allergic rhinitis, urticaria", action: "2nd-generation H1 antihistamine", cautions: "Minimal sedation, minimal anticholinergic effects", dosage: "5 mg once daily", system: "Oral antihistamine", category: "Second-generation antihistamine", subgroup: "Allergic rhinitis/urticaria" },
+
+        // RESPIRATORY
+        { generic: "Salbutamol", trade: "Ventolin", condition: "Rapid relief of bronchospasm; pre-exercise prophylaxis", action: "Short-acting β2-agonist", cautions: "Tremor, tachycardia, palpitations, hypokalemia", dosage: "1–2 puffs q 4–6 h PRN", system: "Respiratory", category: "SABA bronchodilator", subgroup: "Asthma/COPD bronchodilator" },
+        { generic: "Tiotropium", trade: "Spiriva", condition: "Maintenance treatment of COPD; add-on in asthma", action: "Long-acting muscarinic antagonist", cautions: "Dry mouth, urinary retention, constipation", dosage: "1 puff OD", system: "Respiratory", category: "LAMA bronchodilator", subgroup: "Asthma/COPD maintenance" },
+        { generic: "Budesonide", trade: "Pulmicort", condition: "Controller therapy for asthma", action: "Inhaled corticosteroid", cautions: "Oral candidiasis, dysphonia, cough", dosage: "200–400 mcg BID", system: "Respiratory", category: "Inhaled corticosteroid", subgroup: "Asthma/COPD maintenance" },
+        { generic: "Budesonide/Formoterol", trade: "Symbicort", condition: "Maintenance asthma/COPD; MART/SMART in asthma", action: "ICS + rapid-onset LABA", cautions: "Oral candidiasis, dysphonia, cough, tremor, tachycardia, palpitations, hypokalemia", dosage: "1–2 inhalations BID", system: "Respiratory", category: "ICS-LABA inhaler", subgroup: "Asthma/COPD maintenance" },
+        { generic: "Fluticasone/Salmeterol", trade: "Seretide", condition: "Maintenance asthma/COPD", action: "ICS + LABA", cautions: "Oral candidiasis, dysphonia, cough, tremor, tachycardia, palpitations, hypokalemia", dosage: "1 inhalation BID", system: "Respiratory", category: "ICS-LABA inhaler", subgroup: "Asthma/COPD maintenance" },
+        { generic: "Ipratropium/Fenoterol", trade: "Berodual", condition: "Acute bronchospasm/COPD symptom relief", action: "Short-acting antimuscarinic + β2-agonist bronchodilator", cautions: "Dry mouth, tremor, palpitations", dosage: "1–2 puffs QID PRN or nebulized per product", system: "Respiratory", category: "SAMA-SABA bronchodilator", subgroup: "Asthma/COPD bronchodilator" },
+        { generic: "Tiotropium/Olodaterol", trade: "Spiolto", condition: "Maintenance COPD", action: "LAMA + LABA bronchodilator", cautions: "Dry mouth, tremor, palpitations", dosage: "2 inhalations OD", system: "Respiratory", category: "LAMA-LABA inhaler", subgroup: "Asthma/COPD maintenance" },
+        { generic: "Umeclidinium/Vilanterol", trade: "Anoro", condition: "Maintenance COPD", action: "LAMA + LABA bronchodilator", cautions: "Dry mouth, tremor, palpitations", dosage: "1 inhalation OD", system: "Respiratory", category: "LAMA-LABA inhaler", subgroup: "Asthma/COPD maintenance" },
+        { generic: "Fluticasone/Umeclidinium/Vilanterol", trade: "Trelegy", condition: "Triple maintenance therapy for COPD or severe asthma", action: "ICS + LAMA + LABA", cautions: "Oral candidiasis, dysphonia, dry mouth, tremor, palpitations", dosage: "1 inhalation OD", system: "Respiratory", category: "Triple inhaler", subgroup: "Asthma/COPD maintenance" },
+        { generic: "Montelukast", trade: "Singulair", condition: "Asthma prophylaxis; allergic rhinitis; exercise-induced bronchospasm prevention", action: "Leukotriene receptor antagonist", cautions: "Headache; neuropsychiatric effects", dosage: "10 mg OD", system: "Respiratory", category: "Leukotriene receptor antagonist", subgroup: "Asthma/allergic rhinitis" },
+        { generic: "Theophylline", trade: "Nuelin SR", condition: "Selected asthma/COPD (limited role)", action: "Methylxanthine bronchodilator / PDE inhibition", cautions: "Nausea, insomnia, tremor, arrhythmia, seizures at high levels", dosage: "200–400 mg/day, titrated to serum level", system: "Respiratory", category: "Methylxanthine bronchodilator", subgroup: "Asthma/COPD bronchodilator" },
+        { generic: "Omalizumab", trade: "Xolair", condition: "Moderate-severe allergic asthma; chronic spontaneous urticaria", action: "Anti-IgE monoclonal antibody", cautions: "Injection reactions, headache, anaphylaxis (rare)", dosage: "SC q 2–4 weeks", system: "Respiratory", category: "Biologic anti-IgE", subgroup: "Severe allergic asthma/urticaria" },
+
+        // COUGH
+        { generic: "N-acetyl cysteine", trade: "NAC long", condition: "Productive cough with thick sputum", action: "Mucolytic", cautions: "N/V, GI upset, unpleasant odor/taste, bronchospasm (inhaled)", dosage: "600 mg OD–BID PRN", system: "Cough", category: "Mucolytic", subgroup: "Productive cough" },
+        { generic: "Carbocysteine", trade: "Flemex", condition: "Productive cough with thick sputum", action: "Mucolytic", cautions: "N/V, GI upset", dosage: "325–750 mg TID PRN, then reduce when improved", system: "Cough", category: "Mucolytic", subgroup: "Productive cough" },
+        { generic: "Erdosteine", trade: "Erdos", condition: "Productive cough with thick sputum", action: "Mucolytic", cautions: "N/V, GI upset", dosage: "300 mg BID PRN", system: "Cough", category: "Mucolytic", subgroup: "Productive cough" },
+        { generic: "Bromhexine", trade: "Bisolvon", condition: "Productive cough with thick sputum", action: "Mucolytic", cautions: "N/V, GI upset", dosage: "8–16 mg TID PRN", system: "Cough", category: "Mucolytic", subgroup: "Productive cough" },
+        { generic: "Ambroxol", trade: "Mucosolvan", condition: "Productive cough with thick sputum", action: "Mucolytic", cautions: "N/V, GI upset", dosage: "30 mg TID or SR 75 mg OD PRN", system: "Cough", category: "Mucolytic", subgroup: "Productive cough" },
+        { generic: "Guaifenesin", trade: "Fenesin", condition: "Productive cough with thick sputum", action: "Expectorant", cautions: "N/V, GI upset", dosage: "200–400 mg q 4 h PRN", system: "Cough", category: "Expectorant", subgroup: "Productive cough" },
+        { generic: "Dextromethorphan", trade: "Romilar", condition: "Dry, nonproductive cough", action: "Central antitussive (NMDA antagonist / sigma agonist)", cautions: "Drowsiness, dizziness, nausea; serotonin syndrome with serotonergic drugs", dosage: "10–20 mg q 4 h or 30 mg q 6–8 h PRN", system: "Cough", category: "Antitussive", subgroup: "Dry cough" },
+
+        // SMOKING CESSATION
+        { generic: "Nicotine gum", trade: "Nicorette Gum", condition: "Smoking cessation", action: "Nicotine replacement", cautions: "Hiccups, jaw soreness, dyspepsia", dosage: "2 mg or 4 mg q 1–2 h; then taper", system: "Smoking cessation", category: "Nicotine replacement", subgroup: "Smoking cessation" },
+        { generic: "Nicotine patch", trade: "Nicorette Invisipatch", condition: "Smoking cessation", action: "Nicotine replacement", cautions: "Skin irritation, vivid dreams, insomnia", dosage: "15 mg or 25 mg/16 h OD; then taper", system: "Smoking cessation", category: "Nicotine replacement", subgroup: "Smoking cessation" },
+        { generic: "Varenicline", trade: "Champix", condition: "Smoking cessation", action: "Partial agonist of α4β2 nicotinic receptor", cautions: "N/V, insomnia, abnormal dreams, headache", dosage: "Start 0.5 mg daily → 0.5 mg BID → 1 mg BID", system: "Smoking cessation", category: "Nicotinic receptor partial agonist", subgroup: "Smoking cessation" },
+        { generic: "Nortriptyline", trade: "None", condition: "Smoking cessation", action: "Tricyclic antidepressant", cautions: "Dry mouth, constipation, sedation, orthostasis, arrhythmia", dosage: "Start 10–25 mg hs; then titrate", system: "Smoking cessation", category: "Non-nicotine cessation aid", subgroup: "Smoking cessation" },
+        { generic: "Cytisine", trade: "Cytisine GPO", condition: "Smoking cessation", action: "Partial agonist of α4β2 nicotinic receptor", cautions: "N/V, insomnia, abnormal dreams, headache", dosage: "1.5 mg tablets in tapering schedule over ~25 days", system: "Smoking cessation", category: "Nicotinic receptor partial agonist", subgroup: "Smoking cessation" }
+    ];
+
+    const aliasGenericMap = {
+        "dextromethophan": "dextromethorphan",
+        "varenidine": "varenicline",
+        "umeclidinium/vitanterol": "umeclidinium/vilanterol",
+        "fluticasone/umeclidinium/vitanterol": "fluticasone/umeclidinium/vilanterol",
+        "dexamethasone/neomycin": "dexamethasone/neomycin"
+    };
+
+    function normalizeText(value) {
+        return String(value || "")
+            .toLowerCase()
+            .replace(/ophthalmic|otic|nasal spray|inhaler|injection|eye-ear drops|syrup/g, "")
+            .replace(/[α]/g, "a")
+            .replace(/[β]/g, "b")
+            .replace(/[–—]/g, "-")
+            .replace(/\s+/g, " ")
+            .replace(/\s*\/\s*/g, "/")
+            .trim();
+    }
+
+    function normalizeCondition(value) {
+        return normalizeText(value)
+            .replace(/w\//g, "with")
+            .replace(/\.$/, "")
+            .trim();
+    }
+
+    function normalizedGeneric(value) {
+        const normalized = normalizeText(value);
+        return aliasGenericMap[normalized] || normalized;
+    }
+
+    function formatDrugName(drug) {
+        if (!drug) return "No matched drug";
+        return drug.trade && drug.trade !== "None" ? `${drug.generic} (${drug.trade})` : drug.generic;
+    }
+
+    function escapeHtml(value) {
+        return String(value || "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function sameCondition(drugA, drugB) {
+        return normalizeCondition(drugA.condition) === normalizeCondition(drugB.condition);
+    }
+
+    function sameDrug(drugA, drugB) {
+        if (!drugA || !drugB) return false;
+        return normalizedGeneric(drugA.generic) === normalizedGeneric(drugB.generic) && normalizeText(drugA.trade) === normalizeText(drugB.trade);
+    }
+
+    function findReferenceForDrug(drug) {
+        const genericKey = normalizedGeneric(drug.generic);
+        const tradeKey = normalizeText(drug.trade);
+        let directTradeMatch = pdfReferenceData.find(ref => normalizedGeneric(ref.generic) === genericKey && normalizeText(ref.trade) === tradeKey);
+        if (directTradeMatch) return directTradeMatch;
+
+        let genericMatches = pdfReferenceData.filter(ref => normalizedGeneric(ref.generic) === genericKey);
+        if (genericMatches.length === 1) return genericMatches[0];
+
+        let conditionKey = normalizeCondition(drug.condition);
+        let conditionMatch = genericMatches.find(ref => normalizeCondition(ref.condition) === conditionKey);
+        if (conditionMatch) return conditionMatch;
+
+        return null;
+    }
+
+    function applyPdfReferenceData() {
+        database.forEach(drug => {
+            const ref = findReferenceForDrug(drug);
+            if (ref) {
+                drug.generic = ref.generic;
+                drug.trade = ref.trade;
+                drug.condition = ref.condition;
+                drug.action = ref.action;
+                drug.cautions = ref.cautions;
+                drug.dosage = ref.dosage;
+                drug.system = ref.system;
+                drug.category = ref.category;
+                drug.subgroup = ref.subgroup;
+            } else {
+                drug.dosage = drug.dosage || "Not listed in the PDF table";
+                drug.system = drug.system || "General";
+                drug.category = drug.category || "General";
+                drug.subgroup = drug.subgroup || "General";
+            }
+        });
+    }
+
+    function hasAllergyConflict(drug, patient) {
+        const allergies = normalizeText(patient.allergies);
+        if (!allergies || allergies === "none") return false;
+        const drugText = normalizeText(`${drug.generic} ${drug.trade}`);
+        return allergies.split(/,|;|\/| and /).some(allergy => {
+            const cleanAllergy = allergy.trim();
+            return cleanAllergy.length > 2 && drugText.includes(cleanAllergy);
+        });
+    }
+
+    function safeValidDrugsForPatient(patient) {
+        const sameConditionDrugs = database.filter(d => sameCondition(d, patient));
+        const allergySafeDrugs = sameConditionDrugs.filter(d => !hasAllergyConflict(d, patient));
+        return allergySafeDrugs.length > 0 ? allergySafeDrugs : sameConditionDrugs;
+    }
+
+    function randomFromArray(items) {
+        return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function addUniqueOptions(options, candidates, targetCount, correctPatient) {
+        let shuffled = [...candidates].sort(() => Math.random() - 0.5);
+        for (let candidate of shuffled) {
+            if (options.length >= targetCount) break;
+            if (options.some(existing => sameDrug(existing, candidate))) continue;
+            options.push(candidate);
+        }
+    }
+
+    function buildDistractorPool(correctPatient, correctOption) {
+        const allWrong = database.filter(d => !sameDrug(d, correctOption) && !sameCondition(d, correctPatient));
+
+        if (currentDifficulty === "easy") {
+            return allWrong;
+        }
+
+        if (currentDifficulty === "med") {
+            const sameSystem = allWrong.filter(d => d.system === correctPatient.system);
+            const sameSubgroup = allWrong.filter(d => d.subgroup === correctPatient.subgroup);
+            return [...sameSubgroup, ...sameSystem, ...allWrong];
+        }
+
+        const hardSameSubgroup = allWrong.filter(d => d.subgroup === correctPatient.subgroup);
+        const hardSameCategory = allWrong.filter(d => d.category === correctPatient.category);
+        const hardSameSystem = allWrong.filter(d => d.system === correctPatient.system);
+        const hardNearby = allWrong.filter(d => {
+            if (correctPatient.system === "Ophthalmic") return d.system === "Ophthalmic" || d.system === "Otic/Ophthalmic";
+            if (correctPatient.system === "Nasal") return d.system === "Nasal" || d.system === "Oral antihistamine" || d.subgroup === "Allergic rhinitis/urticaria";
+            if (correctPatient.system === "Oral antihistamine") return d.system === "Oral antihistamine" || d.system === "Nasal";
+            if (correctPatient.system === "Respiratory") return d.system === "Respiratory" || d.system === "Cough";
+            if (correctPatient.system === "Cough") return d.system === "Cough" || d.system === "Respiratory";
+            if (correctPatient.system === "Otic") return d.system === "Otic" || d.system === "Otic/Ophthalmic" || d.system === "Ophthalmic";
+            return d.system === correctPatient.system;
+        });
+
+        return [...hardSameSubgroup, ...hardSameCategory, ...hardSameSystem, ...hardNearby, ...allWrong];
+    }
+
+    applyPdfReferenceData();
 
     document.getElementById('drug-input').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') submitManual();
@@ -524,17 +794,24 @@
     }
 
     function generateChoices(correctPatient) {
-        let validDrugsForCondition = database.filter(d => d.condition === correctPatient.condition);
-        let correctOption = validDrugsForCondition[Math.floor(Math.random() * validDrugsForCondition.length)];
+        const validDrugsForCondition = safeValidDrugsForPatient(correctPatient);
+
+        // Keep the original patient/template drug as the button's correct option when safe,
+        // so the visible case caution and the clickable answer do not contradict each other.
+        let correctOption = validDrugsForCondition.find(d => sameDrug(d, correctPatient)) || randomFromArray(validDrugsForCondition);
         let options = [correctOption];
-        
-        let available = database.filter(d => d.condition !== correctPatient.condition);
-        
-        for(let i=0; i<3; i++) {
-            let randIdx = Math.floor(Math.random() * available.length);
-            options.push(available[randIdx]);
-            available.splice(randIdx, 1);
+
+        // Rush mode now uses clinically nearby distractors first.
+        // This makes the game harder to cut choices by broad category.
+        const distractorPool = buildDistractorPool(correctPatient, correctOption);
+        addUniqueOptions(options, distractorPool, 4, correctPatient);
+
+        // Emergency fallback in case a category has too few distractors.
+        if (options.length < 4) {
+            const fallbackPool = database.filter(d => !options.some(existing => sameDrug(existing, d)) && !sameCondition(d, correctPatient));
+            addUniqueOptions(options, fallbackPool, 4, correctPatient);
         }
+
         options.sort(() => Math.random() - 0.5);
 
         const grid = document.getElementById('choice-grid');
@@ -542,8 +819,8 @@
         options.forEach(opt => {
             const btn = document.createElement('button');
             btn.className = 'choice-btn';
-            btn.innerText = opt.trade !== "None" ? `${opt.generic} (${opt.trade})` : opt.generic;
-            btn.onclick = () => processAnswer(opt.condition === correctPatient.condition, opt, correctPatient);
+            btn.innerText = formatDrugName(opt);
+            btn.onclick = () => processAnswer(safeValidDrugsForPatient(correctPatient).some(valid => sameDrug(valid, opt)), opt, correctPatient, "button");
             grid.appendChild(btn);
         });
     }
@@ -554,22 +831,25 @@
         const input = document.getElementById('drug-input').value;
         if (input.trim() === '') return;
 
-        let validDrugs = database.filter(d => d.condition === patient.condition);
+        let validDrugs = safeValidDrugsForPatient(patient);
         let matchedDrug = validDrugs.find(d => isMatch(input, d.generic) || isMatch(input, d.trade));
 
-        processAnswer(!!matchedDrug, matchedDrug, patient);
+        processAnswer(!!matchedDrug, matchedDrug, patient, "manual", input.trim());
     }
 
-    function processAnswer(isCorrect, submittedDrug, originalPatient) {
-        gameActive = false; 
+    function processAnswer(isCorrect, submittedDrug, originalPatient, answerMode, manualInput) {
+        gameActive = false;
         clearInterval(spawnTimer);
 
         const modal = document.getElementById('solution-modal');
         const title = document.getElementById('sol-title');
         const content = document.getElementById('sol-content');
 
-        let validDrugs = database.filter(d => d.condition === originalPatient.condition);
-        let validNamesList = validDrugs.map(d => d.trade !== "None" ? `${d.generic} (${d.trade})` : d.generic).join(" &nbsp;|&nbsp; ");
+        let validDrugs = safeValidDrugsForPatient(originalPatient);
+        let validNamesList = validDrugs.map(d => formatDrugName(d)).join(" &nbsp;|&nbsp; ");
+        let explanationDrug = submittedDrug || validDrugs[0] || originalPatient;
+        let selectedAnswerText = submittedDrug ? formatDrugName(submittedDrug) : escapeHtml(manualInput || "No matched drug");
+        let answerSourceLabel = answerMode === "manual" ? "Typed answer" : "Selected answer";
 
         if (isCorrect) {
             score++;
@@ -580,13 +860,32 @@
             title.innerHTML = "❌ <span style='color: #c62828;'>Clinical Error</span>";
         }
 
+        const answerBoxClass = isCorrect ? "selected-drug-box" : "wrong-drug-box";
+        const allergyNote = hasAllergyConflict(explanationDrug, originalPatient)
+            ? `<div class="wrong-drug-box">⚠️ Allergy warning: this drug appears to conflict with the patient's listed allergy.</div>`
+            : "";
+
         content.innerHTML = `
+            <div class="${answerBoxClass}">
+                ${answerSourceLabel}: ${selectedAnswerText}
+            </div>
+
+            ${allergyNote}
+
             <div style="margin-bottom: 15px;">
-                <strong>Valid Drugs for this condition:</strong><br>
+                <strong>Valid Drugs for this condition/case:</strong><br>
                 <div class="drug-list">${validNamesList}</div>
             </div>
-            <strong>Mechanism:</strong> ${originalPatient.action}<br><br>
-            <strong>Cautions to remember:</strong> ${originalPatient.cautions}
+
+            <strong>Mechanism of selected/matched drug:</strong> ${explanationDrug.action || "Not listed"}<br><br>
+            <strong>Cautions for selected/matched drug:</strong> ${explanationDrug.cautions || "Not listed"}<br><br>
+            <strong>Dosage / execution from reference:</strong> ${explanationDrug.dosage || "Not listed"}<br><br>
+            <strong>Clinical category:</strong> ${explanationDrug.category || "Not listed"}<br>
+            <strong>Subgroup:</strong> ${explanationDrug.subgroup || "Not listed"}
+
+            <div class="reference-note">
+                Note: feedback now follows the actual selected/matched drug, not only the original patient template.
+            </div>
         `;
 
         modal.classList.remove('hidden');
