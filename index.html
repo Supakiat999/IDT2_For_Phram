@@ -67,7 +67,7 @@
 <div id="game-container">
     <div id="start-screen" class="overlay">
         <h1>💊 Pharmacy Rush</h1>
-        <p>Review the patient's condition, history, and <strong>allergies</strong>. Choose the best medication from the buttons. </p>
+        <p>Review the patient's condition, history, and <strong>allergies</strong>. Choose the best medication from the buttons. This version also checks safety and gives short learning feedback.</p>
         <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Shift Difficulty:</div>
         <div class="diff-controls">
             <button class="diff-btn" id="btn-easy" onclick="setDifficulty('easy')">Easy</button>
@@ -259,7 +259,8 @@
         { label: 'COPD/asthma with nonselective beta-blocker risk', historyAny: ['copd', 'asthma'], actionAny: ['nonselective beta-blocker'], severity: 2 },
         { label: 'Hypertension with systemic adrenergic agonist caution', historyAny: ['hypertension'], actionAny: ['alpha-adrenergic agonist'], severity: 1 },
         { label: 'Insomnia with sedating antihistamines', historyAny: ['insomnia', 'bus driver', 'pilot'], actionAny: ['sedating h1 antihistamine'], severity: 1 },
-        { label: 'QT-risk caution with hydroxyzine', historyAny: ['arrhythmia', 'heart'], genericAny: ['hydroxyzine'], severity: 2 }
+        { label: 'QT-risk caution with hydroxyzine', historyAny: ['arrhythmia', 'heart'], genericAny: ['hydroxyzine'], severity: 2 },
+        { label: 'COPD + glaucoma caution with muscarinic agonists', historyAny: ['copd', 'glaucoma'], actionAny: ['muscarinic agonist'], severity: 2 }
     ];
 
     const hardCaseTemplates = [
@@ -490,6 +491,18 @@
         spawnTimer = setInterval(() => { if (gameActive) spawnPatient(); }, rate);
     }
 
+    function enrichPatientRiskProfile(patient) {
+        const h = normalize(patient.history);
+        const addons = [];
+        if (h.includes('copd') && !h.includes('glaucoma') && Math.random() < 0.4) addons.push('Glaucoma');
+        if (h.includes('glaucoma') && !h.includes('copd') && Math.random() < 0.35) addons.push('COPD');
+        if (Math.random() < 0.2 && normalize(patient.allergies) === 'none') {
+            const allergySeeds = ['Sulfa', 'Neomycin', 'Peanuts', 'Adhesive allergy'];
+            patient.allergies = allergySeeds[Math.floor(Math.random() * allergySeeds.length)];
+        }
+        if (addons.length) patient.history = `${patient.history}; ${addons.join(', ')}`;
+    }
+
     function spawnPatient() {
         if (queue.length >= maxQueue) { triggerGameOver('The waiting room reached 10 patients!'); return; }
         if (currentMode === 'tradequiz') {
@@ -534,6 +547,7 @@
         const randomName = names[Math.floor(Math.random() * names.length)];
         const randomAge = Math.floor(Math.random() * 50) + 18;
         const newPatient = { id: `pat_${patientCounter++}`, name: randomName, age: randomAge, ...template };
+        enrichPatientRiskProfile(newPatient);
 
         if (currentDifficulty === 'hard' && Math.random() < 0.65) {
             const hcase = hardCaseTemplates[Math.floor(Math.random() * hardCaseTemplates.length)];
@@ -711,13 +725,16 @@
 
     function generateChoices(patient) {
         if (patient.quizMode) {
-            const correctDrug = database.find(d => normalize(d.generic) === normalize(patient.quizAnswerGeneric)) || database[0];
             const labelFor = (drug) => {
                 if (patient.quizType === 'trade') return drug.trade && drug.trade !== 'None' ? drug.trade : 'None';
                 if (patient.quizType === 'usage') return drug.condition;
                 return drug.action;
             };
-            const correctValue = labelFor(correctDrug);
+            const correctValue = patient.quizType === 'trade'
+                ? patient.quizAnswerTrade
+                : patient.quizType === 'usage'
+                    ? patient.quizAnswerUsage
+                    : patient.quizAnswerMechanism;
             const pool = database
                 .map(d => ({ quizValue: labelFor(d), sourceDrug: d }))
                 .filter(x => x.quizValue && normalize(x.quizValue) !== 'none');
@@ -730,7 +747,7 @@
                 uniquePool.push(p);
             });
             const distractors = shuffle(uniquePool.filter(x => normalize(x.quizValue) !== normalize(correctValue))).slice(0, 3);
-            const options = shuffle([{ quizValue: correctValue, sourceDrug: correctDrug }, ...distractors]);
+            const options = shuffle([{ quizValue: correctValue, sourceDrug: null }, ...distractors]);
             const grid = document.getElementById('choice-grid');
             grid.innerHTML = '';
             options.forEach(opt => {
@@ -743,10 +760,21 @@
             return;
         }
         const valid = database.filter(d => sameCondition(d.condition, patient.condition));
-        const correct = valid[Math.floor(Math.random() * valid.length)];
         const choiceCount = diffSettings[getAdaptiveDifficulty()].choices;
-        const distractors = pickDistractors(patient, Math.max(1, choiceCount - 1));
-        const options = shuffle(uniqueByLabel([correct, ...distractors])).slice(0, choiceCount);
+        const safeValid = strictSafety ? valid.filter(v => evaluateSafety(patient, v).penalty === 0) : valid;
+        const unsafeValid = strictSafety ? valid.filter(v => evaluateSafety(patient, v).penalty > 0) : [];
+
+        const correctPool = safeValid.length ? safeValid : valid;
+        const correct = correctPool[Math.floor(Math.random() * correctPool.length)];
+        const optionsSeed = [correct];
+
+        if (unsafeValid.length) {
+            const trick = unsafeValid[Math.floor(Math.random() * unsafeValid.length)];
+            optionsSeed.push(trick); // valid condition but unsafe for this patient
+        }
+
+        const distractors = pickDistractors(patient, Math.max(1, choiceCount - optionsSeed.length));
+        const options = shuffle(uniqueByLabel([...optionsSeed, ...distractors])).slice(0, choiceCount);
         const grid = document.getElementById('choice-grid');
         grid.innerHTML = '';
         options.forEach(opt => {
@@ -871,9 +899,10 @@
         const preferredDrug = validDrugs[0];
         const isBestChoice = preferredDrug && normalize(preferredDrug.generic) === normalize(submittedDrug.generic) && normalize(preferredDrug.trade) === normalize(submittedDrug.trade);
         const safety = strictSafety ? evaluateSafety(patient, submittedDrug) : { penalty: 0, reasons: [] };
-        const unavoidableSafety = isSafetyUnavoidable(patient, validDrugs);
-        const safetyFlagged = safety.penalty > 0 && !unavoidableSafety;
-        const isCorrect = isConditionCorrect;
+        const safeAlternatives = strictSafety ? validDrugs.filter(v => evaluateSafety(patient, v).penalty === 0) : validDrugs;
+        const unavoidableSafety = strictSafety && safeAlternatives.length === 0;
+        const safetyFlagged = strictSafety && safety.penalty > 0;
+        const isCorrect = isConditionCorrect && (!safetyFlagged || unavoidableSafety);
         const validNames = validDrugs.map(formatDrugLabel).join(' | ');
 
         let earned = 0;
@@ -915,7 +944,7 @@
             adaptiveDifficultyOffset = Math.max(-3, adaptiveDifficultyOffset - 1);
             title.innerHTML = "❌ <span style='color:#c62828;'>Clinical Error</span>";
             const conditionReason = isConditionCorrect
-                ? 'Condition matched, but safety check failed.'
+                ? 'Condition matched, but this drug is contraindicated for this patient. Choose a safer valid option.'
                 : 'Selected medicine does not match this condition.';
             const safetyReasonList = safety.reasons.length
                 ? `<ul>${safety.reasons.map(r => `<li>${r}</li>`).join('')}</ul>`
