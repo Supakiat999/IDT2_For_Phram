@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pharmacy Rush: Clinical Simulator</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e0f7fa; margin: 0; padding: 20px; color: #333; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+        #game-container { width: 100%; max-width: 1050px; background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; position: relative; display: flex; flex-direction: column; }
+        #header { background: #00695c; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 1rem; font-weight: bold; gap: 12px; flex-wrap: wrap; }
+        .stats { display: flex; gap: 14px; flex-wrap: wrap; }
+        #main-area { display: flex; height: 640px; }
+        #queue-panel { width: 30%; background: #eceff1; padding: 12px; overflow-y: auto; border-right: 1px solid #cfd8dc; box-sizing: border-box; }
+        #queue-panel h3 { margin-top: 0; color: #455a64; border-bottom: 2px solid #b0bec5; padding-bottom: 5px; }
+        #exam-panel { width: 70%; padding: 20px; display: flex; flex-direction: column; background: #ffffff; overflow-y: auto; box-sizing: border-box; }
+        .patient-card { background: white; padding: 12px; margin-bottom: 10px; border-radius: 6px; cursor: pointer; border-left: 5px solid #00897b; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.2s; }
+        .patient-card:hover { background: #e0f2f1; transform: translateX(2px); }
+        .patient-card.selected { background: #b2dfdb; border-left-color: #004d40; }
+        .patient-card.urgent { border-left-color: #d32f2f; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { background: white; } 50% { background: #ffcdd2; } 100% { background: white; } }
+        .exam-info { margin-bottom: 12px; line-height: 1.5; }
+        .exam-info strong { color: #00695c; }
+        .exam-title { font-size: 1.35rem; color: #263238; margin-top: 0; border-bottom: 2px solid #eeeeee; padding-bottom: 10px; }
+        .prescription-area { margin-top: auto; background: #f5f5f5; padding: 16px; border-radius: 8px; }
+        .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .choice-btn { background: #e0f2f1; border: 2px solid #b2dfdb; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; color: #004d40; transition: all 0.2s; text-align: left; }
+        .choice-btn:hover { background: #b2dfdb; border-color: #00695c; }
+        .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10; text-align: center; padding: 20px; box-sizing: border-box; }
+        .hidden { display: none !important; }
+        .overlay h1 { color: #00695c; font-size: 2.5rem; margin-bottom: 10px; }
+        .overlay p { font-size: 1rem; color: #546e7a; max-width: 760px; margin-bottom: 14px; }
+        .overlay button.start-btn { background: #ff7043; color: white; border: none; padding: 13px 34px; font-size: 1.1rem; font-weight: bold; border-radius: 40px; cursor: pointer; }
+        .diff-controls { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; }
+        .diff-btn { background: transparent; border: 2px solid #00695c; color: #00695c; padding: 8px 16px; border-radius: 30px; font-weight: bold; cursor: pointer; }
+        .diff-btn.active { background: #00695c; color: white; }
+        .solution-box { background: white; padding: 20px; border-radius: 10px; text-align: left; max-width: 780px; width: 92%; border: 2px solid #00695c; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 86vh; overflow-y: auto; }
+        .solution-box.success-box { border-color: #2e7d32; background: #f1f8e9; }
+        .solution-box.error-box { border-color: #c62828; background: #ffebee; }
+        .drug-list { font-weight: bold; color: #00695c; background: #e0f7fa; padding: 8px; border-radius: 5px; margin-top: 6px; }
+        .creator-credit { font-size: 0.85rem; color: #78909c; margin-top: 24px; font-weight: normal; }
+        .risk-box { border-left: 4px solid #e65100; background: #fff3e0; color: #bf360c; padding: 8px; border-radius: 5px; margin-bottom: 8px; }
+        .mini-panel { margin-top: 8px; background: #f1f8e9; border: 1px solid #c5e1a5; border-radius: 6px; padding: 8px; font-size: 0.92rem; }
+        .ctrl-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; margin: 10px 0; }
+        .history-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+        .history-actions .action-btn { min-width: 170px; }
+        .action-btn { background: #00897b; color: white; border: none; padding: 10px 14px; font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .quick-ref { background: #f8f9fa; border: 1px solid #cfd8dc; padding: 10px; border-radius: 8px; margin-top: 10px; }
+        .quick-ref input { width: 100%; padding: 8px; border: 1px solid #90a4ae; border-radius: 5px; box-sizing: border-box; }
+        #ref-results { margin-top: 8px; max-height: 120px; overflow-y: auto; font-size: 0.88rem; }
+        @media (max-width: 768px) {
+            body { padding: 10px; align-items: flex-start; }
+            #game-container { height: 96vh; }
+            #main-area { flex-direction: column; height: auto; flex: 1; overflow: hidden; }
+            #queue-panel { width: 100%; height: 160px; border-right: none; border-bottom: 2px solid #cfd8dc; padding: 10px; }
+            #queue-list { display: flex; overflow-x: auto; gap: 8px; }
+            .patient-card { min-width: 220px; margin-bottom: 0; flex-shrink: 0; }
+            #exam-panel { width: 100%; flex: 1; padding: 12px; }
+            .choice-grid { grid-template-columns: 1fr; }
+            .choice-btn { min-height: 52px; font-size: 0.98rem; }
+            .stats { gap: 8px; }
+            .stats span { font-size: 0.9rem; }
+            .action-btn { min-height: 44px; }
+        }
+    </style>
+</head>
+<body>
+<div id="game-container">
+    <div id="start-screen" class="overlay">
+        <h1>💊 Pharmacy Rush</h1>
+        <p>Review the patient's condition, history, and <strong>allergies</strong>. Choose the best medication from the buttons. This version also checks safety and gives short learning feedback.</p>
+        <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Shift Difficulty:</div>
+        <div class="diff-controls">
+            <button class="diff-btn" id="btn-easy" onclick="setDifficulty('easy')">Easy</button>
+            <button class="diff-btn active" id="btn-med" onclick="setDifficulty('med')">Standard</button>
+            <button class="diff-btn" id="btn-hard" onclick="setDifficulty('hard')">Hard (Lookalikes)</button>
+        </div>
+        <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Mode:</div>
+        <div class="diff-controls">
+            <button class="diff-btn active" id="mode-rush" onclick="setGameMode('rush')">Pharmacy Rush</button>
+            <button class="diff-btn" id="mode-tradequiz" onclick="setGameMode('tradequiz')">Mini Quiz: Trade Name</button>
+        </div>
+        <div class="ctrl-row">
+            <label>Mini quiz type:
+                <select id="quiztype-select">
+                    <option value="trade">Drug name → Trade name</option>
+                    <option value="usage">Drug name → How to use</option>
+                    <option value="mechanism">Drug name → Mechanism</option>
+                    <option value="mixed">Mixed quiz</option>
+                </select>
+            </label>
+        </div>
+        <div class="ctrl-row">
+            <label><input type="checkbox" id="tutor-toggle" checked> Tutor mode explanations</label>
+            <label><input type="checkbox" id="strict-toggle" checked> Strict safety checks</label>
+            <label><input type="checkbox" id="notimed-toggle"> No timer mode</label>
+            <label><input type="checkbox" id="drill-toggle"> Drill weakest category</label>
+            <label><input type="checkbox" id="suddendeath-toggle"> Sudden death</label>
+        </div>
+        <button class="start-btn" onclick="startGame()">Start Shift</button>
+        <div id="session-history" class="mini-panel" style="max-width:700px; text-align:left; margin-top:12px;">Session history: none yet.</div>
+        <div class="history-actions">
+            <button class="action-btn" onclick="openHistory()">Review Past Answers</button>
+            <button class="action-btn" onclick="exportSessionReport()">Export Report</button>
+        </div>
+        <div class="creator-credit">
+            Made by Supakiat - Konkruad (ICE 19)<br>
+            Instagram : @_supakiatm_
+        </div>
+    </div>
+
+    <div id="game-over-screen" class="overlay hidden">
+        <h1 style="color: #c62828;">Game Over</h1>
+        <p id="end-message">The queue got too long!</p>
+        <h2 style="color: #00695c;">Final Score: <span id="final-score">0</span></h2>
+        <div id="analytics-panel" class="mini-panel" style="max-width:700px; text-align:left; margin-bottom:12px;"></div>
+        <button class="start-btn" onclick="resetGame()">Try Again</button>
+    </div>
+
+    <div id="solution-modal" class="overlay hidden" style="background: rgba(224, 247, 250, 0.95);">
+        <div class="solution-box">
+            <h2 id="sol-title">Result</h2>
+            <div id="sol-content" style="line-height: 1.5; font-size: 1rem; color: #455a64;"></div>
+            <div style="text-align: right; margin-top: 12px;"><button class="action-btn" onclick="closeSolution()">Next Patient</button></div>
+        </div>
+    </div>
+
+    <div id="history-modal" class="overlay hidden" style="background: rgba(245, 245, 245, 0.96);">
+        <div class="solution-box" style="max-width: 900px;">
+            <h2>Question History (Local Device)</h2>
+            <div id="history-content" style="max-height: 60vh; overflow-y:auto; font-size:0.95rem;"></div>
+            <div style="text-align: right; margin-top: 12px;"><button class="action-btn" onclick="closeHistory()">Close</button></div>
+        </div>
+    </div>
+
+    <div id="header">
+        <div>🏥 City Pharmacy</div>
+        <div class="stats">
+            <span>Score: <span id="score-display">0</span></span>
+            <span>Streak: <span id="streak-display">0</span></span>
+            <span>Mastery: <span id="mastery-display">Novice</span></span>
+            <span>Strikes: <span id="strike-display">0</span>/3</span>
+            <span>Queue: <span id="queue-count">0</span>/10</span>
+            <span>Case timer: <span id="case-timer">--</span></span>
+            <span>Accuracy: <span id="accuracy-display">0%</span></span>
+            <span>Mode: <span id="mode-display">Rush</span></span>
+            <button class="action-btn" onclick="openHistory()">Review History</button>
+            <button class="action-btn" onclick="exportSessionReport()">Export Report</button>
+        </div>
+    </div>
+
+    <div id="main-area">
+        <div id="queue-panel">
+            <h3>Waiting Area</h3>
+            <div id="queue-list"></div>
+            <div class="mini-panel" id="progress-panel">Progress: No cases yet.</div>
+            <div class="mini-panel" id="data-quality">Data check: Pending...</div>
+            <div class="quick-ref">
+                <strong>Quick Drug Reference</strong>
+                <input id="ref-search" type="text" placeholder="Search generic, trade, condition, action...">
+                <div id="ref-results"></div>
+            </div>
+        </div>
+
+        <div id="exam-panel">
+            <div id="empty-exam">
+                <h2 style="color:#b0bec5; text-align:center; margin-top:100px;">Select a patient from the queue to examine them.</h2>
+            </div>
+            <div id="active-exam" class="hidden">
+                <h2 class="exam-title" id="pat-name">Patient Name</h2>
+                <div id="risk-display"></div>
+                <div class="exam-info">
+                    <div id="row-age"><strong>Age:</strong> <span id="pat-age"></span></div>
+                    <div id="row-condition"><strong id="condition-label">Condition/Symptoms:</strong> <span id="pat-condition"></span></div>
+                    <div id="row-history"><strong id="history-label">Medical History:</strong> <span id="pat-history"></span></div>
+                    <div id="row-allergies"><strong>Allergies:</strong> <span id="pat-allergies" style="color:#d32f2f; font-weight:bold;"></span></div>
+                    <div id="row-cautions"><strong>Cautions:</strong> <span id="pat-cautions" style="color:#e65100;"></span></div>
+                </div>
+                <div class="prescription-area">
+                    <label style="font-weight:bold; color:#455a64; display:block; margin-bottom:8px;">Select Valid Medication:</label>
+                    <div class="choice-grid" id="choice-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const names = ["Aj.BD", "AJ.VT", "Aj.PC","Spy", "Pingpong", "Aim", "Jiw", "Cheer", "Film", "Bam", "Kan", "Tungngern", "Pluem", "Ing", "Noey", "Saiya", "Fook", "Boat", "Nurse", "Tata", "Prem", "Grace", "Pimpim", "Mink", "Amy", "Nam", "Jern", "Pun", "Nine", "Nicha", "Nan", "Nich", "Grace", "Nun", "Praewa", "Yok", "Ben", "Pan", "In", "Ada", "Porjai", "Bass", "Saifah", "Prae", "Rita", "Tent", "Pat", "Punch", "King", "Khaohom", "Pin", "Baibua", "Looktan", "Janjao", "Mintmind", "Wim", "Focus", "Gaga", "March", "Ton", "Haru", "Elle", "Creamy", "Tae", "Peak", "Real", "Poom", "Torboon", "Sian", "Film", "AJ (Uji)", "Palm", "Fresh", "Chino", "Ohm", "Mind", "Tonkhao", "Patty", "Mai", "Mew", "August", "Matoom", "Putter", "Earth", "Peaker", "Jai", "Aomsin", "Poom", "Oboon", "Mo", "Pretty", "Guitar", "Tin-Tin", "Pian", "Pat", "Mobile", "Muilin", "Khaimook", "Pangpond", "Tonnam", "Fight", "Pond", "First", "Fasai", "Foofoo", "Porfai", "C", "Nonny", "Kin", "Match", "Aom", "Ning", "Jolie", "Tangkwa", "Mook", "Preemmy", "Nun", "Baifern", "Bronze", "Jenny", "Palm", "Siwki", "Prae", "Ivy", "Pim", "Eclair", "Pond", "Emmy", "Kitty", "Film", "Ing", "Match", "Bo", "Boom", "Prom", "Game", "Pluem", "August", "Pangpond", "Baifern", "Panwad", "Baifern", "Tientien", "Nook", "Shogun", "Diamond", "Thach", "Nan", "Phu", "Han", "Few", "Sky", "Praewa", "Praewa", "Mobile"];
+
+    // dataset (unchanged core from previous version)
+    const database = [
+        { generic: "Carboxymethylcellulose", trade: "Cellufresh", condition: "Dry eye, irritation, exposure-related discomfort", history: "Contact lens wearer", allergies: "None", cautions: "Transient blur, mild stinging; preservative sensitivity", action: "Ocular lubricant / tear substitute", category: "ophthalmic" },
+        { generic: "Hydroxypropyl methylcellulose", trade: "Genteal", condition: "Dry eye, irritation, exposure-related discomfort", history: "Office worker (screen time)", allergies: "None", cautions: "Transient blur, mild stinging; preservative sensitivity", action: "Ocular lubricant / tear substitute", category: "ophthalmic" },
+        { generic: "Hyaluronate", trade: "Vislube", condition: "Dry eye, irritation, exposure-related discomfort", history: "Post-LASIK surgery", allergies: "None", cautions: "Transient blur, mild stinging; preservative sensitivity", action: "Ocular lubricant / tear substitute", category: "ophthalmic" },
+        { generic: "Cyclosporine", trade: "Restasis", condition: "Chronic inflammatory dry eye", history: "Sjogren's Syndrome", allergies: "None", cautions: "Burning, redness, blurred vision", action: "Calcineurin inhibitor", category: "ophthalmic" },
+        { generic: "Diquafosol", trade: "Diquas", condition: "Dry eye disease", history: "Rheumatoid Arthritis", allergies: "None", cautions: "Eye irritation, conjunctival hyperemia, blurred vision", action: "P2Y2 receptor agonist", category: "ophthalmic" },
+        { generic: "Antazoline/tetrahydrozoline", trade: "Hista-Oph", condition: "Short-term relief of allergic conjunctivitis", history: "Seasonal allergies", allergies: "None", cautions: "Stinging, rebound redness, mydriasis, increased IOP", action: "H1 antihistamine + vasoconstrictor", category: "ophthalmic" },
+        { generic: "Ketotifen", trade: "Zaditen", condition: "Allergic conjunctivitis", history: "None", allergies: "Pollen", cautions: "Transient irritation, dry eye, headache", action: "H1 antihistamine + mast-cell stabilizer", category: "ophthalmic" },
+        { generic: "Olopatadine", trade: "Patanol, Pataday", condition: "Allergic conjunctivitis", history: "Asthma", allergies: "Dust mites", cautions: "Transient burning, dry eye, headache", action: "Selective H1 antihistamine + mast-cell stabilizer", category: "ophthalmic" },
+        { generic: "Sodium cromoglycate", trade: "Vividrin", condition: "Allergic conjunctivitis", history: "Eczema", allergies: "None", cautions: "Mild stinging, blurred vision", action: "Mast-cell stabilizer", category: "ophthalmic" },
+        { generic: "Tobramycin", trade: "Tobrex", condition: "Superficial bacterial eye infection", history: "None", allergies: "Penicillin", cautions: "Local irritation, hypersensitivity", action: "Aminoglycoside antibiotic", category: "ophthalmic" },
+        { generic: "Moxifloxacin", trade: "Vigamox", condition: "Superficial bacterial eye infection", history: "Frequent conjunctivitis", allergies: "None", cautions: "Irritation, dysgeusia, hypersensitivity", action: "Fluoroquinolone antibiotic", category: "ophthalmic" },
+        { generic: "Chloramphenicol", trade: "None", condition: "Superficial bacterial eye infection", history: "None", allergies: "None", cautions: "Local burning; blood dyscrasia", action: "Broad-spectrum antibacterial", category: "ophthalmic" },
+        { generic: "Neomycin/gramicidin/Polymyxin B", trade: "PolyOph", condition: "Superficial bacterial eye infection", history: "None", allergies: "None", cautions: "Local irritation, hypersensitivity", action: "Topical antibiotic combination", category: "ophthalmic" },
+        { generic: "Tobramycin/Dexamethasone", trade: "Tobradex", condition: "Steroid-responsive ocular inflammation with bacterial infection risk", history: "Recent eye trauma", allergies: "None", cautions: "Local irritation, hypersensitivity, decreased healing, superinfection, increased IOP, cataract with prolonged use", action: "Antibiotic + corticosteroid", category: "ophthalmic" },
+        { generic: "Prednisolone", trade: "None", condition: "Uveitis/post-op or severe ocular inflammation", history: "Uveitis", allergies: "None", cautions: "Decreased healing, superinfection, increased IOP, cataract with prolonged use", action: "Corticosteroid; anti-inflammatory", category: "ophthalmic" },
+        { generic: "Brimonidine", trade: "Alphagan, Alphagan-P", condition: "Open-angle glaucoma / ocular hypertension", history: "Hypertension", allergies: "None", cautions: "Dry mouth, fatigue, allergy, red eye", action: "alpha2-agonist", category: "ophthalmic" },
+        { generic: "Latanoprost", trade: "Xalatan", condition: "Open-angle glaucoma / ocular hypertension", history: "Glaucoma family history", allergies: "None", cautions: "Conjunctival hyperemia, eyelash growth, iris/skin darkening (irreversible)", action: "Prostaglandin F2alpha analog", category: "ophthalmic" },
+        { generic: "Betaxolol", trade: "Betoptic", condition: "Open-angle glaucoma / ocular hypertension", history: "None", allergies: "None", cautions: "Bradycardia, hypotension, bronchospasm, dry eye", action: "beta1-selective blocker", category: "ophthalmic" },
+        { generic: "Dorzolamide/Timolol", trade: "Cosopt", condition: "Open-angle glaucoma / ocular hypertension", history: "COPD", allergies: "Sulfa", cautions: "Stinging, bitter taste, bradycardia, bronchospasm", action: "Carbonic anhydrase inhibitor + nonselective beta-blocker", category: "ophthalmic" },
+        { generic: "Pilocarpine", trade: "IsoptoCarpine", condition: "Acute angle-closure glaucoma (adjunct)", history: "Cataracts", allergies: "None", cautions: "Brow ache, blurred vision, impaired night vision, miosis", action: "Muscarinic agonist", category: "ophthalmic" },
+        { generic: "Clotrimazole", trade: "Candid", condition: "Otomycosis / fungal otitis externa", history: "Frequent swimmer", allergies: "None", cautions: "Local irritation, burning", action: "Imidazole antifungal", category: "otic" },
+        { generic: "Ofloxacin", trade: "Tarivid", condition: "Bacterial otitis externa; otorrhea with tympanostomy tube / perforation", history: "Recurrent ear infections", allergies: "None", cautions: "Itching, discomfort, dizziness", action: "Fluoroquinolone antibiotic", category: "otic" },
+        { generic: "Dexamethasone/neomycin", trade: "DexOph", condition: "Inflamed otitis externa or conjunctivitis with suspected bacterial infection", history: "None", allergies: "Neomycin", cautions: "Local irritation, neomycin allergy; ototoxicity risk if TM perforated", action: "Topical corticosteroid + aminoglycoside antibiotic", category: "otic" },
+        { generic: "Docusate", trade: "Dewax", condition: "Impacted earwax", history: "Hearing aid user", allergies: "None", cautions: "Transient irritation, discomfort", action: "Cerumen-softening surfactant", category: "otic" },
+        { generic: "Oxymetazoline", trade: "Iliadin", condition: "Nasal congestion", history: "Common cold", allergies: "None", cautions: "Rebound congestion, dryness, irritation", action: "alpha-adrenergic agonist", category: "nasal" },
+        { generic: "Naphazoline/Chlorpheniramine", trade: "Nasol", condition: "Nasal congestion with rhinorrhea", history: "None", allergies: "None", cautions: "Rebound congestion, dryness, irritation, drowsiness", action: "alpha-adrenergic agonist + H1 antihistamine", category: "nasal" },
+        { generic: "Pseudoephedrine", trade: "None", condition: "Nasal/sinus congestion", history: "Hypertension", allergies: "None", cautions: "Insomnia, palpitations, tremor, increased BP, urinary retention", action: "alpha-adrenergic agonist", category: "nasal" },
+        { generic: "Mometasone", trade: "Nasonex", condition: "Allergic rhinitis; nasal polyps", history: "Nasal polyps", allergies: "None", cautions: "Epistaxis, irritation, sore throat", action: "Intranasal corticosteroid", category: "nasal" },
+        { generic: "Budesonide", trade: "Rhinocort", condition: "Allergic rhinitis", history: "Asthma", allergies: "None", cautions: "Epistaxis, irritation, sore throat", action: "Intranasal corticosteroid", category: "nasal" },
+        { generic: "Azelastine/Fluticasone", trade: "Dymista", condition: "Moderate-severe allergic rhinitis", history: "Chronic sinusitis", allergies: "None", cautions: "Bitter taste, epistaxis, sedation (mild), irritation", action: "Intranasal antihistamine + corticosteroid", category: "nasal" },
+        { generic: "Chlorpheniramine", trade: "None", condition: "Allergic rhinitis, urticaria, pruritus", history: "Insomnia", allergies: "None", cautions: "Sedation, anticholinergic effects", action: "Sedating H1 antihistamine", category: "antihistamine" },
+        { generic: "Hydroxyzine", trade: "Atarax", condition: "Allergic rhinitis, urticaria, pruritus, anxiolytic", history: "Anxiety disorder", allergies: "None", cautions: "Sedation, anticholinergic effects, QT prolongation", action: "Sedating H1 antihistamine", category: "antihistamine" },
+        { generic: "Diphenhydramine", trade: "Benadryl", condition: "Allergic rhinitis, urticaria, pruritus; short-term sleep aid", history: "None", allergies: "Peanuts", cautions: "Sedation, anticholinergic effects", action: "Sedating H1 antihistamine", category: "antihistamine" },
+        { generic: "Dimenhydrinate", trade: "Dramamine", condition: "Motion sickness, vertigo", history: "Frequent traveler", allergies: "None", cautions: "Sedation, anticholinergic effects", action: "Sedating H1 antihistamine", category: "antihistamine" },
+        { generic: "Loratadine", trade: "Claritine", condition: "Allergic rhinitis, urticaria", history: "Bus driver", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects", action: "non-sedating H1 antihistamine", category: "antihistamine" },
+        { generic: "Cetirizine", trade: "Zyrtec", condition: "Allergic rhinitis, urticaria", history: "Eczema", allergies: "Cat dander", cautions: "Minimal sedation, minimal anticholinergic effects", action: "2nd-generation peripheral H1 antihistamine", category: "antihistamine" },
+        { generic: "Fexofenadine", trade: "Telfast", condition: "Allergic rhinitis, urticaria", history: "Commercial Pilot", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects", action: "2nd-generation H1 antihistamine", category: "antihistamine" },
+        { generic: "Bilastine", trade: "Bilaxten", condition: "Allergic rhinitis, urticaria", history: "None", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects", action: "2nd-generation H1 antihistamine", category: "antihistamine" },
+        { generic: "Desloratadine", trade: "Aerius", condition: "Allergic rhinitis, urticaria", history: "None", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects", action: "2nd-generation H1 antihistamine", category: "antihistamine" },
+        { generic: "Levocetirizine", trade: "Xyzal", condition: "Allergic rhinitis, urticaria", history: "None", allergies: "None", cautions: "Minimal sedation, minimal anticholinergic effects", action: "2nd-generation H1 antihistamine", category: "antihistamine" },
+        { generic: "Salbutamol", trade: "Ventolin", condition: "Rapid relief of bronchospasm; pre-exercise prophylaxis", history: "Exercise-induced asthma", allergies: "None", cautions: "Tremor, tachycardia, palpitations, hypokalemia", action: "Short-acting beta2-agonist", category: "respiratory" },
+        { generic: "Tiotropium", trade: "Spiriva", condition: "Maintenance treatment of COPD; add-on in asthma", history: "Smoker (30 pack-years)", allergies: "None", cautions: "Dry mouth, urinary retention, constipation", action: "Long-acting muscarinic antagonist", category: "respiratory" },
+        { generic: "Budesonide", trade: "Pulmicort", condition: "Controller therapy for asthma", history: "Asthma", allergies: "None", cautions: "Oral candidiasis, dysphonia, cough", action: "Inhaled corticosteroid", category: "respiratory" },
+        { generic: "Budesonide/Formoterol", trade: "Symbicort", condition: "Maintenance asthma/COPD; MART/SMART in asthma", history: "Severe Asthma", allergies: "None", cautions: "Oral candidiasis, dysphonia, cough, tremor, tachycardia, palpitations, hypokalemia", action: "ICS + rapid-onset LABA", category: "respiratory" },
+        { generic: "Fluticasone/Salmeterol", trade: "Seretide", condition: "Maintenance asthma/COPD", history: "COPD", allergies: "None", cautions: "Oral candidiasis, dysphonia, cough, tremor, tachycardia, palpitations, hypokalemia", action: "ICS + LABA", category: "respiratory" },
+        { generic: "Ipratropium/Fenoterol", trade: "Berodual", condition: "Acute bronchospasm/COPD symptom relief", history: "None", allergies: "None", cautions: "Dry mouth, tremor, palpitations", action: "Short-acting antimuscarinic + beta2-agonist bronchodilator", category: "respiratory" },
+        { generic: "Tiotropium/Olodaterol", trade: "Spiolto", condition: "Maintenance COPD", history: "Severe COPD", allergies: "None", cautions: "Dry mouth, tremor, palpitations", action: "LAMA + LABA bronchodilator", category: "respiratory" },
+        { generic: "Umeclidinium/Vilanterol", trade: "Anoro", condition: "Maintenance COPD", history: "COPD", allergies: "None", cautions: "Dry mouth, tremor, palpitations", action: "LAMA + LABA bronchodilator", category: "respiratory" },
+        { generic: "Fluticasone/Umeclidinium/Vilanterol", trade: "Trelegy", condition: "Triple maintenance therapy for COPD or severe asthma", history: "Refractory COPD", allergies: "None", cautions: "Oral candidiasis, dysphonia, dry mouth, tremor, palpitations", action: "ICS + LAMA + LABA", category: "respiratory" },
+        { generic: "Montelukast", trade: "Singulair", condition: "Asthma prophylaxis; allergic rhinitis; exercise-induced bronchospasm prevention", history: "Allergic Asthma", allergies: "None", cautions: "Headache; neuropsychiatric effects", action: "Leukotriene receptor antagonist", category: "respiratory" },
+        { generic: "Theophylline", trade: "Nuelin SR", condition: "Selected asthma/COPD (limited role)", history: "COPD", allergies: "None", cautions: "Nausea, insomnia, tremor, arrhythmia, seizures at high levels", action: "Methylxanthine bronchodilator / PDE inhibition", category: "respiratory" },
+        { generic: "Omalizumab", trade: "Xolair", condition: "Moderate-severe allergic asthma; chronic spontaneous urticaria", history: "Severe persistent asthma", allergies: "None", cautions: "Injection reactions, headache, anaphylaxis (rare)", action: "Anti-IgE monoclonal antibody", category: "respiratory" },
+        { generic: "N-acetyl cysteine", trade: "NAC long, Fluimucil", condition: "Productive cough with thick sputum", history: "Bronchitis", allergies: "None", cautions: "N/V, GI upset, unpleasant odor/taste, bronchospasm (inhaled)", action: "Mucolytic", category: "cough" },
+        { generic: "Carbocysteine", trade: "Flemex", condition: "Productive cough with thick sputum", history: "Heavy Smoker", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic", category: "cough" },
+        { generic: "Erdosteine", trade: "Erdos", condition: "Productive cough with thick sputum", history: "None", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic", category: "cough" },
+        { generic: "Bromhexine", trade: "Bisolvon", condition: "Productive cough with thick sputum", history: "URTI", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic", category: "cough" },
+        { generic: "Ambroxol", trade: "Mucosolvan", condition: "Productive cough with thick sputum", history: "None", allergies: "None", cautions: "N/V, GI upset", action: "Mucolytic", category: "cough" },
+        { generic: "Guaifenesin", trade: "Fenesin", condition: "Productive cough with thick sputum", history: "None", allergies: "None", cautions: "N/V, GI upset", action: "Expectorant", category: "cough" },
+        { generic: "Dextromethorphan", trade: "Romilar", condition: "Dry, nonproductive cough", history: "Currently on SSRIs", allergies: "None", cautions: "Drowsiness, dizziness, nausea; serotonin syndrome with serotonergic drugs", action: "Central antitussive (NMDA antagonist / sigma agonist)", category: "cough" },
+        { generic: "Nicotine gum", trade: "Nicorette Gum", condition: "Smoking cessation", history: "Smoker trying to quit", allergies: "None", cautions: "Hiccups, jaw soreness, dyspepsia", action: "Nicotine replacement", category: "smoking" },
+        { generic: "Nicotine patch", trade: "Nicorette Invisipatch", condition: "Smoking cessation", history: "Smoker trying to quit", allergies: "Adhesive allergy", cautions: "Skin irritation, vivid dreams, insomnia", action: "Nicotine replacement", category: "smoking" },
+        { generic: "Varenicline", trade: "Champix", condition: "Smoking cessation", history: "Trying to quit smoking", allergies: "None", cautions: "N/V, insomnia, abnormal dreams, headache", action: "Partial agonist of alpha4beta2 nicotinic receptor", category: "smoking" },
+        { generic: "Nortriptyline", trade: "None", condition: "Smoking cessation", history: "Depression", allergies: "None", cautions: "Dry mouth, constipation, sedation, orthostasis, arrhythmia", action: "Tricyclic antidepressant", category: "smoking" },
+        { generic: "Cytisine", trade: "Cytisine GPO", condition: "Smoking cessation", history: "Smoker (10 years)", allergies: "None", cautions: "N/V, insomnia, abnormal dreams, headache", action: "Partial agonist of alpha4beta2 nicotinic receptor", category: "smoking" }
+    ];
+
+    const contraindicationRules = [
+        { label: 'COPD/asthma with nonselective beta-blocker risk', historyAny: ['copd', 'asthma'], actionAny: ['nonselective beta-blocker'], severity: 2 },
+        { label: 'Hypertension with systemic adrenergic agonist caution', historyAny: ['hypertension'], actionAny: ['alpha-adrenergic agonist'], severity: 1 },
+        { label: 'Insomnia with sedating antihistamines', historyAny: ['insomnia', 'bus driver', 'pilot'], actionAny: ['sedating h1 antihistamine'], severity: 1 },
+        { label: 'QT-risk caution with hydroxyzine', historyAny: ['arrhythmia', 'heart'], genericAny: ['hydroxyzine'], severity: 2 },
+        { label: 'COPD + glaucoma caution with muscarinic agonists', historyAny: ['copd', 'glaucoma'], actionAny: ['muscarinic agonist'], severity: 2 }
+    ];
+
+    const hardCaseTemplates = [
+        { note: 'Mild cough but strong sedation concern', history: 'Night-shift nurse; avoid daytime sedation', avoidTag: 'sedating h1 antihistamine' },
+        { note: 'Respiratory comorbidity risk', history: 'COPD with recent wheeze', avoidTag: 'nonselective beta-blocker' },
+        { note: 'Blood pressure concern', history: 'Uncontrolled hypertension', avoidTag: 'alpha-adrenergic agonist' },
+        { note: 'Athlete needs low drowsiness option', history: 'Competitive athlete, daytime training', avoidTag: 'sedating h1 antihistamine' },
+        { note: 'History of arrhythmia', history: 'Palpitations and prior arrhythmia', avoidTag: 'qt-risk' }
+    ];
+
+    let queue = [], score = 0, strikes = 0, streak = 0, selectedPatientId = null, patientCounter = 0, spawnTimer, gameActive = false;
+    let maxQueue = 10, currentDifficulty = 'med', caseTimer = null, caseTimeLeft = 0;
+    let strictSafety = true, tutorMode = true, noTimerMode = false, drillWeakestMode = false, suddenDeathMode = false;
+    let adaptiveDifficultyOffset = 0, bestChoiceStreak = 0, maxBestChoiceStreak = 0;
+    let currentMode = 'rush', totalAttempts = 0, totalCorrect = 0;
+    let quizType = 'trade';
+    const sessionLog = [];
+    const progressByCategory = {};
+    const SESSION_HISTORY_KEY = 'pharmacy_rush_session_history_v1';
+    const QUESTION_HISTORY_KEY = 'pharmacy_rush_question_history_v1';
+
+    const diffSettings = {
+        easy: { baseRate: 12000, minRate: 6000, decrement: 200, choices: 3, caseSec: 24 },
+        med:  { baseRate: 8000, minRate: 3500, decrement: 300, choices: 4, caseSec: 18 },
+        hard: { baseRate: 4500, minRate: 2000, decrement: 400, choices: 5, caseSec: 12 }
+    };
+
+    function normalize(t){ return (t || '').toLowerCase().replace(/\s+/g,' ').trim(); }
+    function formatDrugLabel(d){ return d.trade && d.trade !== 'None' && d.trade !== '/' ? `${d.generic} (${d.trade})` : d.generic; }
+    function sameCondition(a,b){ return normalize(a) === normalize(b); }
+    function shuffle(arr){ const c=[...arr]; for(let i=c.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [c[i],c[j]]=[c[j],c[i]];} return c; }
+
+    function setDifficulty(level){
+        currentDifficulty = level;
+        document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`btn-${level}`).classList.add('active');
+    }
+
+    function setGameMode(mode) {
+        currentMode = mode;
+        document.getElementById('mode-rush').classList.remove('active');
+        document.getElementById('mode-tradequiz').classList.remove('active');
+        document.getElementById(`mode-${mode}`).classList.add('active');
+    }
+
+    function getActiveQuizType() {
+        const selected = document.getElementById('quiztype-select').value || 'trade';
+        if (selected !== 'mixed') return selected;
+        const list = ['trade', 'usage', 'mechanism'];
+        return list[Math.floor(Math.random() * list.length)];
+    }
+
+    function quizTypeLabel(type) {
+        if (type === 'trade') return 'Trade Name';
+        if (type === 'usage') return 'How to Use';
+        if (type === 'mechanism') return 'Mechanism';
+        return 'Quiz';
+    }
+
+    function validateDatabase() {
+        const seen = new Set();
+        const issues = [];
+        database.forEach((d, idx) => {
+            if (!d.generic || !d.condition || !d.action || !d.cautions) issues.push(`Row ${idx + 1}: missing required fields`);
+            const k = `${normalize(d.generic)}|${normalize(d.trade)}|${normalize(d.condition)}`;
+            if (seen.has(k)) issues.push(`Row ${idx + 1}: possible duplicate ${d.generic}`);
+            seen.add(k);
+        });
+        const badge = document.getElementById('data-quality');
+        if (issues.length) {
+            console.warn('Data check issues:', issues);
+            if (badge) badge.innerText = `Data check: ${issues.length} issue(s) found`;
+        } else if (badge) {
+            badge.innerText = 'Data check: Passed ✓';
+        }
+    }
+
+    function updateMastery() {
+        let mastery = 'Novice';
+        if (score >= 15) mastery = 'Advanced';
+        if (score >= 30) mastery = 'Expert';
+        document.getElementById('mastery-display').innerText = mastery;
+    }
+
+    function getAccuracyPercent() {
+        if (!totalAttempts) return 0;
+        return Math.round((totalCorrect / totalAttempts) * 100);
+    }
+
+    function loadSessionHistory() {
+        try {
+            const raw = localStorage.getItem(SESSION_HISTORY_KEY);
+            const data = raw ? JSON.parse(raw) : [];
+            const latest = data.slice(-5).reverse();
+            const text = latest.length
+                ? latest.map(s => `${s.date} | ${s.mode} | ${s.accuracy}% (${s.correct}/${s.attempts})`).join(' || ')
+                : 'none yet.';
+            document.getElementById('session-history').innerText = `Session history: ${text}\nTip: Use “Review Past Answers” below to open full local question history.`;
+        } catch (_) {
+            document.getElementById('session-history').innerText = 'Session history: unavailable.';
+        }
+    }
+
+    function saveSessionHistory() {
+        try {
+            const raw = localStorage.getItem(SESSION_HISTORY_KEY);
+            const data = raw ? JSON.parse(raw) : [];
+            data.push({
+                date: new Date().toISOString().slice(0, 10),
+                mode: currentMode === 'tradequiz' ? `Mini Quiz (${quizType})` : 'Rush',
+                attempts: totalAttempts,
+                correct: totalCorrect,
+                accuracy: getAccuracyPercent()
+            });
+            localStorage.setItem(SESSION_HISTORY_KEY, JSON.stringify(data.slice(-50)));
+        } catch (_) {}
+    }
+
+    function saveQuestionHistory(entry) {
+        try {
+            const raw = localStorage.getItem(QUESTION_HISTORY_KEY);
+            const data = raw ? JSON.parse(raw) : [];
+            data.push({ ...entry, at: new Date().toISOString() });
+            localStorage.setItem(QUESTION_HISTORY_KEY, JSON.stringify(data.slice(-2000)));
+        } catch (_) {}
+    }
+
+    function openHistory() {
+        const modal = document.getElementById('history-modal');
+        const body = document.getElementById('history-content');
+        try {
+            const raw = localStorage.getItem(QUESTION_HISTORY_KEY);
+            const data = raw ? JSON.parse(raw) : [];
+            if (!data.length) {
+                body.innerHTML = '<p>No saved question history yet.</p>';
+            } else {
+                const rows = data.slice().reverse().map((q, idx) => `
+                    <div style="padding:8px; border-bottom:1px solid #ddd;">
+                        <strong>#${idx + 1}</strong> [${q.at}] [${q.mode}] ${q.isCorrect ? '✅' : '❌'}<br>
+                        <strong>Question:</strong> ${q.question}<br>
+                        <strong>Your answer:</strong> ${q.selected}<br>
+                        <strong>Correct answer:</strong> ${q.correct}
+                    </div>
+                `).join('');
+                body.innerHTML = rows;
+            }
+        } catch (_) {
+            body.innerHTML = '<p>Unable to load local history.</p>';
+        }
+        modal.classList.remove('hidden');
+    }
+
+    function closeHistory() {
+        document.getElementById('history-modal').classList.add('hidden');
+    }
+
+    function updateProgress(category, isCorrect) {
+        if (!progressByCategory[category]) progressByCategory[category] = { total: 0, correct: 0 };
+        progressByCategory[category].total += 1;
+        if (isCorrect) progressByCategory[category].correct += 1;
+
+        const lines = Object.keys(progressByCategory).map(cat => {
+            const p = progressByCategory[cat];
+            const rate = Math.round((p.correct / p.total) * 100);
+            return `${cat}: ${p.correct}/${p.total} (${rate}%)`;
+        });
+        document.getElementById('progress-panel').innerText = lines.length ? `Progress: ${lines.join(' | ')}` : 'Progress: No cases yet.';
+    }
+
+    function getWeakestCategory() {
+        const entries = Object.entries(progressByCategory).filter(([, v]) => v.total >= 2);
+        if (!entries.length) return null;
+        entries.sort((a, b) => (a[1].correct / a[1].total) - (b[1].correct / b[1].total));
+        return entries[0][0];
+    }
+
+    function getAdaptiveDifficulty() {
+        if (currentDifficulty === 'easy') return 'easy';
+        if (currentDifficulty === 'hard') return 'hard';
+        if (adaptiveDifficultyOffset >= 2) return 'hard';
+        if (adaptiveDifficultyOffset <= -2) return 'easy';
+        return 'med';
+    }
+
+    function getCaseSeconds() {
+        if (noTimerMode) return 0;
+        const level = getAdaptiveDifficulty();
+        return diffSettings[level].caseSec;
+    }
+
+    function startGame() {
+        tutorMode = document.getElementById('tutor-toggle').checked;
+        strictSafety = document.getElementById('strict-toggle').checked;
+        noTimerMode = document.getElementById('notimed-toggle').checked;
+        drillWeakestMode = document.getElementById('drill-toggle').checked;
+        suddenDeathMode = document.getElementById('suddendeath-toggle').checked;
+        quizType = document.getElementById('quiztype-select').value || 'trade';
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+        gameActive = true; score = 0; strikes = 0; streak = 0; queue = []; selectedPatientId = null; patientCounter = 0;
+        totalAttempts = 0;
+        totalCorrect = 0;
+        adaptiveDifficultyOffset = 0;
+        bestChoiceStreak = 0;
+        maxBestChoiceStreak = 0;
+        Object.keys(progressByCategory).forEach(k => delete progressByCategory[k]);
+        sessionLog.length = 0;
+        stopCaseTimer();
+        document.getElementById('mode-display').innerText = currentMode === 'tradequiz' ? `Mini Quiz (${quizType})` : 'Rush';
+        updateStats();
+        spawnPatient();
+        startSpawner();
+    }
+
+    function resetGame() {
+        clearInterval(spawnTimer);
+        stopCaseTimer();
+        clearExamPanel();
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+    }
+
+    function startSpawner() {
+        clearInterval(spawnTimer);
+        const level = getAdaptiveDifficulty();
+        const s = diffSettings[level];
+        const rate = Math.max(s.minRate, s.baseRate - (score * s.decrement));
+        spawnTimer = setInterval(() => { if (gameActive) spawnPatient(); }, rate);
+    }
+
+    function enrichPatientRiskProfile(patient) {
+        const h = normalize(patient.history);
+        const addons = [];
+        if (h.includes('copd') && !h.includes('glaucoma') && Math.random() < 0.4) addons.push('Glaucoma');
+        if (h.includes('glaucoma') && !h.includes('copd') && Math.random() < 0.35) addons.push('COPD');
+        if (Math.random() < 0.2 && normalize(patient.allergies) === 'none') {
+            const allergySeeds = ['Sulfa', 'Neomycin', 'Peanuts', 'Adhesive allergy'];
+            patient.allergies = allergySeeds[Math.floor(Math.random() * allergySeeds.length)];
+        }
+        if (addons.length) patient.history = `${patient.history}; ${addons.join(', ')}`;
+    }
+
+    function spawnPatient() {
+        if (queue.length >= maxQueue) { triggerGameOver('The waiting room reached 10 patients!'); return; }
+        if (currentMode === 'tradequiz') {
+            const activeQuizType = getActiveQuizType();
+            const quizPool = activeQuizType === 'trade'
+                ? database.filter(d => d.trade && d.trade !== 'None' && d.trade !== '/')
+                : database;
+            const answer = quizPool[Math.floor(Math.random() * quizPool.length)];
+            const randomName = names[Math.floor(Math.random() * names.length)];
+            const questionText = activeQuizType === 'trade'
+                ? `What is the trade name for ${answer.generic}?`
+                : activeQuizType === 'usage'
+                    ? `How is ${answer.generic} mainly used?`
+                    : `What is the mechanism of ${answer.generic}?`;
+            const newPatient = {
+                id: `pat_${patientCounter++}`,
+                name: randomName,
+                age: Math.floor(Math.random() * 40) + 20,
+                condition: `Mini Quiz: ${questionText}`,
+                history: activeQuizType === 'trade' ? `Mechanism hint: ${answer.action}` : `Trade name hint: ${answer.trade || 'None'}`,
+                allergies: 'None',
+                cautions: answer.cautions,
+                category: answer.category,
+                quizAnswerGeneric: answer.generic,
+                quizAnswerTrade: answer.trade,
+                quizAnswerUsage: answer.condition,
+                quizAnswerMechanism: answer.action,
+                quizType: activeQuizType,
+                quizMode: true
+            };
+            queue.push(newPatient);
+            renderQueue();
+            updateStats();
+            return;
+        }
+        let sourcePool = database;
+        if (drillWeakestMode) {
+            const weakest = getWeakestCategory();
+            if (weakest) sourcePool = database.filter(d => d.category === weakest);
+        }
+        const template = sourcePool[Math.floor(Math.random() * sourcePool.length)];
+        const randomName = names[Math.floor(Math.random() * names.length)];
+        const randomAge = Math.floor(Math.random() * 50) + 18;
+        const newPatient = { id: `pat_${patientCounter++}`, name: randomName, age: randomAge, ...template };
+        enrichPatientRiskProfile(newPatient);
+
+        if (currentDifficulty === 'hard' && Math.random() < 0.65) {
+            const hcase = hardCaseTemplates[Math.floor(Math.random() * hardCaseTemplates.length)];
+            newPatient.history = `${newPatient.history}; ${hcase.history}`;
+            newPatient.caseNote = hcase.note;
+            newPatient.dynamicAvoidTag = hcase.avoidTag;
+        }
+
+        queue.push(newPatient);
+        renderQueue();
+        updateStats();
+    }
+
+    function renderQueue() {
+        const el = document.getElementById('queue-list');
+        el.innerHTML = '';
+        queue.forEach((pat, index) => {
+            const card = document.createElement('div');
+            card.className = 'patient-card';
+            if (pat.id === selectedPatientId) card.classList.add('selected');
+            if (index === 0 && queue.length >= 7) card.classList.add('urgent');
+            if (pat.quizMode) {
+                card.innerHTML = `<strong>Mini Quiz #${index + 1}</strong><br><small>${quizTypeLabel(pat.quizType)} question</small>`;
+            } else {
+                card.innerHTML = `<strong>${pat.name} (Age: ${pat.age})</strong><br><small>${pat.condition.substring(0, 34)}...</small>`;
+            }
+            card.onclick = () => selectPatient(pat.id);
+            el.appendChild(card);
+        });
+    }
+
+    function getPatientRiskHints(patient) {
+        const hints = [];
+        const h = normalize(patient.history);
+        const a = normalize(patient.allergies);
+        if (h.includes('copd') || h.includes('asthma')) hints.push('Respiratory history: avoid bronchospasm-provoking options.');
+        if (h.includes('hypertension')) hints.push('Hypertension: monitor sympathomimetic risk.');
+        if (a !== 'none') hints.push(`Allergy alert: ${patient.allergies}.`);
+        if (patient.caseNote) hints.push(`Hard case note: ${patient.caseNote}.`);
+        return hints;
+    }
+
+    function selectPatient(id) {
+        selectedPatientId = id;
+        renderQueue();
+        const patient = queue.find(p => p.id === id);
+        if (!patient) return;
+        document.getElementById('empty-exam').classList.add('hidden');
+        document.getElementById('active-exam').classList.remove('hidden');
+        document.getElementById('pat-name').innerText = patient.quizMode ? `Mini Quiz: ${quizTypeLabel(patient.quizType)}` : patient.name;
+        document.getElementById('pat-age').innerText = patient.age;
+        document.getElementById('pat-condition').innerText = patient.condition;
+        document.getElementById('pat-history').innerText = patient.history;
+        document.getElementById('pat-allergies').innerText = patient.allergies;
+        document.getElementById('pat-cautions').innerText = patient.cautions;
+
+        const quizHiddenRows = ['row-age', 'row-allergies', 'row-cautions'];
+        quizHiddenRows.forEach(id => {
+            document.getElementById(id).style.display = patient.quizMode ? 'none' : 'block';
+        });
+        document.getElementById('row-history').style.display = 'block';
+        document.getElementById('row-condition').style.display = 'block';
+        document.getElementById('condition-label').innerText = patient.quizMode ? 'Question:' : 'Condition/Symptoms:';
+        document.getElementById('history-label').innerText = patient.quizMode ? 'Hint:' : 'Medical History:';
+
+        const hints = getPatientRiskHints(patient);
+        const riskDiv = document.getElementById('risk-display');
+        if (patient.quizMode) {
+            document.getElementById('mode-display').innerText = `Mini Quiz (${patient.quizType})`;
+            const howTo = patient.quizType === 'trade'
+                ? 'Read the generic name and choose the correct trade name.'
+                : patient.quizType === 'usage'
+                    ? 'Read the drug name and choose its main use.'
+                    : 'Read the drug name and choose its mechanism.';
+            riskDiv.innerHTML = `<div class="risk-box"><strong>How to answer:</strong><br>${howTo}</div>`;
+        } else {
+            riskDiv.innerHTML = hints.length ? `<div class="risk-box"><strong>Clinical flags:</strong><br>${hints.join('<br>')}</div>` : '';
+        }
+
+        generateChoices(patient);
+        const sec = getCaseSeconds();
+        if (sec > 0) startCaseTimer(sec);
+        else document.getElementById('case-timer').innerText = 'OFF';
+    }
+
+    function clearExamPanel() {
+        selectedPatientId = null;
+        stopCaseTimer();
+        document.getElementById('empty-exam').classList.remove('hidden');
+        document.getElementById('active-exam').classList.add('hidden');
+        document.getElementById('risk-display').innerHTML = '';
+        renderQueue();
+    }
+
+    function startCaseTimer(seconds) {
+        if (noTimerMode || seconds <= 0) {
+            document.getElementById('case-timer').innerText = 'OFF';
+            return;
+        }
+        stopCaseTimer();
+        caseTimeLeft = seconds;
+        document.getElementById('case-timer').innerText = `${caseTimeLeft}s`;
+        caseTimer = setInterval(() => {
+            caseTimeLeft -= 1;
+            document.getElementById('case-timer').innerText = `${caseTimeLeft}s`;
+            if (caseTimeLeft <= 0) {
+                stopCaseTimer();
+                if (!selectedPatientId || !gameActive) return;
+                strikes += 1;
+                streak = 0;
+                totalAttempts += 1;
+                const timedOutPatient = queue.find(p => p.id === selectedPatientId);
+                if (timedOutPatient) {
+                    saveQuestionHistory({
+                        mode: timedOutPatient.quizMode ? `Mini Quiz (${timedOutPatient.quizType})` : 'Rush',
+                        question: timedOutPatient.condition,
+                        selected: 'TIMEOUT',
+                        correct: timedOutPatient.quizMode
+                            ? (timedOutPatient.quizType === 'trade' ? timedOutPatient.quizAnswerTrade : timedOutPatient.quizType === 'usage' ? timedOutPatient.quizAnswerUsage : timedOutPatient.quizAnswerMechanism)
+                            : 'See valid list in result modal',
+                        isCorrect: false
+                    });
+                }
+                sessionLog.push({ patientId: selectedPatientId, result: 'timeout', score, strikes, when: new Date().toISOString() });
+                updateStats();
+                showTimeoutModal();
+                if (strikes >= 3) setTimeout(() => triggerGameOver('You reached 3 strikes. Shift terminated.'), 900);
+            }
+        }, 1000);
+    }
+
+    function stopCaseTimer() {
+        if (caseTimer) clearInterval(caseTimer);
+        caseTimer = null;
+        document.getElementById('case-timer').innerText = '--';
+    }
+
+    function showTimeoutModal() {
+        gameActive = false;
+        clearInterval(spawnTimer);
+        const modal = document.getElementById('solution-modal');
+        const box = modal.querySelector('.solution-box');
+        box.classList.remove('success-box');
+        box.classList.add('error-box');
+        document.getElementById('sol-title').innerHTML = "⏱️ <span style='color:#e65100;'>Time Out</span>";
+        document.getElementById('sol-content').innerHTML = `<p>You ran out of time for this patient. 1 strike added.</p><p><strong>Tip:</strong> Match the condition first, then check history and allergy.</p>`;
+        modal.classList.remove('hidden');
+    }
+
+    function uniqueByLabel(items) {
+        const seen = new Set();
+        return items.filter(item => {
+            const key = normalize(formatDrugLabel(item));
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
+    }
+
+    function pickDistractors(patient, count) {
+        const level = getAdaptiveDifficulty();
+        const notSame = database.filter(d => !sameCondition(d.condition, patient.condition));
+        if (level === 'easy') return shuffle(notSame).slice(0, count);
+
+        const sameCategory = notSame.filter(d => d.category === patient.category);
+        const actionToken = normalize(patient.action).split(/[\s+/;-]+/)[0];
+        const sameActionToken = notSame.filter(d => actionToken && normalize(d.action).includes(actionToken));
+        const sameCautionToken = notSame.filter(d => normalize(d.cautions).split(/[\s,;]+/).some(w => normalize(patient.cautions).includes(w) && w.length > 6));
+
+        if (level === 'med') {
+            return shuffle(uniqueByLabel([...sameCategory, ...notSame])).slice(0, count);
+        }
+        return shuffle(uniqueByLabel([...sameCategory, ...sameActionToken, ...sameCautionToken, ...notSame])).slice(0, count);
+    }
+
+    function generateChoices(patient) {
+        if (patient.quizMode) {
+            const labelFor = (drug) => {
+                if (patient.quizType === 'trade') return drug.trade && drug.trade !== 'None' ? drug.trade : 'None';
+                if (patient.quizType === 'usage') return drug.condition;
+                return drug.action;
+            };
+            const correctValue = patient.quizType === 'trade'
+                ? patient.quizAnswerTrade
+                : patient.quizType === 'usage'
+                    ? patient.quizAnswerUsage
+                    : patient.quizAnswerMechanism;
+            const pool = database
+                .map(d => ({ quizValue: labelFor(d), sourceDrug: d }))
+                .filter(x => x.quizValue && normalize(x.quizValue) !== 'none');
+            const uniquePool = [];
+            const seen = new Set();
+            pool.forEach(p => {
+                const k = normalize(p.quizValue);
+                if (seen.has(k)) return;
+                seen.add(k);
+                uniquePool.push(p);
+            });
+            const distractors = shuffle(uniquePool.filter(x => normalize(x.quizValue) !== normalize(correctValue))).slice(0, 3);
+            const options = shuffle([{ quizValue: correctValue, sourceDrug: null }, ...distractors]);
+            const grid = document.getElementById('choice-grid');
+            grid.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerText = opt.quizValue;
+                btn.onclick = () => processAnswer(opt, patient);
+                grid.appendChild(btn);
+            });
+            return;
+        }
+        const valid = database.filter(d => sameCondition(d.condition, patient.condition));
+        const choiceCount = diffSettings[getAdaptiveDifficulty()].choices;
+        const safeValid = strictSafety ? valid.filter(v => evaluateSafety(patient, v).penalty === 0) : valid;
+        const unsafeValid = strictSafety ? valid.filter(v => evaluateSafety(patient, v).penalty > 0) : [];
+
+        const correctPool = safeValid.length ? safeValid : valid;
+        const correct = correctPool[Math.floor(Math.random() * correctPool.length)];
+        const optionsSeed = [correct];
+
+        if (unsafeValid.length) {
+            const trick = unsafeValid[Math.floor(Math.random() * unsafeValid.length)];
+            optionsSeed.push(trick); // valid condition but unsafe for this patient
+        }
+
+        const distractors = pickDistractors(patient, Math.max(1, choiceCount - optionsSeed.length));
+        const options = shuffle(uniqueByLabel([...optionsSeed, ...distractors])).slice(0, choiceCount);
+        const grid = document.getElementById('choice-grid');
+        grid.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = formatDrugLabel(opt);
+            btn.onclick = () => processAnswer(opt, patient);
+            grid.appendChild(btn);
+        });
+    }
+
+    function evaluateSafety(patient, drug) {
+        const reasons = [];
+        let penalty = 0;
+        const history = normalize(patient.history);
+        const allergies = normalize(patient.allergies);
+        const action = normalize(drug.action);
+        const generic = normalize(drug.generic);
+
+        contraindicationRules.forEach(rule => {
+            const historyHit = !rule.historyAny || rule.historyAny.some(k => history.includes(k));
+            const actionHit = !rule.actionAny || rule.actionAny.some(k => action.includes(k));
+            const genericHit = !rule.genericAny || rule.genericAny.some(k => generic.includes(k));
+            if (historyHit && actionHit && genericHit) {
+                reasons.push(`Safety flag: ${rule.label}`);
+                penalty = Math.max(penalty, rule.severity || 1);
+            }
+        });
+
+        if (allergies !== 'none') {
+            const alTokens = allergies.split(/[ ,;/]+/).filter(Boolean);
+            const tokenMatch = alTokens.find(t => t.length > 3 && (generic.includes(t) || normalize(drug.trade).includes(t)));
+            if (tokenMatch) {
+                reasons.push(`Allergy conflict detected: ${patient.allergies}`);
+                penalty = Math.max(penalty, 2);
+            }
+        }
+
+        if (patient.dynamicAvoidTag) {
+            const tag = normalize(patient.dynamicAvoidTag);
+            if ((tag === 'qt-risk' && (generic.includes('hydroxyzine') || normalize(drug.cautions).includes('qt')))
+                || (tag !== 'qt-risk' && action.includes(tag))) {
+                reasons.push(`Hard-case dynamic warning: avoid ${patient.dynamicAvoidTag} in this patient context.`);
+                penalty = Math.max(penalty, 2);
+            }
+        }
+
+        return { penalty, reasons };
+    }
+
+    function isSafetyUnavoidable(patient, validDrugs) {
+        if (!strictSafety || !validDrugs.length) return false;
+        const penalties = validDrugs.map(v => evaluateSafety(patient, v).penalty);
+        return penalties.every(p => p > 0);
+    }
+
+    function processAnswer(submittedDrug, patient) {
+        gameActive = false;
+        clearInterval(spawnTimer);
+        stopCaseTimer();
+        const modal = document.getElementById('solution-modal');
+        const title = document.getElementById('sol-title');
+        const content = document.getElementById('sol-content');
+        const box = modal.querySelector('.solution-box');
+        box.classList.remove('success-box', 'error-box');
+
+        if (patient.quizMode) {
+            totalAttempts += 1;
+            const correctValue = patient.quizType === 'trade'
+                ? patient.quizAnswerTrade
+                : patient.quizType === 'usage'
+                    ? patient.quizAnswerUsage
+                    : patient.quizAnswerMechanism;
+            const isCorrectQuiz = normalize(submittedDrug.quizValue) === normalize(correctValue);
+            if (isCorrectQuiz) totalCorrect += 1;
+            const label = patient.quizType === 'trade' ? 'trade name' : patient.quizType === 'usage' ? 'main use' : 'mechanism';
+            if (isCorrectQuiz) {
+                box.classList.add('success-box');
+                score += 1;
+                streak += 1;
+                queue = queue.filter(p => p.id !== selectedPatientId);
+                title.innerHTML = "✅ <span style='color:#2e7d32;'>Correct Quiz Answer</span>";
+                content.innerHTML = `<strong>Drug:</strong> ${patient.quizAnswerGeneric}<br><strong>Correct ${label}:</strong> ${correctValue}<br><strong>Your answer:</strong> ${submittedDrug.quizValue}`;
+            } else {
+                box.classList.add('error-box');
+                strikes += 1;
+                streak = 0;
+                title.innerHTML = "❌ <span style='color:#c62828;'>Incorrect Quiz Answer</span>";
+                content.innerHTML = `<strong>Drug:</strong> ${patient.quizAnswerGeneric}<br><strong>Correct ${label}:</strong> ${correctValue}<br><strong>Your answer:</strong> ${submittedDrug.quizValue}`;
+            }
+            updateProgress(patient.category || 'quiz', isCorrectQuiz);
+            saveQuestionHistory({
+                mode: `Mini Quiz (${patient.quizType})`,
+                question: patient.condition,
+                selected: submittedDrug.quizValue,
+                correct: correctValue,
+                isCorrect: isCorrectQuiz
+            });
+            sessionLog.push({
+                when: new Date().toISOString(),
+                patient: patient.name,
+                condition: patient.condition,
+                history: patient.history,
+                selected: submittedDrug.quizValue,
+                isCorrect: isCorrectQuiz,
+                strikes,
+                score,
+                safetyNotes: ''
+            });
+            modal.classList.remove('hidden');
+            updateStats();
+            if (suddenDeathMode && strikes > 0) {
+                setTimeout(() => triggerGameOver('Sudden death mode: one error ends the shift.'), 800);
+                return;
+            }
+            if (strikes >= 3) setTimeout(() => triggerGameOver('You reached 3 strikes. Shift terminated.'), 1200);
+            return;
+        }
+
+        const validDrugs = database.filter(d => sameCondition(d.condition, patient.condition));
+        const isConditionCorrect = validDrugs.some(d => normalize(d.generic) === normalize(submittedDrug.generic) && normalize(d.trade) === normalize(submittedDrug.trade));
+        const preferredDrug = validDrugs[0];
+        const isBestChoice = preferredDrug && normalize(preferredDrug.generic) === normalize(submittedDrug.generic) && normalize(preferredDrug.trade) === normalize(submittedDrug.trade);
+        const safety = strictSafety ? evaluateSafety(patient, submittedDrug) : { penalty: 0, reasons: [] };
+        const safeAlternatives = strictSafety ? validDrugs.filter(v => evaluateSafety(patient, v).penalty === 0) : validDrugs;
+        const unavoidableSafety = strictSafety && safeAlternatives.length === 0;
+        const safetyFlagged = strictSafety && safety.penalty > 0;
+        const isCorrect = isConditionCorrect && (!safetyFlagged || unavoidableSafety);
+        const validNames = validDrugs.map(formatDrugLabel).join(' | ');
+
+        let earned = 0;
+        totalAttempts += 1;
+        if (isCorrect) {
+            box.classList.add('success-box');
+            totalCorrect += 1;
+            if (safetyFlagged) {
+                streak = 0;
+                earned = 0;
+            } else {
+                streak += 1;
+                earned = isBestChoice ? 2 : 1;
+                if (streak % 5 === 0) earned += 1;
+            }
+            score += earned;
+            bestChoiceStreak = isBestChoice ? bestChoiceStreak + 1 : 0;
+            if (bestChoiceStreak > maxBestChoiceStreak) maxBestChoiceStreak = bestChoiceStreak;
+            adaptiveDifficultyOffset = Math.min(3, adaptiveDifficultyOffset + (safetyFlagged ? 0 : (isBestChoice ? 1 : 0)));
+            queue = queue.filter(p => p.id !== selectedPatientId);
+            title.innerHTML = "✅ <span style='color:#2e7d32;'>Correct Dispensation</span>";
+            content.innerHTML = `
+                <strong>Selected:</strong> ${formatDrugLabel(submittedDrug)}<br>
+                <strong>Choice quality:</strong> ${isBestChoice ? 'Best choice' : 'Acceptable choice'}<br>
+                <strong>Points gained:</strong> ${earned}<br><br>
+                <strong>Valid Drugs for this condition:</strong><br>
+                <div class='drug-list'>${validNames}</div><br>
+                <strong>Mechanism of selected drug:</strong> ${submittedDrug.action}<br><br>
+                <strong>Cautions of selected drug:</strong> ${submittedDrug.cautions}
+                ${safetyFlagged ? `<br><br><strong>Safety warning:</strong> Your drug is valid for this condition, but has caution flags in this patient context. No points were added.` : ''}
+                ${unavoidableSafety ? `<br><br><strong>Safety note:</strong> This case has unavoidable safety flags for all valid options, so it was accepted as a necessary choice.` : ''}
+            `;
+        } else {
+            box.classList.add('error-box');
+            const strikeAdd = Math.max(1, safety.penalty || 1);
+            strikes += strikeAdd;
+            streak = 0;
+            bestChoiceStreak = 0;
+            adaptiveDifficultyOffset = Math.max(-3, adaptiveDifficultyOffset - 1);
+            title.innerHTML = "❌ <span style='color:#c62828;'>Clinical Error</span>";
+            const conditionReason = isConditionCorrect
+                ? 'Condition matched, but this drug is contraindicated for this patient. Choose a safer valid option.'
+                : 'Selected medicine does not match this condition.';
+            const safetyReasonList = safety.reasons.length
+                ? `<ul>${safety.reasons.map(r => `<li>${r}</li>`).join('')}</ul>`
+                : '<ul><li>No major safety flag triggered, but condition mismatch made the choice incorrect.</li></ul>';
+            const tutorExtra = tutorMode
+                ? `<hr>
+                   <strong>Why this is wrong:</strong>
+                   <p>${conditionReason}</p>
+                   <strong>Safety findings:</strong>
+                   ${safetyReasonList}
+                   <strong>Correct references (click to expand):</strong>
+                   ${validDrugs.map(d => `<details><summary><strong>${formatDrugLabel(d)}</strong></summary><small>Mechanism: ${d.action}<br>Cautions: ${d.cautions}</small></details>`).join('')}`
+                : '';
+            content.innerHTML = `<strong>Selected:</strong> ${formatDrugLabel(submittedDrug)}<br><strong>Strikes added:</strong> ${strikeAdd}<br><div class='drug-list'>Valid drugs: ${validNames}</div>${tutorExtra}`;
+        }
+
+        updateProgress(patient.category, isCorrect);
+        saveQuestionHistory({
+            mode: 'Rush',
+            question: patient.condition,
+            selected: formatDrugLabel(submittedDrug),
+            correct: validNames,
+            isCorrect
+        });
+        sessionLog.push({
+            when: new Date().toISOString(),
+            patient: patient.name,
+            condition: patient.condition,
+            history: patient.history,
+            selected: formatDrugLabel(submittedDrug),
+            isCorrect,
+            strikes,
+            score,
+            safetyNotes: safety.reasons.join('; ')
+        });
+
+        modal.classList.remove('hidden');
+        updateStats();
+        if (suddenDeathMode && strikes > 0) {
+            setTimeout(() => triggerGameOver('Sudden death mode: one error ends the shift.'), 800);
+            return;
+        }
+        if (strikes >= 3) setTimeout(() => triggerGameOver('You reached 3 strikes. Shift terminated.'), 1200);
+    }
+
+    function closeSolution() {
+        const modal = document.getElementById('solution-modal');
+        modal.classList.add('hidden');
+        const box = modal.querySelector('.solution-box');
+        box.classList.remove('success-box', 'error-box');
+        clearExamPanel();
+        if (strikes < 3) { gameActive = true; startSpawner(); }
+    }
+
+    function updateStats() {
+        document.getElementById('score-display').innerText = score;
+        document.getElementById('strike-display').innerText = strikes;
+        document.getElementById('streak-display').innerText = streak;
+        document.getElementById('accuracy-display').innerText = `${getAccuracyPercent()}%`;
+        const q = document.getElementById('queue-count');
+        q.innerText = queue.length;
+        q.style.color = queue.length >= 7 ? '#ffeb3b' : 'inherit';
+        updateMastery();
+    }
+
+    function renderAnalytics() {
+        const total = sessionLog.length;
+        const correct = sessionLog.filter(x => x.isCorrect).length;
+        const accuracy = total ? Math.round((correct / total) * 100) : 0;
+        const safetyHits = sessionLog.filter(x => x.safetyNotes).length;
+        const weak = getWeakestCategory() || 'N/A';
+        const topMiss = Object.entries(progressByCategory)
+            .filter(([, v]) => v.total > 0)
+            .map(([k, v]) => ({ k, miss: v.total - v.correct }))
+            .sort((a, b) => b.miss - a.miss)[0];
+
+        document.getElementById('analytics-panel').innerHTML = `
+            <strong>Session analytics</strong><br>
+            Cases: ${total} | Accuracy: ${accuracy}% | Running accuracy: ${getAccuracyPercent()}% | Safety flags: ${safetyHits}<br>
+            Weakest category: ${weak}<br>
+            Most-missed category: ${topMiss ? topMiss.k : 'N/A'}<br>
+            Best-choice streak reached: ${maxBestChoiceStreak}
+        `;
+    }
+
+    function triggerGameOver(reason) {
+        gameActive = false;
+        clearInterval(spawnTimer);
+        stopCaseTimer();
+        document.getElementById('end-message').innerText = reason;
+        document.getElementById('final-score').innerText = score;
+        saveSessionHistory();
+        loadSessionHistory();
+        renderAnalytics();
+        document.getElementById('solution-modal').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.remove('hidden');
+    }
+
+    function exportSessionReport() {
+        if (!sessionLog.length) { alert('No session data yet.'); return; }
+        const headers = ['when','patient','condition','history','selected','isCorrect','strikes','score','safetyNotes'];
+        const rows = sessionLog.map(r => headers.map(h => `"${String(r[h] ?? '').replaceAll('"','""')}"`).join(','));
+        const csv = [headers.join(','), ...rows].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `pharmacy_rush_report_${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.csv`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    }
+
+    function searchReference(query) {
+        const q = normalize(query);
+        const results = document.getElementById('ref-results');
+        if (!q) { results.innerHTML = ''; return; }
+        const matched = database.filter(d => [d.generic, d.trade, d.condition, d.action, d.cautions].some(v => normalize(v).includes(q))).slice(0, 8);
+        results.innerHTML = matched.length
+            ? matched.map(m => `<div><strong>${formatDrugLabel(m)}</strong><br><small>${m.condition} | ${m.action}</small></div><hr>`).join('')
+            : '<small>No matches found.</small>';
+    }
+
+    document.getElementById('ref-search').addEventListener('input', (e) => searchReference(e.target.value));
+    document.addEventListener('keydown', (e) => {
+        if (!selectedPatientId) return;
+        if (!document.getElementById('solution-modal').classList.contains('hidden')) return;
+        const n = Number(e.key);
+        if (!Number.isInteger(n) || n < 1 || n > 9) return;
+        const buttons = Array.from(document.querySelectorAll('#choice-grid .choice-btn'));
+        if (buttons[n - 1]) buttons[n - 1].click();
+    });
+    validateDatabase();
+    loadSessionHistory();
+</script>
+</body>
+</html>
