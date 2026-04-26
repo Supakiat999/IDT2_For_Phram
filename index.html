@@ -83,6 +83,15 @@
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "whpxskpz47");
 </script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-OD1BQ368VG"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-OD1BQ368VG');
+</script>
 </head>
 <body>
 <div id="game-container">
@@ -209,6 +218,16 @@
     </div>
 </div>
 
+<div id="consent-banner" class="overlay hidden" style="background: rgba(38,50,56,0.92); color: white; z-index: 50;">
+    <div class="solution-box" style="max-width:700px;">
+        <h2 style="margin-top:0;">Analytics Consent</h2>
+        <div class="history-actions" style="justify-content:flex-end;">
+            <button class="action-btn" onclick="setAnalyticsConsent(false)" style="background:#607d8b;">Continue Without Analytics</button>
+            <button class="action-btn" onclick="setAnalyticsConsent(true)">Allow Analytics</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const names = ["Aj.BD", "AJ.VT", "Aj.PC","Spy", "Pingpong", "Aim", "Jiw", "Cheer", "Film", "Bam", "Kan", "Tungngern", "Pluem", "Ing", "Noey", "Saiya", "Fook", "Boat", "Nurse", "Tata", "Prem", "Grace", "Pimpim", "Mink", "Amy", "Nam", "Jern", "Pun", "Nine", "Nicha", "Nan", "Nich", "Grace", "Nun", "Praewa", "Yok", "Ben", "Pan", "In", "Ada", "Porjai", "Bass", "Saifah", "Prae", "Rita", "Tent", "Pat", "Punch", "King", "Khaohom", "Pin", "Baibua", "Looktan", "Janjao", "Mintmind", "Wim", "Focus", "Gaga", "March", "Ton", "Haru", "Elle", "Creamy", "Tae", "Peak", "Real", "Poom", "Torboon", "Sian", "Film", "AJ (Uji)", "Palm", "Fresh", "Chino", "Ohm", "Mind", "Tonkhao", "Patty", "Mai", "Mew", "August", "Matoom", "Putter", "Earth", "Peaker", "Jai", "Aomsin", "Poom", "Oboon", "Mo", "Pretty", "Guitar", "Tin-Tin", "Pian", "Pat", "Mobile", "Muilin", "Khaimook", "Pangpond", "Tonnam", "Fight", "Pond", "First", "Fasai", "Foofoo", "Porfai", "C", "Nonny", "Kin", "Match", "Aom", "Ning", "Jolie", "Tangkwa", "Mook", "Preemmy", "Nun", "Baifern", "Bronze", "Jenny", "Palm", "Siwki", "Prae", "Ivy", "Pim", "Eclair", "Pond", "Emmy", "Kitty", "Film", "Ing", "Match", "Bo", "Boom", "Prom", "Game", "Pluem", "August", "Pangpond", "Baifern", "Panwad", "Baifern", "Tientien", "Nook", "Shogun", "Diamond", "Thach", "Nan", "Phu", "Han", "Few", "Sky", "Praewa", "Praewa", "Mobile"];
 
@@ -298,6 +317,8 @@
 
     let queue = [], score = 0, strikes = 0, streak = 0, selectedPatientId = null, patientCounter = 0, spawnTimer, gameActive = false;
     let isShiftPaused = false;
+    let analyticsConsent = true;
+    let heartbeatTimer = null;
     let maxQueue = 10, currentDifficulty = 'med', caseTimer = null, caseTimeLeft = 0;
     let strictSafety = true, tutorMode = true, noTimerMode = false, drillWeakestMode = false, suddenDeathMode = false;
     let adaptiveDifficultyOffset = 0, bestChoiceStreak = 0, maxBestChoiceStreak = 0;
@@ -307,6 +328,10 @@
     const progressByCategory = {};
     const SESSION_HISTORY_KEY = 'pharmacy_rush_session_history_v1';
     const QUESTION_HISTORY_KEY = 'pharmacy_rush_question_history_v1';
+    const ANALYTICS_QUEUE_KEY = 'pharmacy_rush_analytics_queue_v1';
+    const ANALYTICS_COVERAGE_KEY = 'pharmacy_rush_analytics_coverage_v1';
+    const ANALYTICS_CONSENT_KEY = 'pharmacy_rush_analytics_consent_v1';
+    const ANALYTICS_ENDPOINT = ''; // optional: set to a first-party endpoint like /api/analytics
 
     const diffSettings = {
         easy: { baseRate: 12000, minRate: 6000, decrement: 200, choices: 5, caseSec: 24 },
@@ -328,6 +353,101 @@
     function formatDrugLabel(d){ return d.trade && d.trade !== 'None' && d.trade !== '/' ? `${d.generic} (${d.trade})` : d.generic; }
     function sameCondition(a,b){ return normalize(a) === normalize(b); }
     function shuffle(arr){ const c=[...arr]; for(let i=c.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [c[i],c[j]]=[c[j],c[i]];} return c; }
+
+    function getCoverageStats() {
+        try {
+            return JSON.parse(localStorage.getItem(ANALYTICS_COVERAGE_KEY) || '{"sessionStarts":0,"eventsQueued":0,"eventsSent":0}');
+        } catch (_) {
+            return { sessionStarts: 0, eventsQueued: 0, eventsSent: 0 };
+        }
+    }
+
+    function setCoverageStats(stats) {
+        localStorage.setItem(ANALYTICS_COVERAGE_KEY, JSON.stringify(stats));
+        renderAnalyticsDebugPanel();
+    }
+
+    function queueAnalyticsEvent(eventName, payload = {}) {
+        try {
+            const q = JSON.parse(localStorage.getItem(ANALYTICS_QUEUE_KEY) || '[]');
+            q.push({ ts: new Date().toISOString(), eventName, payload, url: `${location.origin}${location.pathname}` });
+            localStorage.setItem(ANALYTICS_QUEUE_KEY, JSON.stringify(q.slice(-500)));
+            const stats = getCoverageStats();
+            stats.eventsQueued += 1;
+            setCoverageStats(stats);
+        } catch (_) {}
+    }
+
+    async function flushAnalyticsQueue() {
+        if (!ANALYTICS_ENDPOINT) return;
+        try {
+            const q = JSON.parse(localStorage.getItem(ANALYTICS_QUEUE_KEY) || '[]');
+            if (!q.length) return;
+            const payload = JSON.stringify({ events: q });
+            let ok = false;
+            if (navigator.sendBeacon) {
+                ok = navigator.sendBeacon(ANALYTICS_ENDPOINT, new Blob([payload], { type: 'application/json' }));
+            }
+            if (!ok) {
+                const r = await fetch(ANALYTICS_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: payload, keepalive: true });
+                ok = r.ok;
+            }
+            if (ok) {
+                localStorage.removeItem(ANALYTICS_QUEUE_KEY);
+                const stats = getCoverageStats();
+                stats.eventsSent += q.length;
+                setCoverageStats(stats);
+            }
+        } catch (_) {}
+    }
+
+    function trackEvent(eventName, payload = {}) {
+        if (!analyticsConsent) return;
+        queueAnalyticsEvent(eventName, payload);
+        if (window.__clarityLoaded && typeof window.clarity === 'function') {
+            window.clarity('event', eventName);
+        }
+        if (typeof window.gtag === 'function') {
+            window.gtag('event', eventName, payload);
+        }
+        flushAnalyticsQueue();
+    }
+
+    function renderAnalyticsDebugPanel() {
+        const panel = document.getElementById('analytics-debug-content');
+        if (!panel) return;
+        const stats = getCoverageStats();
+        const queued = (() => {
+            try { return JSON.parse(localStorage.getItem(ANALYTICS_QUEUE_KEY) || '[]').length; } catch (_) { return 0; }
+        })();
+        panel.innerHTML = `
+            Consent: <strong>${analyticsConsent ? 'ON' : 'OFF'}</strong><br>
+            Clarity loaded: <strong>${window.__clarityLoaded ? 'YES' : 'NO'}</strong><br>
+            Session starts: <strong>${stats.sessionStarts}</strong><br>
+            Events queued: <strong>${stats.eventsQueued}</strong><br>
+            Events sent: <strong>${stats.eventsSent}</strong><br>
+            Queue size now: <strong>${queued}</strong><br>
+            Endpoint: <code>${ANALYTICS_ENDPOINT || '(not configured)'}</code>
+        `;
+    }
+
+    function setAnalyticsConsent(allowed) {
+        analyticsConsent = !!allowed;
+        localStorage.setItem(ANALYTICS_CONSENT_KEY, analyticsConsent ? 'yes' : 'no');
+        document.getElementById('consent-banner').classList.add('hidden');
+        renderAnalyticsDebugPanel();
+        if (analyticsConsent) {
+            initializeClarityTelemetry();
+            trackEvent('analytics_consent_allowed');
+        }
+    }
+
+    function initAnalyticsConsentAndDebug() {
+        analyticsConsent = true;
+        localStorage.setItem(ANALYTICS_CONSENT_KEY, 'yes');
+        document.getElementById('consent-banner').classList.add('hidden');
+        renderAnalyticsDebugPanel();
+    }
 
     function setDifficulty(level){
         currentDifficulty = level;
@@ -392,6 +512,7 @@
     }
 
     function checkClarityStatus() {
+        if (!analyticsConsent) return;
         setTimeout(() => {
             if (!window.__clarityLoaded) {
                 console.debug('Clarity is not loaded for this session.');
@@ -400,6 +521,7 @@
     }
 
     function initializeClarityTelemetry() {
+        if (!analyticsConsent) return;
         let attempts = 0;
         const maxAttempts = 20;
         const tick = setInterval(() => {
@@ -416,6 +538,45 @@
                 clearInterval(tick);
             }
         }, 500);
+    }
+
+    function normalizeCanonicalUrl() {
+        const normalizedPath = location.pathname.endsWith('/') && location.pathname.length > 1
+            ? location.pathname.slice(0, -1)
+            : location.pathname;
+        const normalized = `${location.origin}${normalizedPath}`;
+        if (`${location.origin}${location.pathname}` !== normalized) {
+            history.replaceState({}, '', normalized + location.search + location.hash);
+        }
+    }
+
+    function startHeartbeat() {
+        clearInterval(heartbeatTimer);
+        heartbeatTimer = setInterval(() => {
+            if (!gameActive) return;
+            trackEvent('heartbeat', { score, strikes, queueSize: queue.length, mode: currentMode });
+        }, 20000);
+    }
+
+    function stopHeartbeat() {
+        clearInterval(heartbeatTimer);
+    }
+
+    function initCoverageHooks() {
+        normalizeCanonicalUrl();
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden') {
+                trackEvent('page_hidden', { score, attempts: totalAttempts });
+                flushAnalyticsQueue();
+            }
+        });
+        window.addEventListener('pagehide', () => {
+            trackEvent('pagehide', { score, attempts: totalAttempts });
+            flushAnalyticsQueue();
+        });
+        window.addEventListener('beforeunload', () => {
+            trackEvent('beforeunload', { score, attempts: totalAttempts });
+        });
     }
 
     function updateMastery() {
@@ -543,6 +704,7 @@
         if (isShiftPaused && totalAttempts > 0) {
             saveSessionHistory();
             loadSessionHistory();
+            trackEvent('shift_restarted_from_home', { attempts: totalAttempts, correct: totalCorrect, score });
         }
         isShiftPaused = false;
         document.getElementById('resume-shift-btn').classList.add('hidden');
@@ -560,6 +722,11 @@
         updateStats();
         spawnPatient();
         startSpawner();
+        startHeartbeat();
+        const stats = getCoverageStats();
+        stats.sessionStarts += 1;
+        setCoverageStats(stats);
+        trackEvent('shift_started', { mode: currentMode, quizType });
     }
 
     function resumeShift() {
@@ -576,6 +743,8 @@
             displayPatient(queue.find(p => p.id === selectedPatientId));
         }
         startSpawner();
+        startHeartbeat();
+        trackEvent('shift_resumed', { mode: currentMode, score, strikes, queueSize: queue.length });
     }
 
     function resetGame() {
@@ -583,6 +752,7 @@
         isShiftPaused = false;
         clearInterval(spawnTimer);
         stopCaseTimer();
+        stopHeartbeat();
         clearExamPanel();
         document.getElementById('resume-shift-btn').classList.add('hidden');
         document.getElementById('start-shift-btn').innerText = 'Start New Shift';
@@ -595,6 +765,8 @@
         isShiftPaused = true;
         clearInterval(spawnTimer);
         stopCaseTimer();
+        stopHeartbeat();
+        trackEvent('to_home_clicked', { score, strikes, attempts: totalAttempts, queueSize: queue.length });
         document.getElementById('solution-modal').classList.add('hidden');
         document.getElementById('history-modal').classList.add('hidden');
         document.getElementById('resume-shift-btn').classList.remove('hidden');
@@ -1015,6 +1187,7 @@
                 score,
                 safetyNotes: ''
             });
+            trackEvent('question_answered', { mode: 'quiz', correct: isCorrectQuiz, score, strikes });
             modal.classList.remove('hidden');
             updateStats();
             if (suddenDeathMode && strikes > 0) {
@@ -1105,6 +1278,7 @@
             score,
             safetyNotes: safety.reasons.join('; ')
         });
+        trackEvent('question_answered', { mode: 'rush', correct: isCorrect, score, strikes, safetyFlags: safety.reasons.length });
 
         modal.classList.remove('hidden');
         updateStats();
@@ -1159,11 +1333,13 @@
         gameActive = false;
         clearInterval(spawnTimer);
         stopCaseTimer();
+        stopHeartbeat();
         document.getElementById('end-message').innerText = reason;
         document.getElementById('final-score').innerText = score;
         saveSessionHistory();
         loadSessionHistory();
         renderAnalytics();
+        trackEvent('shift_completed', { reason, score, attempts: totalAttempts, correct: totalCorrect, accuracy: getAccuracyPercent() });
         document.getElementById('solution-modal').classList.add('hidden');
         document.getElementById('game-over-screen').classList.remove('hidden');
     }
@@ -1207,6 +1383,8 @@
     });
     validateDatabase();
     runLogicSmokeChecks();
+    initAnalyticsConsentAndDebug();
+    initCoverageHooks();
     checkClarityStatus();
     initializeClarityTelemetry();
     loadSessionHistory();
