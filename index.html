@@ -356,6 +356,23 @@
         }
     }
 
+    function runLogicSmokeChecks() {
+        const checks = [
+            {
+                name: 'non-sedating should not match sedating rule',
+                pass: !actionMatchesTag('non-sedating H1 antihistamine', 'sedating h1 antihistamine')
+            },
+            {
+                name: 'sedating should match sedating rule',
+                pass: actionMatchesTag('Sedating H1 antihistamine', 'sedating h1 antihistamine')
+            }
+        ];
+        const failed = checks.filter(c => !c.pass);
+        if (failed.length) {
+            console.warn('Logic smoke checks failed:', failed.map(f => f.name).join(' | '));
+        }
+    }
+
     function updateMastery() {
         let mastery = 'Novice';
         if (score >= 15) mastery = 'Advanced';
@@ -1093,6 +1110,7 @@
         if (buttons[n - 1]) buttons[n - 1].click();
     });
     validateDatabase();
+    runLogicSmokeChecks();
     loadSessionHistory();
 </script>
 </body>
