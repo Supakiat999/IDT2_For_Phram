@@ -63,9 +63,23 @@
         }
     </style>
 <script type="text/javascript">
-    (function(c,l,a,r,i,t,y){
+    (function(c,l,a,r,i,t,y,retried){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        c.__clarityLoaded = false;
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        t.onload=function(){ c.__clarityLoaded = true; };
+        t.onerror=function(){
+            if (retried) {
+                console.warn("Microsoft Clarity failed to load after retry. Check ad-blockers, HTTPS, and project/domain settings.");
+                return;
+            }
+            const retryScript = l.createElement(r);
+            retryScript.async = 1;
+            retryScript.src = "https://www.clarity.ms/tag/" + i + "?retry=1&ts=" + Date.now();
+            retryScript.onload = function(){ c.__clarityLoaded = true; };
+            retryScript.onerror = function(){ console.warn("Microsoft Clarity retry failed."); };
+            y.parentNode.insertBefore(retryScript, y);
+        };
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "whpxskpz47");
 </script>
@@ -290,12 +304,22 @@
     const QUESTION_HISTORY_KEY = 'pharmacy_rush_question_history_v1';
 
     const diffSettings = {
-        easy: { baseRate: 12000, minRate: 6000, decrement: 200, choices: 3, caseSec: 24 },
-        med:  { baseRate: 8000, minRate: 3500, decrement: 300, choices: 4, caseSec: 18 },
+        easy: { baseRate: 12000, minRate: 6000, decrement: 200, choices: 5, caseSec: 24 },
+        med:  { baseRate: 8000, minRate: 3500, decrement: 300, choices: 5, caseSec: 18 },
         hard: { baseRate: 4500, minRate: 2000, decrement: 400, choices: 5, caseSec: 12 }
     };
 
     function normalize(t){ return (t || '').toLowerCase().replace(/\s+/g,' ').trim(); }
+
+    function actionMatchesTag(actionText, tagText) {
+        const action = normalize(actionText);
+        const tag = normalize(tagText);
+        if (!tag) return true;
+        const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const hasPositiveTag = new RegExp(`\\b${escaped}\\b`).test(action);
+        const hasNegatedTag = new RegExp(`\\bnon[-\\s]+${escaped}\\b`).test(action);
+        return hasPositiveTag && !hasNegatedTag;
+    }
     function formatDrugLabel(d){ return d.trade && d.trade !== 'None' && d.trade !== '/' ? `${d.generic} (${d.trade})` : d.generic; }
     function sameCondition(a,b){ return normalize(a) === normalize(b); }
     function shuffle(arr){ const c=[...arr]; for(let i=c.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [c[i],c[j]]=[c[j],c[i]];} return c; }
@@ -343,6 +367,50 @@
         } else if (badge) {
             badge.innerText = 'Data check: Passed \u2713';
         }
+    }
+
+    function runLogicSmokeChecks() {
+        const checks = [
+            {
+                name: 'non-sedating should not match sedating rule',
+                pass: !actionMatchesTag('non-sedating H1 antihistamine', 'sedating h1 antihistamine')
+            },
+            {
+                name: 'sedating should match sedating rule',
+                pass: actionMatchesTag('Sedating H1 antihistamine', 'sedating h1 antihistamine')
+            }
+        ];
+        const failed = checks.filter(c => !c.pass);
+        if (failed.length) {
+            console.warn('Logic smoke checks failed:', failed.map(f => f.name).join(' | '));
+        }
+    }
+
+    function checkClarityStatus() {
+        setTimeout(() => {
+            if (!window.__clarityLoaded) {
+                console.warn('Clarity is not loaded. Data may not appear in the dashboard for this device/session.');
+            }
+        }, 8000);
+    }
+
+    function initializeClarityTelemetry() {
+        let attempts = 0;
+        const maxAttempts = 20;
+        const tick = setInterval(() => {
+            attempts += 1;
+            if (window.__clarityLoaded && typeof window.clarity === 'function') {
+                window.clarity('set', 'app_name', 'Pharmacy Rush');
+                window.clarity('set', 'page_url', `${window.location.origin}${window.location.pathname}`);
+                window.clarity('event', 'clarity_script_loaded');
+                clearInterval(tick);
+                return;
+            }
+            if (attempts >= maxAttempts) {
+                console.warn('Clarity telemetry init skipped: script did not become ready in time.');
+                clearInterval(tick);
+            }
+        }, 500);
     }
 
     function updateMastery() {
@@ -753,8 +821,14 @@
                 seen.add(k);
                 uniquePool.push(p);
             });
-            const distractors = shuffle(uniquePool.filter(x => normalize(x.quizValue) !== normalize(correctValue))).slice(0, 3);
-            const options = shuffle([{ quizValue: correctValue, sourceDrug: null }, ...distractors]);
+            let distractors = shuffle(uniquePool.filter(x => normalize(x.quizValue) !== normalize(correctValue))).slice(0, 4);
+            if (distractors.length < 4) {
+                const extra = shuffle(uniquePool)
+                    .filter(x => normalize(x.quizValue) !== normalize(correctValue) && !distractors.some(d => normalize(d.quizValue) === normalize(x.quizValue)))
+                    .slice(0, 4 - distractors.length);
+                distractors = [...distractors, ...extra];
+            }
+            const options = shuffle([{ quizValue: correctValue, sourceDrug: null }, ...distractors]).slice(0, 5);
             const grid = document.getElementById('choice-grid');
             grid.innerHTML = '';
             options.forEach(opt => {
@@ -781,7 +855,12 @@
         }
 
         const distractors = pickDistractors(patient, Math.max(1, choiceCount - optionsSeed.length));
-        const options = shuffle(uniqueByLabel([...optionsSeed, ...distractors])).slice(0, choiceCount);
+        let options = shuffle(uniqueByLabel([...optionsSeed, ...distractors])).slice(0, choiceCount);
+        if (options.length < choiceCount) {
+            const fillers = shuffle(uniqueByLabel(database))
+                .filter(d => !options.some(o => normalize(formatDrugLabel(o)) === normalize(formatDrugLabel(d))));
+            options = [...options, ...fillers.slice(0, choiceCount - options.length)];
+        }
         const grid = document.getElementById('choice-grid');
         grid.innerHTML = '';
         options.forEach(opt => {
@@ -803,7 +882,7 @@
 
         contraindicationRules.forEach(rule => {
             const historyHit = !rule.historyAny || rule.historyAny.some(k => history.includes(k));
-            const actionHit = !rule.actionAny || rule.actionAny.some(k => action.includes(k));
+            const actionHit = !rule.actionAny || rule.actionAny.some(k => actionMatchesTag(drug.action, k));
             const genericHit = !rule.genericAny || rule.genericAny.some(k => generic.includes(k));
             if (historyHit && actionHit && genericHit) {
                 reasons.push(`Safety flag: ${rule.label}`);
@@ -917,14 +996,8 @@
         if (isCorrect) {
             box.classList.add('success-box');
             totalCorrect += 1;
-            if (safetyFlagged) {
-                streak = 0;
-                earned = 0;
-            } else {
-                streak += 1;
-                earned = isBestChoice ? 2 : 1;
-                if (streak % 5 === 0) earned += 1;
-            }
+            streak += 1;
+            earned = 1;
             score += earned;
             bestChoiceStreak = isBestChoice ? bestChoiceStreak + 1 : 0;
             if (bestChoiceStreak > maxBestChoiceStreak) maxBestChoiceStreak = bestChoiceStreak;
@@ -939,7 +1012,7 @@
                 <div class='drug-list'>${validNames}</div><br>
                 <strong>Mechanism of selected drug:</strong> ${submittedDrug.action}<br><br>
                 <strong>Cautions of selected drug:</strong> ${submittedDrug.cautions}
-                ${safetyFlagged ? `<br><br><strong>Safety warning:</strong> Your drug is valid for this condition, but has caution flags in this patient context. No points were added.` : ''}
+                ${safetyFlagged ? `<br><br><strong>Safety warning:</strong> Your drug is valid for this condition, but has caution flags in this patient context.` : ''}
                 ${unavoidableSafety ? `<br><br><strong>Safety note:</strong> This case has unavoidable safety flags for all valid options, so it was accepted as a necessary choice.` : ''}
             `;
         } else {
@@ -1073,7 +1146,12 @@
             : '<small>No matches found.</small>';
     }
 
-    document.getElementById('ref-search').addEventListener('input', (e) => searchReference(e.target.value));
+    const refSearchInput = document.getElementById('ref-search');
+    if (refSearchInput) {
+        refSearchInput.addEventListener('input', (e) => searchReference(e.target.value));
+    } else {
+        console.warn('Quick Drug Reference search input (#ref-search) was not found.');
+    }
     document.addEventListener('keydown', (e) => {
         if (!selectedPatientId) return;
         if (!document.getElementById('solution-modal').classList.contains('hidden')) return;
@@ -1083,6 +1161,9 @@
         if (buttons[n - 1]) buttons[n - 1].click();
     });
     validateDatabase();
+    runLogicSmokeChecks();
+    checkClarityStatus();
+    initializeClarityTelemetry();
     loadSessionHistory();
 </script>
 </body>
