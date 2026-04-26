@@ -221,7 +221,6 @@
 <div id="consent-banner" class="overlay hidden" style="background: rgba(38,50,56,0.92); color: white; z-index: 50;">
     <div class="solution-box" style="max-width:700px;">
         <h2 style="margin-top:0;">Analytics Consent</h2>
-        <p style="color:#37474f;">Allow anonymous analytics to improve reliability across devices. You can continue without analytics.</p>
         <div class="history-actions" style="justify-content:flex-end;">
             <button class="action-btn" onclick="setAnalyticsConsent(false)" style="background:#607d8b;">Continue Without Analytics</button>
             <button class="action-btn" onclick="setAnalyticsConsent(true)">Allow Analytics</button>
@@ -324,7 +323,7 @@
 
     let queue = [], score = 0, strikes = 0, streak = 0, selectedPatientId = null, patientCounter = 0, spawnTimer, gameActive = false;
     let isShiftPaused = false;
-    let analyticsConsent = false;
+    let analyticsConsent = true;
     let heartbeatTimer = null;
     let maxQueue = 10, currentDifficulty = 'med', caseTimer = null, caseTimeLeft = 0;
     let strictSafety = true, tutorMode = true, noTimerMode = false, drillWeakestMode = false, suddenDeathMode = false;
@@ -447,11 +446,9 @@
     }
 
     function initAnalyticsConsentAndDebug() {
-        const saved = localStorage.getItem(ANALYTICS_CONSENT_KEY);
-        analyticsConsent = saved === 'yes';
-        if (saved !== 'yes' && saved !== 'no') {
-            document.getElementById('consent-banner').classList.remove('hidden');
-        }
+        analyticsConsent = true;
+        localStorage.setItem(ANALYTICS_CONSENT_KEY, 'yes');
+        document.getElementById('consent-banner').classList.add('hidden');
         const dbgBtn = document.getElementById('analytics-debug-toggle');
         const dbgPanel = document.getElementById('analytics-debug-panel');
         dbgBtn.addEventListener('click', () => dbgPanel.classList.toggle('hidden'));
