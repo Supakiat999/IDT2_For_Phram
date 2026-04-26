@@ -341,7 +341,7 @@
             console.warn('Data check issues:', issues);
             if (badge) badge.innerText = `Data check: ${issues.length} issue(s) found`;
         } else if (badge) {
-            badge.innerText = 'Data check: Passed โ“';
+            badge.innerText = 'Data check: Passed \u2713';
         }
     }
 
@@ -365,7 +365,7 @@
             const text = latest.length
                 ? latest.map(s => `${s.date} | ${s.mode} | ${s.accuracy}% (${s.correct}/${s.attempts})`).join(' || ')
                 : 'none yet.';
-            document.getElementById('session-history').innerText = `Session history: ${text}\nTip: Use โ€Review Past Answersโ€ below to open full local question history.`;
+            document.getElementById('session-history').innerText = `Session history: ${text}\nTip: Use "Review Past Answers" below to open full local question history.`;
         } catch (_) {
             document.getElementById('session-history').innerText = 'Session history: unavailable.';
         }
@@ -406,7 +406,7 @@
             } else {
                 const rows = data.slice().reverse().map((q, idx) => `
                     <div style="padding:8px; border-bottom:1px solid #ddd;">
-                        <strong>#${idx + 1}</strong> [${q.at}] [${q.mode}] ${q.isCorrect ? 'โ…' : 'โ'}<br>
+                        <strong>#${idx + 1}</strong> [${q.at}] [${q.mode}] ${q.isCorrect ? '\u2705' : '\u274C'}<br>
                         <strong>Question:</strong> ${q.question}<br>
                         <strong>Your answer:</strong> ${q.selected}<br>
                         <strong>Correct answer:</strong> ${q.correct}
@@ -699,7 +699,7 @@
         const box = modal.querySelector('.solution-box');
         box.classList.remove('success-box');
         box.classList.add('error-box');
-        document.getElementById('sol-title').innerHTML = "โฑ๏ธ <span style='color:#e65100;'>Time Out</span>";
+        document.getElementById('sol-title').innerHTML = "\u23F1\uFE0F <span style='color:#e65100;'>Time Out</span>";
         document.getElementById('sol-content').innerHTML = `<p>You ran out of time for this patient. 1 strike added.</p><p><strong>Tip:</strong> Match the condition first, then check history and allergy.</p>`;
         modal.classList.remove('hidden');
     }
@@ -863,13 +863,13 @@
                 score += 1;
                 streak += 1;
                 queue = queue.filter(p => p.id !== selectedPatientId);
-                title.innerHTML = "โ… <span style='color:#2e7d32;'>Correct Quiz Answer</span>";
+                title.innerHTML = "\u2705 <span style='color:#2e7d32;'>Correct Quiz Answer</span>";
                 content.innerHTML = `<strong>Drug:</strong> ${patient.quizAnswerGeneric}<br><strong>Correct ${label}:</strong> ${correctValue}<br><strong>Your answer:</strong> ${submittedDrug.quizValue}`;
             } else {
                 box.classList.add('error-box');
                 strikes += 1;
                 streak = 0;
-                title.innerHTML = "โ <span style='color:#c62828;'>Incorrect Quiz Answer</span>";
+                title.innerHTML = "\u274C <span style='color:#c62828;'>Incorrect Quiz Answer</span>";
                 content.innerHTML = `<strong>Drug:</strong> ${patient.quizAnswerGeneric}<br><strong>Correct ${label}:</strong> ${correctValue}<br><strong>Your answer:</strong> ${submittedDrug.quizValue}`;
             }
             updateProgress(patient.category || 'quiz', isCorrectQuiz);
@@ -930,7 +930,7 @@
             if (bestChoiceStreak > maxBestChoiceStreak) maxBestChoiceStreak = bestChoiceStreak;
             adaptiveDifficultyOffset = Math.min(3, adaptiveDifficultyOffset + (safetyFlagged ? 0 : (isBestChoice ? 1 : 0)));
             queue = queue.filter(p => p.id !== selectedPatientId);
-            title.innerHTML = "โ… <span style='color:#2e7d32;'>Correct Dispensation</span>";
+            title.innerHTML = "\u2705 <span style='color:#2e7d32;'>Correct Dispensation</span>";
             content.innerHTML = `
                 <strong>Selected:</strong> ${formatDrugLabel(submittedDrug)}<br>
                 <strong>Choice quality:</strong> ${isBestChoice ? 'Best choice' : 'Acceptable choice'}<br>
@@ -949,7 +949,7 @@
             streak = 0;
             bestChoiceStreak = 0;
             adaptiveDifficultyOffset = Math.max(-3, adaptiveDifficultyOffset - 1);
-            title.innerHTML = "โ <span style='color:#c62828;'>Clinical Error</span>";
+            title.innerHTML = "\u274C <span style='color:#c62828;'>Clinical Error</span>";
             const conditionReason = isConditionCorrect
                 ? 'Condition matched, but this drug is contraindicated for this patient. Choose a safer valid option.'
                 : 'Selected medicine does not match this condition.';
