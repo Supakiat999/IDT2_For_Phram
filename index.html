@@ -66,6 +66,7 @@
     (function(c,l,a,r,i,t,y){
         c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
         t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        t.onerror=function(){ console.warn("Microsoft Clarity failed to load."); };
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
     })(window, document, "clarity", "script", "whpxskpz47");
 </script>
@@ -296,6 +297,16 @@
     };
 
     function normalize(t){ return (t || '').toLowerCase().replace(/\s+/g,' ').trim(); }
+
+    function actionMatchesTag(actionText, tagText) {
+        const action = normalize(actionText);
+        const tag = normalize(tagText);
+        if (!tag) return true;
+        const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const hasPositiveTag = new RegExp(`\\b${escaped}\\b`).test(action);
+        const hasNegatedTag = new RegExp(`\\bnon[-\\s]+${escaped}\\b`).test(action);
+        return hasPositiveTag && !hasNegatedTag;
+    }
     function formatDrugLabel(d){ return d.trade && d.trade !== 'None' && d.trade !== '/' ? `${d.generic} (${d.trade})` : d.generic; }
     function sameCondition(a,b){ return normalize(a) === normalize(b); }
     function shuffle(arr){ const c=[...arr]; for(let i=c.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [c[i],c[j]]=[c[j],c[i]];} return c; }
@@ -803,7 +814,7 @@
 
         contraindicationRules.forEach(rule => {
             const historyHit = !rule.historyAny || rule.historyAny.some(k => history.includes(k));
-            const actionHit = !rule.actionAny || rule.actionAny.some(k => action.includes(k));
+            const actionHit = !rule.actionAny || rule.actionAny.some(k => actionMatchesTag(drug.action, k));
             const genericHit = !rule.genericAny || rule.genericAny.some(k => generic.includes(k));
             if (historyHit && actionHit && genericHit) {
                 reasons.push(`Safety flag: ${rule.label}`);
@@ -917,14 +928,8 @@
         if (isCorrect) {
             box.classList.add('success-box');
             totalCorrect += 1;
-            if (safetyFlagged) {
-                streak = 0;
-                earned = 0;
-            } else {
-                streak += 1;
-                earned = isBestChoice ? 2 : 1;
-                if (streak % 5 === 0) earned += 1;
-            }
+            streak += 1;
+            earned = 1;
             score += earned;
             bestChoiceStreak = isBestChoice ? bestChoiceStreak + 1 : 0;
             if (bestChoiceStreak > maxBestChoiceStreak) maxBestChoiceStreak = bestChoiceStreak;
@@ -939,7 +944,7 @@
                 <div class='drug-list'>${validNames}</div><br>
                 <strong>Mechanism of selected drug:</strong> ${submittedDrug.action}<br><br>
                 <strong>Cautions of selected drug:</strong> ${submittedDrug.cautions}
-                ${safetyFlagged ? `<br><br><strong>Safety warning:</strong> Your drug is valid for this condition, but has caution flags in this patient context. No points were added.` : ''}
+                ${safetyFlagged ? `<br><br><strong>Safety warning:</strong> Your drug is valid for this condition, but has caution flags in this patient context.` : ''}
                 ${unavoidableSafety ? `<br><br><strong>Safety note:</strong> This case has unavoidable safety flags for all valid options, so it was accepted as a necessary choice.` : ''}
             `;
         } else {
@@ -1073,7 +1078,12 @@
             : '<small>No matches found.</small>';
     }
 
-    document.getElementById('ref-search').addEventListener('input', (e) => searchReference(e.target.value));
+    const refSearchInput = document.getElementById('ref-search');
+    if (refSearchInput) {
+        refSearchInput.addEventListener('input', (e) => searchReference(e.target.value));
+    } else {
+        console.warn('Quick Drug Reference search input (#ref-search) was not found.');
+    }
     document.addEventListener('keydown', (e) => {
         if (!selectedPatientId) return;
         if (!document.getElementById('solution-modal').classList.contains('hidden')) return;
