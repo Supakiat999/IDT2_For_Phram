@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -62,11 +62,18 @@
             .action-btn { min-height: 44px; }
         }
     </style>
+<script type="text/javascript">
+    (function(c,l,a,r,i,t,y){
+        c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+        t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+        y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+    })(window, document, "clarity", "script", "whpxskpz47");
+</script>
 </head>
 <body>
 <div id="game-container">
     <div id="start-screen" class="overlay">
-        <h1>💊 Pharmacy Rush</h1>
+        <h1>๐’ Pharmacy Rush</h1>
         <p>Review the patient's condition, history, and <strong>allergies</strong>. Choose the best medication from the buttons. This version also checks safety and gives short learning feedback.</p>
         <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Shift Difficulty:</div>
         <div class="diff-controls">
@@ -82,9 +89,9 @@
         <div class="ctrl-row">
             <label>Mini quiz type:
                 <select id="quiztype-select">
-                    <option value="trade">Drug name → Trade name</option>
-                    <option value="usage">Drug name → How to use</option>
-                    <option value="mechanism">Drug name → Mechanism</option>
+                    <option value="trade">Drug name โ’ Trade name</option>
+                    <option value="usage">Drug name โ’ How to use</option>
+                    <option value="mechanism">Drug name โ’ Mechanism</option>
                     <option value="mixed">Mixed quiz</option>
                 </select>
             </label>
@@ -133,7 +140,7 @@
     </div>
 
     <div id="header">
-        <div>🏥 City Pharmacy</div>
+        <div>๐ฅ City Pharmacy</div>
         <div class="stats">
             <span>Score: <span id="score-display">0</span></span>
             <span>Streak: <span id="streak-display">0</span></span>
@@ -334,7 +341,7 @@
             console.warn('Data check issues:', issues);
             if (badge) badge.innerText = `Data check: ${issues.length} issue(s) found`;
         } else if (badge) {
-            badge.innerText = 'Data check: Passed ✓';
+            badge.innerText = 'Data check: Passed โ“';
         }
     }
 
@@ -358,7 +365,7 @@
             const text = latest.length
                 ? latest.map(s => `${s.date} | ${s.mode} | ${s.accuracy}% (${s.correct}/${s.attempts})`).join(' || ')
                 : 'none yet.';
-            document.getElementById('session-history').innerText = `Session history: ${text}\nTip: Use “Review Past Answers” below to open full local question history.`;
+            document.getElementById('session-history').innerText = `Session history: ${text}\nTip: Use โ€Review Past Answersโ€ below to open full local question history.`;
         } catch (_) {
             document.getElementById('session-history').innerText = 'Session history: unavailable.';
         }
@@ -399,7 +406,7 @@
             } else {
                 const rows = data.slice().reverse().map((q, idx) => `
                     <div style="padding:8px; border-bottom:1px solid #ddd;">
-                        <strong>#${idx + 1}</strong> [${q.at}] [${q.mode}] ${q.isCorrect ? '✅' : '❌'}<br>
+                        <strong>#${idx + 1}</strong> [${q.at}] [${q.mode}] ${q.isCorrect ? 'โ…' : 'โ'}<br>
                         <strong>Question:</strong> ${q.question}<br>
                         <strong>Your answer:</strong> ${q.selected}<br>
                         <strong>Correct answer:</strong> ${q.correct}
@@ -692,7 +699,7 @@
         const box = modal.querySelector('.solution-box');
         box.classList.remove('success-box');
         box.classList.add('error-box');
-        document.getElementById('sol-title').innerHTML = "⏱️ <span style='color:#e65100;'>Time Out</span>";
+        document.getElementById('sol-title').innerHTML = "โฑ๏ธ <span style='color:#e65100;'>Time Out</span>";
         document.getElementById('sol-content').innerHTML = `<p>You ran out of time for this patient. 1 strike added.</p><p><strong>Tip:</strong> Match the condition first, then check history and allergy.</p>`;
         modal.classList.remove('hidden');
     }
@@ -856,13 +863,13 @@
                 score += 1;
                 streak += 1;
                 queue = queue.filter(p => p.id !== selectedPatientId);
-                title.innerHTML = "✅ <span style='color:#2e7d32;'>Correct Quiz Answer</span>";
+                title.innerHTML = "โ… <span style='color:#2e7d32;'>Correct Quiz Answer</span>";
                 content.innerHTML = `<strong>Drug:</strong> ${patient.quizAnswerGeneric}<br><strong>Correct ${label}:</strong> ${correctValue}<br><strong>Your answer:</strong> ${submittedDrug.quizValue}`;
             } else {
                 box.classList.add('error-box');
                 strikes += 1;
                 streak = 0;
-                title.innerHTML = "❌ <span style='color:#c62828;'>Incorrect Quiz Answer</span>";
+                title.innerHTML = "โ <span style='color:#c62828;'>Incorrect Quiz Answer</span>";
                 content.innerHTML = `<strong>Drug:</strong> ${patient.quizAnswerGeneric}<br><strong>Correct ${label}:</strong> ${correctValue}<br><strong>Your answer:</strong> ${submittedDrug.quizValue}`;
             }
             updateProgress(patient.category || 'quiz', isCorrectQuiz);
@@ -923,7 +930,7 @@
             if (bestChoiceStreak > maxBestChoiceStreak) maxBestChoiceStreak = bestChoiceStreak;
             adaptiveDifficultyOffset = Math.min(3, adaptiveDifficultyOffset + (safetyFlagged ? 0 : (isBestChoice ? 1 : 0)));
             queue = queue.filter(p => p.id !== selectedPatientId);
-            title.innerHTML = "✅ <span style='color:#2e7d32;'>Correct Dispensation</span>";
+            title.innerHTML = "โ… <span style='color:#2e7d32;'>Correct Dispensation</span>";
             content.innerHTML = `
                 <strong>Selected:</strong> ${formatDrugLabel(submittedDrug)}<br>
                 <strong>Choice quality:</strong> ${isBestChoice ? 'Best choice' : 'Acceptable choice'}<br>
@@ -942,7 +949,7 @@
             streak = 0;
             bestChoiceStreak = 0;
             adaptiveDifficultyOffset = Math.max(-3, adaptiveDifficultyOffset - 1);
-            title.innerHTML = "❌ <span style='color:#c62828;'>Clinical Error</span>";
+            title.innerHTML = "โ <span style='color:#c62828;'>Clinical Error</span>";
             const conditionReason = isConditionCorrect
                 ? 'Condition matched, but this drug is contraindicated for this patient. Choose a safer valid option.'
                 : 'Selected medicine does not match this condition.';
@@ -1080,3 +1087,4 @@
 </script>
 </body>
 </html>
+
