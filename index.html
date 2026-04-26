@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -117,7 +117,10 @@
             <label><input type="checkbox" id="drill-toggle"> Drill weakest category</label>
             <label><input type="checkbox" id="suddendeath-toggle"> Sudden death</label>
         </div>
-        <button class="start-btn" onclick="startGame()">Start Shift</button>
+        <div class="history-actions">
+            <button class="start-btn" id="start-shift-btn" onclick="startGame()">Start New Shift</button>
+            <button class="start-btn hidden" id="resume-shift-btn" onclick="resumeShift()" style="background:#00897b;">Resume Shift</button>
+        </div>
         <div id="session-history" class="mini-panel" style="max-width:700px; text-align:left; margin-top:12px;">Session history: none yet.</div>
         <div class="history-actions">
             <button class="action-btn" onclick="openHistory()">Review Past Answers</button>
@@ -164,6 +167,7 @@
             <span>Case timer: <span id="case-timer">--</span></span>
             <span>Accuracy: <span id="accuracy-display">0%</span></span>
             <span>Mode: <span id="mode-display">Rush</span></span>
+            <button class="action-btn" onclick="returnToHome()">To Home</button>
             <button class="action-btn" onclick="openHistory()">Review History</button>
             <button class="action-btn" onclick="exportSessionReport()">Export Report</button>
         </div>
@@ -293,6 +297,7 @@
     ];
 
     let queue = [], score = 0, strikes = 0, streak = 0, selectedPatientId = null, patientCounter = 0, spawnTimer, gameActive = false;
+    let isShiftPaused = false;
     let maxQueue = 10, currentDifficulty = 'med', caseTimer = null, caseTimeLeft = 0;
     let strictSafety = true, tutorMode = true, noTimerMode = false, drillWeakestMode = false, suddenDeathMode = false;
     let adaptiveDifficultyOffset = 0, bestChoiceStreak = 0, maxBestChoiceStreak = 0;
@@ -535,6 +540,13 @@
         quizType = document.getElementById('quiztype-select').value || 'trade';
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
+        if (isShiftPaused && totalAttempts > 0) {
+            saveSessionHistory();
+            loadSessionHistory();
+        }
+        isShiftPaused = false;
+        document.getElementById('resume-shift-btn').classList.add('hidden');
+        document.getElementById('start-shift-btn').innerText = 'Start New Shift';
         gameActive = true; score = 0; strikes = 0; streak = 0; queue = []; selectedPatientId = null; patientCounter = 0;
         totalAttempts = 0;
         totalCorrect = 0;
@@ -550,10 +562,43 @@
         startSpawner();
     }
 
+    function resumeShift() {
+        if (!isShiftPaused) return;
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+        gameActive = true;
+        isShiftPaused = false;
+        document.getElementById('resume-shift-btn').classList.add('hidden');
+        document.getElementById('start-shift-btn').innerText = 'Start New Shift';
+        updateStats();
+        renderQueue();
+        if (selectedPatientId && queue.some(p => p.id === selectedPatientId)) {
+            displayPatient(queue.find(p => p.id === selectedPatientId));
+        }
+        startSpawner();
+    }
+
     function resetGame() {
+        gameActive = false;
+        isShiftPaused = false;
         clearInterval(spawnTimer);
         stopCaseTimer();
         clearExamPanel();
+        document.getElementById('resume-shift-btn').classList.add('hidden');
+        document.getElementById('start-shift-btn').innerText = 'Start New Shift';
+        document.getElementById('start-screen').classList.remove('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+    }
+
+    function returnToHome() {
+        gameActive = false;
+        isShiftPaused = true;
+        clearInterval(spawnTimer);
+        stopCaseTimer();
+        document.getElementById('solution-modal').classList.add('hidden');
+        document.getElementById('history-modal').classList.add('hidden');
+        document.getElementById('resume-shift-btn').classList.remove('hidden');
+        document.getElementById('start-shift-btn').innerText = 'Start New Shift';
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
     }
