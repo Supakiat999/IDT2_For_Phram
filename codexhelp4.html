@@ -118,7 +118,7 @@
             <label><input type="checkbox" id="suddendeath-toggle"> Sudden death</label>
         </div>
         <div class="history-actions">
-            <button class="start-btn" id="start-shift-btn" onclick="startGame()">Start from 0</button>
+            <button class="start-btn" id="start-shift-btn" onclick="startGame()">Start New Shift</button>
             <button class="start-btn hidden" id="resume-shift-btn" onclick="resumeShift()" style="background:#00897b;">Resume Shift</button>
         </div>
         <div id="session-history" class="mini-panel" style="max-width:700px; text-align:left; margin-top:12px;">Session history: none yet.</div>
@@ -546,7 +546,7 @@
         }
         isShiftPaused = false;
         document.getElementById('resume-shift-btn').classList.add('hidden');
-        document.getElementById('start-shift-btn').innerText = 'Start from 0';
+        document.getElementById('start-shift-btn').innerText = 'Start New Shift';
         gameActive = true; score = 0; strikes = 0; streak = 0; queue = []; selectedPatientId = null; patientCounter = 0;
         totalAttempts = 0;
         totalCorrect = 0;
@@ -569,7 +569,7 @@
         gameActive = true;
         isShiftPaused = false;
         document.getElementById('resume-shift-btn').classList.add('hidden');
-        document.getElementById('start-shift-btn').innerText = 'Start from 0';
+        document.getElementById('start-shift-btn').innerText = 'Start New Shift';
         updateStats();
         renderQueue();
         if (selectedPatientId && queue.some(p => p.id === selectedPatientId)) {
@@ -585,7 +585,7 @@
         stopCaseTimer();
         clearExamPanel();
         document.getElementById('resume-shift-btn').classList.add('hidden');
-        document.getElementById('start-shift-btn').innerText = 'Start from 0';
+        document.getElementById('start-shift-btn').innerText = 'Start New Shift';
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
     }
@@ -598,7 +598,7 @@
         document.getElementById('solution-modal').classList.add('hidden');
         document.getElementById('history-modal').classList.add('hidden');
         document.getElementById('resume-shift-btn').classList.remove('hidden');
-        document.getElementById('start-shift-btn').innerText = 'Start from 0';
+        document.getElementById('start-shift-btn').innerText = 'Start New Shift';
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
     }
