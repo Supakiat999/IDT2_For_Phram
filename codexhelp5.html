@@ -228,12 +228,6 @@
     </div>
 </div>
 
-<button id="analytics-debug-toggle" class="action-btn" style="position:fixed;right:12px;bottom:12px;z-index:40;background:#455a64;">Analytics Debug</button>
-<div id="analytics-debug-panel" class="solution-box hidden" style="position:fixed;right:12px;bottom:64px;z-index:45;max-width:380px;">
-    <h3 style="margin-top:0;">Analytics Status</h3>
-    <div id="analytics-debug-content" style="font-size:0.9rem;line-height:1.4;"></div>
-</div>
-
 <script>
     const names = ["Aj.BD", "AJ.VT", "Aj.PC","Spy", "Pingpong", "Aim", "Jiw", "Cheer", "Film", "Bam", "Kan", "Tungngern", "Pluem", "Ing", "Noey", "Saiya", "Fook", "Boat", "Nurse", "Tata", "Prem", "Grace", "Pimpim", "Mink", "Amy", "Nam", "Jern", "Pun", "Nine", "Nicha", "Nan", "Nich", "Grace", "Nun", "Praewa", "Yok", "Ben", "Pan", "In", "Ada", "Porjai", "Bass", "Saifah", "Prae", "Rita", "Tent", "Pat", "Punch", "King", "Khaohom", "Pin", "Baibua", "Looktan", "Janjao", "Mintmind", "Wim", "Focus", "Gaga", "March", "Ton", "Haru", "Elle", "Creamy", "Tae", "Peak", "Real", "Poom", "Torboon", "Sian", "Film", "AJ (Uji)", "Palm", "Fresh", "Chino", "Ohm", "Mind", "Tonkhao", "Patty", "Mai", "Mew", "August", "Matoom", "Putter", "Earth", "Peaker", "Jai", "Aomsin", "Poom", "Oboon", "Mo", "Pretty", "Guitar", "Tin-Tin", "Pian", "Pat", "Mobile", "Muilin", "Khaimook", "Pangpond", "Tonnam", "Fight", "Pond", "First", "Fasai", "Foofoo", "Porfai", "C", "Nonny", "Kin", "Match", "Aom", "Ning", "Jolie", "Tangkwa", "Mook", "Preemmy", "Nun", "Baifern", "Bronze", "Jenny", "Palm", "Siwki", "Prae", "Ivy", "Pim", "Eclair", "Pond", "Emmy", "Kitty", "Film", "Ing", "Match", "Bo", "Boom", "Prom", "Game", "Pluem", "August", "Pangpond", "Baifern", "Panwad", "Baifern", "Tientien", "Nook", "Shogun", "Diamond", "Thach", "Nan", "Phu", "Han", "Few", "Sky", "Praewa", "Praewa", "Mobile"];
 
@@ -413,6 +407,9 @@
         if (window.__clarityLoaded && typeof window.clarity === 'function') {
             window.clarity('event', eventName);
         }
+        if (typeof window.gtag === 'function') {
+            window.gtag('event', eventName, payload);
+        }
         flushAnalyticsQueue();
     }
 
@@ -449,9 +446,6 @@
         analyticsConsent = true;
         localStorage.setItem(ANALYTICS_CONSENT_KEY, 'yes');
         document.getElementById('consent-banner').classList.add('hidden');
-        const dbgBtn = document.getElementById('analytics-debug-toggle');
-        const dbgPanel = document.getElementById('analytics-debug-panel');
-        dbgBtn.addEventListener('click', () => dbgPanel.classList.toggle('hidden'));
         renderAnalyticsDebugPanel();
     }
 
