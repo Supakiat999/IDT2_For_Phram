@@ -70,14 +70,14 @@
         t.onload=function(){ c.__clarityLoaded = true; };
         t.onerror=function(){
             if (retried) {
-                console.warn("Microsoft Clarity failed to load after retry. Check ad-blockers, HTTPS, and project/domain settings.");
+                console.debug("Microsoft Clarity failed to load after retry.");
                 return;
             }
             const retryScript = l.createElement(r);
             retryScript.async = 1;
             retryScript.src = "https://www.clarity.ms/tag/" + i + "?retry=1&ts=" + Date.now();
             retryScript.onload = function(){ c.__clarityLoaded = true; };
-            retryScript.onerror = function(){ console.warn("Microsoft Clarity retry failed."); };
+            retryScript.onerror = function(){ console.debug("Microsoft Clarity retry failed."); };
             y.parentNode.insertBefore(retryScript, y);
         };
         y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
@@ -382,14 +382,14 @@
         ];
         const failed = checks.filter(c => !c.pass);
         if (failed.length) {
-            console.warn('Logic smoke checks failed:', failed.map(f => f.name).join(' | '));
+            console.debug('Logic smoke checks failed:', failed.map(f => f.name).join(' | '));
         }
     }
 
     function checkClarityStatus() {
         setTimeout(() => {
             if (!window.__clarityLoaded) {
-                console.warn('Clarity is not loaded. Data may not appear in the dashboard for this device/session.');
+                console.debug('Clarity is not loaded for this session.');
             }
         }, 8000);
     }
@@ -407,7 +407,7 @@
                 return;
             }
             if (attempts >= maxAttempts) {
-                console.warn('Clarity telemetry init skipped: script did not become ready in time.');
+                console.debug('Clarity telemetry init skipped: script not ready in time.');
                 clearInterval(tick);
             }
         }, 500);
