@@ -102,8 +102,9 @@
         <div class="ctrl-row" style="margin-top:0;">
             <label for="exam-select">Exam:</label>
             <select id="exam-select" onchange="onExamSelectionChange()">
-                <option value="exam_2026_04_27">Exam on 27 April 2026 (current)</option>
-                <option value="exam_next_placeholder">Next exam (coming soon)</option>
+                <option value="exam_2026_05_07">Exam on 7 May 2026 (current)</option>
+                <option value="exam_2026_04_27">Exam on 27 April 2026 (previous)</option>
+                <option value="exam_next_placeholder">Future exam (coming soon)</option>
             </select>
         </div>
         <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Shift Difficulty:</div>
@@ -146,8 +147,7 @@
         </div>
         <div class="creator-credit">
             Made by Supakiat - Konkruad (ICE 19)<br>
-            Instagram : @_supakiatm_<br>
-            Build: 2026-04-27-r3
+            Instagram : @_supakiatm_<br>'
         </div>
     </div>
 
@@ -309,14 +309,88 @@
         { generic: "Cytisine", trade: "Cytisine GPO", condition: "Smoking cessation", history: "Smoker (10 years)", allergies: "None", cautions: "N/V, insomnia, abnormal dreams, headache", action: "Partial agonist of alpha4beta2 nicotinic receptor", dosage: "1.5 mg tablets in tapering schedule over ~25 days", category: "smoking" }
     ];
 
+    const examDatabase_2026_05_07 = [
+        { generic: "Paracetamol", trade: "Tylenol", condition: "Mild–moderate pain, fever", history: "None", allergies: "None", cautions: "Hepatotoxicity in overdose or chronic use", action: "Central analgesic / antipyretic (minimal anti-inflammatory effect)", dosage: "325–1000 mg q4–6h PRN (max 4 g/day; 5 days/course)", category: "pain" },
+        { generic: "Ibuprofen", trade: "None", condition: "Mild-moderate pain, inflammation, fever", history: "None", allergies: "None", cautions: "Dyspepsia, GI bleed, fluid retention, renal injury, increased CV risk, bronchospasm", action: "Traditional NSAID", dosage: "200–800 mg q6–8h (max 3,200 mg/day)", category: "pain" },
+        { generic: "Diclofenac", trade: "Voltaren, Cataflam, Volfast", condition: "Mild-moderate pain, inflammation", history: "None", allergies: "None", cautions: "Dyspepsia, GI bleed, fluid retention, renal injury, increased CV risk, bronchospasm", action: "Traditional NSAID", dosage: "25–50 mg BID–TID (max 150 mg/day)", category: "pain" },
+        { generic: "Naproxen", trade: "Synflex, Naprosyn LE", condition: "Mild-moderate pain, inflammation", history: "None", allergies: "None", cautions: "Dyspepsia, GI bleed, fluid retention, renal injury, increased CV risk, bronchospasm", action: "Traditional NSAID", dosage: "250–500 mg BID (max 1,500 mg/day)", category: "pain" },
+        { generic: "Indomethacin", trade: "None", condition: "Mild-moderate pain, inflammation", history: "None", allergies: "None", cautions: "Dyspepsia, GI bleed, fluid retention, renal injury, increased CV risk, bronchospasm", action: "Traditional NSAID", dosage: "25–50 mg BID–TID (max 200 mg/day)", category: "pain" },
+        { generic: "Mefenamic acid", trade: "Ponstan", condition: "Mild-moderate pain, inflammation", history: "None", allergies: "None", cautions: "Dyspepsia, GI bleed, fluid retention, renal injury, increased CV risk, bronchospasm", action: "Traditional NSAID", dosage: "500 mg then 250 mg q6h (max 1,500 mg/day)", category: "pain" },
+        { generic: "Meloxicam", trade: "Mobic", condition: "Mild-moderate pain, inflammation", history: "None", allergies: "None", cautions: "Dyspepsia, GI bleed, fluid retention, renal injury, increased CV risk, bronchospasm", action: "Traditional NSAID", dosage: "7.5–15 mg OD (max 15 mg/day)", category: "pain" },
+        { generic: "Celecoxib", trade: "Celebrex", condition: "Mild-moderate pain, inflammation", history: "None", allergies: "None", cautions: "Dyspepsia, GI bleed, fluid retention, renal injury, increased CV risk", action: "COX-2 specific NSAID", dosage: "200 mg OD–BID (max 400 mg/day)", category: "pain" },
+        { generic: "Etoricoxib", trade: "Arcoxia", condition: "Mild-moderate pain, inflammation", history: "None", allergies: "None", cautions: "Dyspepsia, GI bleed, fluid retention, renal injury, increased CV risk", action: "COX-2 specific NSAID", dosage: "60–120 mg OD (max 120 mg/day)", category: "pain" },
+        { generic: "Baclofen", trade: "Lioresal", condition: "Spasticity", history: "None", allergies: "None", cautions: "Sedation, weakness, dizziness", action: "GABA-B agonist", dosage: "5–10 mg TID (max 80 mg/day)", category: "muscle" },
+        { generic: "Tizanidine", trade: "Sirdalud", condition: "Spasticity", history: "None", allergies: "None", cautions: "Sedation, hypotension, dry mouth, liver injury", action: "Central alpha2-agonist", dosage: "2–4 mg TID (max 36 mg/day)", category: "muscle" },
+        { generic: "Orphenadrine/paracetamol", trade: "Norgesic", condition: "Muscle spasm with pain", history: "None", allergies: "None", cautions: "Sedation, anticholinergic effects", action: "Anticholinergic & NMDA antagonist + analgesic", dosage: "1–2 tablets 2–3×/day (max 6 tabs/day)", category: "muscle" },
+        { generic: "Eperisone", trade: "Myonal", condition: "Muscle spasm", history: "None", allergies: "None", cautions: "Sedation, dizziness, weakness, GI upset", action: "Voltage-gate sodium & calcium channel blocker", dosage: "50 mg 1–3×/day (max 150 mg/day)", category: "muscle" },
+        { generic: "Tolperisone", trade: "Mydocalm", condition: "Muscle spasm", history: "None", allergies: "None", cautions: "Sedation, dizziness, weakness, GI upset", action: "Voltage-gate sodium & calcium channel blocker", dosage: "150 mg 1–3×/day (max 450 mg/day)", category: "muscle" },
+        { generic: "Colchicine", trade: "None", condition: "Acute gout flare; gout flare prophylaxis", history: "None", allergies: "None", cautions: "Diarrhea, nausea, myopathy, bone marrow suppression", action: "Inhibits microtubules and neutrophil-mediated inflammation", dosage: "Flare: 1.2 mg then 0.6 mg 1 h later; prophylaxis 0.6 mg OD–BID", category: "gout" },
+        { generic: "Allopurinol", trade: "Zyloric", condition: "Chronic gout / urate-lowering therapy", history: "None", allergies: "None", cautions: "Rash, GI upset, SCARs", action: "Xanthine oxidase inhibitor", dosage: "50–800 mg OD", category: "gout" },
+        { generic: "Febuxostat", trade: "Feburic", condition: "Chronic gout / urate-lowering therapy", history: "None", allergies: "None", cautions: "LFT elevation, rash; increased CV risk", action: "Xanthine oxidase inhibitor", dosage: "40–80 mg OD", category: "gout" },
+        { generic: "Prednisolone", trade: "None", condition: "Acute inflammatory/allergic disorders", history: "None", allergies: "None", cautions: "Hyperglycemia, mood change, infection risk, dyspepsia", action: "Systemic corticosteroid", dosage: "Short course 5–60 mg/day; ~3–7 days", category: "anti-inflammatory" },
+        { generic: "Glucosamine", trade: "Viatril-S", condition: "Osteoarthritis", history: "None", allergies: "None", cautions: "GI upset, headache", action: "Cartilage matrix precursor", dosage: "1500 mg/day", category: "osteoarthritis" },
+        { generic: "Diacerein", trade: "Artrodar", condition: "Osteoarthritis", history: "None", allergies: "None", cautions: "Diarrhea, urine discoloration, hepatotoxicity", action: "IL-1 modulator", dosage: "50 mg OD–BID", category: "osteoarthritis" },
+        { generic: "Omeprazole", trade: "None", condition: "GERD, peptic ulcer disease, NSAID ulcer prophylaxis", history: "None", allergies: "None", cautions: "Headache, diarrhea; low Mg/B12, fractures, C. difficile", action: "Proton pump inhibitor", dosage: "20–40 mg OD", category: "gastrointestinal" },
+        { generic: "Esomeprazole", trade: "Nexium", condition: "GERD, peptic ulcer disease, NSAID ulcer prophylaxis", history: "None", allergies: "None", cautions: "Headache, diarrhea; low Mg/B12, fractures, C. difficile", action: "Proton pump inhibitor", dosage: "20–40 mg OD", category: "gastrointestinal" },
+        { generic: "Rabeprozole", trade: "Pariet", condition: "GERD, peptic ulcer disease, NSAID ulcer prophylaxis", history: "None", allergies: "None", cautions: "Headache, diarrhea; low Mg/B12, fractures, C. difficile", action: "Proton pump inhibitor", dosage: "20 mg OD", category: "gastrointestinal" },
+        { generic: "Lansoprazole", trade: "Prevacid", condition: "GERD, peptic ulcer disease, NSAID ulcer prophylaxis", history: "None", allergies: "None", cautions: "Headache, diarrhea; low Mg/B12, fractures, C. difficile", action: "Proton pump inhibitor", dosage: "15–30 mg OD", category: "gastrointestinal" },
+        { generic: "Famotidine", trade: "Pepfamin", condition: "GERD, peptic ulcer disease, NSAID ulcer prophylaxis", history: "None", allergies: "None", cautions: "Headache, dizziness; confusion in frail/renal impairment", action: "H2-receptor antagonist", dosage: "20 mg BID or 40 mg hs", category: "gastrointestinal" },
+        { generic: "Cimetidine", trade: "Siamdine", condition: "GERD, peptic ulcer disease, NSAID ulcer prophylaxis", history: "None", allergies: "None", cautions: "Gynecomastia, confusion, drug interactions", action: "H2-receptor antagonist", dosage: "400 mg BID or 800 mg hs", category: "gastrointestinal" },
+        { generic: "Vonoprazan", trade: "Vocinti", condition: "GERD, peptic ulcer disease, NSAID ulcer prophylaxis", history: "None", allergies: "None", cautions: "Diarrhea, constipation", action: "Potassium-competitive acid blocker", dosage: "20 mg OD", category: "gastrointestinal" },
+        { generic: "Sodium bicarbonate", trade: "Sodamint", condition: "Short-term relief of heartburn / dyspepsia", history: "None", allergies: "None", cautions: "Belching, bloating, hypernatremia, metabolic alkalosis", action: "Neutralizes gastric acid", dosage: "325–2000 mg after meals/hs PRN", category: "gastrointestinal" },
+        { generic: "Aluminum hydroxide", trade: "Alum-milk", condition: "Short-term relief of heartburn / dyspepsia", history: "None", allergies: "None", cautions: "Constipation, hypophosphatemia", action: "Neutralizes gastric acid", dosage: "500–1500 mg after meals and at bedtime PRN", category: "gastrointestinal" },
+        { generic: "Magnesium hydroxide", trade: "Milk of magnesia", condition: "Short-term relief of heartburn / dyspepsia; constipation at higher doses", history: "None", allergies: "None", cautions: "Diarrhea, hypermagnesemia in renal impairment", action: "Neutralizes gastric acid / osmotic laxative", dosage: "Antacid: 400–1200 mg q6 hr PRN; Laxative: 2.4–4.8 g OD hs", category: "gastrointestinal" },
+        { generic: "Alginate/Sodium bicarbonate/Calcium carbonate", trade: "Gaviscon", condition: "GERD", history: "None", allergies: "None", cautions: "Bloating, nausea; hypernatremia", action: "Alginate raft barrier + antacids", dosage: "10–20 mL or 1–2 tablets QID", category: "gastrointestinal" },
+        { generic: "Sucralfate", trade: "Ulsanic", condition: "Peptic ulcer disease; gastritis", history: "None", allergies: "None", cautions: "Constipation, aluminum accumulation in renal failure", action: "Protective barrier", dosage: "1 g QID", category: "gastrointestinal" },
+        { generic: "Metoclopramide", trade: "Plasil", condition: "Antiemetic, prokinetic", history: "None", allergies: "None", cautions: "Drowsiness, diarrhea, extrapyramidal symptoms, hyperprolactinemia", action: "D2 antagonist", dosage: "10 mg TID–QID", category: "gastrointestinal" },
+        { generic: "Domperidone", trade: "Motilium-M", condition: "Antiemetic, prokinetic", history: "None", allergies: "None", cautions: "QT prolongation, arrhythmia, dry mouth", action: "D2 antagonist", dosage: "10 mg TID", category: "gastrointestinal" },
+        { generic: "Itopride", trade: "Ganaton", condition: "Functional dyspepsia / IBS", history: "None", allergies: "None", cautions: "Diarrhea, abdominal pain, hyperprolactinemia", action: "D2 antagonist + acetylcholinesterase inhibitor", dosage: "50 mg TID", category: "gastrointestinal" },
+        { generic: "Simethicone", trade: "Air-X", condition: "Bloating / gas discomfort", history: "None", allergies: "None", cautions: "Belching", action: "Antiflatulent", dosage: "80–160 mg 1–4×/day PRN", category: "gastrointestinal" },
+        { generic: "Dicyclomine/Simethicone", trade: "Berclomin", condition: "Abdominal cramp / IBS", history: "None", allergies: "None", cautions: "Dry mouth, blurred vision, constipation, dizziness", action: "Antimuscarinic antispasmodic + antiflatulent", dosage: "1–2 tablet 3–4×/day PRN", category: "gastrointestinal" },
+        { generic: "Hyoscine butyl bromide", trade: "Buscopan", condition: "Abdominal cramp / IBS", history: "None", allergies: "None", cautions: "Dry mouth, blurred vision, tachycardia, constipation", action: "Antimuscarinic antispasmodic", dosage: "10–20 mg 3–4×/day PRN", category: "gastrointestinal" },
+        { generic: "Mebeverine", trade: "Colofac", condition: "Abdominal cramp / IBS", history: "None", allergies: "None", cautions: "Dizziness", action: "Musculotropic antispasmodic", dosage: "135 mg TID or MR 200 mg BID", category: "gastrointestinal" },
+        { generic: "Ondansetron", trade: "Onsia", condition: "Nausea and vomiting", history: "None", allergies: "None", cautions: "Constipation, headache, QT prolongation", action: "5-HT3 antagonist antiemetic", dosage: "4–8 mg 2–3×/day PRN", category: "gastrointestinal" },
+        { generic: "Lactulose", trade: "Duphalac", condition: "Constipation; hepatic encephalopathy (HE)", history: "None", allergies: "None", cautions: "Bloating, flatulence, diarrhea", action: "Osmotic laxative", dosage: "Constipation: 15–30 mL OD; HE: 15–45 mL 2–3×/day", category: "laxative" },
+        { generic: "Polyethylene glycol 4000/macrogol 4000", trade: "Forlax", condition: "Constipation; bowel prep at higher doses", history: "None", allergies: "None", cautions: "Bloating, nausea, diarrhea", action: "Osmotic laxative", dosage: "10–20 g in water OD", category: "laxative" },
+        { generic: "Bisacodyl", trade: "Dulcolax", condition: "Constipation; bowel prep", history: "None", allergies: "None", cautions: "Cramp, diarrhea, hypokalemia if overused", action: "Stimulant laxative", dosage: "5–10 mg OD hs PRN", category: "laxative" },
+        { generic: "Senna", trade: "Senokot", condition: "Constipation", history: "None", allergies: "None", cautions: "Cramp, diarrhea; melanosis coli with chronic use", action: "Stimulant laxative", dosage: "7.5–15 mg OD hs PRN", category: "laxative" },
+        { generic: "Ispaghula husk", trade: "Fybogel, Mucilin", condition: "Constipation; stool normalization in IBS", history: "None", allergies: "None", cautions: "Bloating, obstruction if taken without enough water", action: "Bulk-forming fiber laxative", dosage: "1–2 sachets or 2–4 tsp in water 1–3×/day", category: "laxative" },
+        { generic: "Loperamide", trade: "Imodium", condition: "Diarrhea, IBS-D", history: "None", allergies: "None", cautions: "Constipation, abdominal pain; serious arrhythmia in overdose", action: "Peripheral mu-opioid agonist", dosage: "4 mg initially, then 2 mg after each loose stool (max 16 mg/day)", category: "antidiarrheal" },
+        { generic: "Hydrocortisone cream", trade: "None", condition: "Steroid-responsive skin inflammation", history: "None", allergies: "None", cautions: "Skin atrophy, striae, acneiform eruption, telangiectasia, HPA suppression if extensive", action: "Low-potency topical corticosteroid", dosage: "Apply thinly 1–2×/day", category: "dermatology" },
+        { generic: "Triamcinolone acetonide cream", trade: "Aristocort, Aristocort-A", condition: "Steroid-responsive skin inflammation", history: "None", allergies: "None", cautions: "Skin atrophy, striae, acneiform eruption, telangiectasia, HPA suppression if extensive", action: "Moderate-potency topical corticosteroid", dosage: "Apply thinly 1–2×/day", category: "dermatology" },
+        { generic: "Mometasone cream", trade: "Elomet", condition: "Steroid-responsive skin inflammation", history: "None", allergies: "None", cautions: "Skin atrophy, striae, acneiform eruption, telangiectasia, HPA suppression if extensive", action: "Moderate-potency topical corticosteroid", dosage: "Apply thinly once daily", category: "dermatology" },
+        { generic: "Betamethasone valerate cream", trade: "Betnovate", condition: "Steroid-responsive skin inflammation", history: "None", allergies: "None", cautions: "Skin atrophy, striae, acneiform eruption, telangiectasia, HPA suppression if extensive", action: "Moderate-potency topical corticosteroid", dosage: "Apply thinly 1–2×/day", category: "dermatology" },
+        { generic: "Desoximetasone lotion", trade: "Topicort", condition: "Steroid-responsive skin inflammation", history: "None", allergies: "None", cautions: "Skin atrophy, striae, acneiform eruption, telangiectasia, HPA suppression if extensive", action: "High-potency topical corticosteroid", dosage: "Apply thinly 1–2×/day", category: "dermatology" },
+        { generic: "Clobetasol cream", trade: "Dermovate", condition: "Steroid-responsive skin inflammation", history: "None", allergies: "None", cautions: "Skin atrophy, striae, acneiform eruption, telangiectasia, HPA suppression if extensive", action: "Very high-potency topical corticosteroid", dosage: "Apply thinly 1–2×/day for short course only", category: "dermatology" },
+        { generic: "Crisaborole ointment", trade: "Staquis", condition: "Mild–moderate atopic dermatitis", history: "None", allergies: "None", cautions: "Application-site burning/stinging", action: "Topical PDE4 inhibitor", dosage: "Apply BID", category: "dermatology" },
+        { generic: "Benzoyl peroxide gel", trade: "Benzac", condition: "Acne vulgaris", history: "None", allergies: "None", cautions: "Dryness, peeling, irritation", action: "Antimicrobials, comedolytics", dosage: "Apply thinly 1–2×/day, 15–30 mins then wash", category: "acne" },
+        { generic: "Tretinoin cream", trade: "Retacnyl", condition: "Acne vulgaris; photoaging", history: "None", allergies: "None", cautions: "Dryness, erythema, peeling, photosensitivity", action: "Topical retinoid", dosage: "Apply nightly", category: "acne" },
+        { generic: "Adapalene gel", trade: "Differin", condition: "Acne vulgaris", history: "None", allergies: "None", cautions: "Dryness, irritation, photosensitivity", action: "Topical retinoid", dosage: "Apply nightly", category: "acne" },
+        { generic: "Trifarotene cream", trade: "Aklief", condition: "Acne vulgaris", history: "None", allergies: "None", cautions: "Dryness, burning, peeling", action: "Topical retinoid (RAR-gamma selective)", dosage: "Apply nightly", category: "acne" },
+        { generic: "Clindamycin solution", trade: "Dalacin-T", condition: "Inflammatory acne", history: "None", allergies: "None", cautions: "Dryness, irritation; resistance if used alone", action: "Topical lincosamide antibiotic", dosage: "Apply BID", category: "acne" },
+        { generic: "Azelaic acid cream", trade: "Skinoren", condition: "Acne, rosacea, post-inflammatory hyperpigmentation", history: "None", allergies: "None", cautions: "Burning, stinging, dryness", action: "Keratolytic / anti-inflammatory / antimicrobial", dosage: "Apply BID", category: "acne" },
+        { generic: "Benzoyl peroxide/Adapalene gel", trade: "EpiDuo", condition: "Acne vulgaris", history: "None", allergies: "None", cautions: "Dryness, irritation, photosensitivity", action: "Comedolytic retinoid + antibacterial/comedolytic BPO", dosage: "Apply once nightly", category: "acne" },
+        { generic: "Isotretinoin", trade: "Roaccutane, Acnotin", condition: "Severe / refractory acne", history: "None", allergies: "None", cautions: "Cheilitis, dry skin, increased LFT/TG, mood changes; teratogenic", action: "Oral retinoid; reduces sebum and normalizes keratinization", dosage: "0.5–1 mg/kg/day", category: "acne" },
+        { generic: "Calcipotriol cream", trade: "Daivonex", condition: "Plaque psoriasis", history: "None", allergies: "None", cautions: "Local irritation, rare hypercalcemia if excessive", action: "Vitamin D analog; reduces keratinocyte proliferation", dosage: "Apply BID", category: "psoriasis" },
+        { generic: "Calciprotriol/Betamethasone dipropionate", trade: "Daivobet, Xamiol", condition: "Plaque psoriasis", history: "None", allergies: "None", cautions: "Irritation, atrophy, rare hypercalcemia", action: "Vitamin D analog + potent corticosteroid", dosage: "Apply once daily", category: "psoriasis" },
+        { generic: "Tacrolimus ointment", trade: "Protopic", condition: "Atopic dermatitis", history: "None", allergies: "None", cautions: "Burning, stinging, flushing", action: "Topical calcineurin inhibitor", dosage: "Apply BID", category: "dermatology" },
+        { generic: "Pimecrolimus ointment", trade: "Elidel", condition: "Atopic dermatitis", history: "None", allergies: "None", cautions: "Burning, irritation", action: "Topical calcineurin inhibitor", dosage: "Apply BID", category: "dermatology" }
+    ];
+
     // placeholder for the next exam dataset (to be filled when details are available)
     const examDatabase_next_placeholder = [];
 
     const examCatalog = {
+        exam_2026_05_07: {
+            label: "Exam on 7 May 2026",
+            available: true,
+            notes: "Loaded with medicine set for the May 7, 2026 exam.",
+            data: examDatabase_2026_05_07
+        },
         exam_2026_04_27: {
             label: "Exam on 27 April 2026",
             available: true,
-            notes: "Loaded with current medicine set for the April 27, 2026 exam.",
+            notes: "Loaded with medicine set for the April 27, 2026 exam.",
             data: examDatabase_2026_04_27
         },
         exam_next_placeholder: {
@@ -327,7 +401,7 @@
         }
     };
 
-    let activeExamKey = "exam_2026_04_27";
+    let activeExamKey = "exam_2026_05_07";
     let database = examCatalog[activeExamKey].data;
 
     const contraindicationRules = [
@@ -728,7 +802,13 @@
         const select = document.getElementById('exam-select');
         const startBtn = document.getElementById('start-shift-btn');
         const selectedKey = select ? select.value : activeExamKey;
-        const selectedExam = examCatalog[selectedKey] || examCatalog.exam_2026_04_27;
+        const hasOngoingShift = gameActive || isShiftPaused || queue.length > 0;
+        if (hasOngoingShift && selectedKey !== activeExamKey) {
+            if (select) select.value = activeExamKey;
+            alert('Please finish or reset the current shift before switching exam sets.');
+            return false;
+        }
+        const selectedExam = examCatalog[selectedKey] || examCatalog.exam_2026_05_07;
         if (!allowUnavailable && !selectedExam.available) {
             if (select) select.value = activeExamKey;
             const active = examCatalog[activeExamKey];
@@ -888,6 +968,7 @@
                 quizAnswerMechanism: answer.action,
                 quizAnswerDosage: answer.dosage || 'Not listed',
                 quizType: activeQuizType,
+                sourceExamKey: activeExamKey,
                 quizMode: true
             };
             queue.push(newPatient);
@@ -903,7 +984,7 @@
         const template = sourcePool[Math.floor(Math.random() * sourcePool.length)];
         const randomName = names[Math.floor(Math.random() * names.length)];
         const randomAge = Math.floor(Math.random() * 50) + 18;
-        const newPatient = { id: `pat_${patientCounter++}`, name: randomName, age: randomAge, ...template };
+        const newPatient = { id: `pat_${patientCounter++}`, name: randomName, age: randomAge, sourceExamKey: activeExamKey, ...template };
         enrichPatientRiskProfile(newPatient);
 
         if (currentDifficulty === 'hard' && Math.random() < 0.65) {
