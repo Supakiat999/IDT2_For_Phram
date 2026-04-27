@@ -106,11 +106,12 @@
                 <option value="exam_next_placeholder">Next exam (coming soon)</option>
             </select>
         </div>
+        <div id="exam-status" class="mini-panel" style="max-width:700px; text-align:left; margin-top:0;"></div>
         <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Shift Difficulty:</div>
         <div class="diff-controls">
             <button class="diff-btn" id="btn-easy" onclick="setDifficulty('easy')">Easy</button>
             <button class="diff-btn active" id="btn-med" onclick="setDifficulty('med')">Standard</button>
-            <button class="diff-btn" id="btn-hard" onclick="setDifficulty('hard')">Hard</button>
+            <button class="diff-btn" id="btn-hard" onclick="setDifficulty('hard')">Hard (Lookalikes)</button>
         </div>
         <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Mode:</div>
         <div class="diff-controls">
@@ -723,6 +724,7 @@
 
     function applyExamSelection({ allowUnavailable = false } = {}) {
         const select = document.getElementById('exam-select');
+        const status = document.getElementById('exam-status');
         const startBtn = document.getElementById('start-shift-btn');
         const selectedKey = select ? select.value : activeExamKey;
         const selectedExam = examCatalog[selectedKey] || examCatalog.exam_2026_04_27;
@@ -730,11 +732,17 @@
             if (select) select.value = activeExamKey;
             const active = examCatalog[activeExamKey];
             database = active.data;
+            if (status) {
+                status.innerHTML = `<strong>Selected:</strong> ${active.label}<br>${active.notes}<br><span style="color:#c62828; font-weight:bold;">Next exam is not available yet, so this app stays on the current exam set.</span>`;
+            }
             if (startBtn) startBtn.disabled = false;
             return false;
         }
         activeExamKey = selectedKey;
         database = selectedExam.data;
+        if (status) {
+            status.innerHTML = `<strong>Selected:</strong> ${selectedExam.label}<br>${selectedExam.notes}`;
+        }
         if (startBtn) startBtn.disabled = !selectedExam.available;
         return true;
     }
@@ -745,6 +753,8 @@
 
     function startGame() {
         if (!applyExamSelection({ allowUnavailable: true }) || !database.length) {
+            const status = document.getElementById('exam-status');
+            if (status) status.innerHTML = '<strong>Cannot start:</strong> selected exam data is not available yet. Please choose the current exam set.';
             return;
         }
 
