@@ -123,6 +123,7 @@
                     <option value="trade">Drug name &rarr; Trade name</option>
                     <option value="usage">Drug name &rarr; How to use</option>
                     <option value="mechanism">Drug name &rarr; Mechanism</option>
+                    <option value="dosage">Drug name &rarr; Dosage</option>
                     <option value="mixed">Mixed quiz</option>
                 </select>
             </label>
@@ -329,6 +330,92 @@
     let activeExamKey = "exam_2026_04_27";
     let database = examCatalog[activeExamKey].data;
 
+
+    const dosageReference = [
+        { generic: "Carboxymethylcellulose", dosage: "1–2 drops q 4–6 hr PRN" },
+        { generic: "Hydroxypropyl methylcellulose", dosage: "1–2 drops q 4–6 hr PRN" },
+        { generic: "Hyaluronate", dosage: "1–2 drops q 4–6 hr PRN" },
+        { generic: "Cyclosporine", dosage: "1 drop BID" },
+        { generic: "Diquafosol", dosage: "1 drop 6×/day" },
+        { generic: "Antazoline/tetrahydrozoline", dosage: "1 drop q 4–6 hr PRN" },
+        { generic: "Ketotifen", dosage: "1 drop BID" },
+        { generic: "Olopatadine", dosage: "0.1%: 1 drop BID; 0.2%/0.7%: 1 drop daily" },
+        { generic: "Sodium cromoglycate", dosage: "1–2 drops QID" },
+        { generic: "Tobramycin", dosage: "1–2 drops q 4–6 h; severe infection q 1–2 h initially" },
+        { generic: "Tobramycin/Dexamethasone", dosage: "1 drop q 4–6 h" },
+        { generic: "Moxifloxacin", dosage: "1 drop TID for ~7 days" },
+        { generic: "Chloramphenicol", dosage: "Drops: 1 drop q 2 h for 48 h, then q 4–6 h for 5 days; Oint: 1 strip QID" },
+        { generic: "Prednisolone", dosage: "1 drop 2–4×/day" },
+        { generic: "Neomycin/gramicidin/Polymyxin B", dosage: "1–2 drops q 4–6 h" },
+        { generic: "Brimonidine", dosage: "1 drop TID" },
+        { generic: "Pilocarpine", dosage: "1 drop QID" },
+        { generic: "Latanoprost", dosage: "1 drop OD" },
+        { generic: "Betaxolol", dosage: "1 drop BID" },
+        { generic: "Dorzolamide/Timolol", dosage: "1 drop BID" },
+        { generic: "Clotrimazole", dosage: "2–3 drops BID–TID" },
+        { generic: "Ofloxacin", dosage: "10 drops daily or 5 drops BID for 7–10 days" },
+        { generic: "Dexamethasone/neomycin", dosage: "2–3 drops TID–QID" },
+        { generic: "Docusate", dosage: "1 mL (5–10 drops) for 10–15 min, then irrigate" },
+        { generic: "Oxymetazoline", dosage: "1–2 sprays/nostril BID PRN" },
+        { generic: "Naphazoline/Chlorpheniramine", dosage: "1 spray/nostril 3–4×/day PRN" },
+        { generic: "Pseudoephedrine", dosage: "60 mg q 4–6 h PRN or 120 mg BID (ER)" },
+        { generic: "Mometasone", dosage: "2 sprays/nostril daily, then lowest effective dose" },
+        { generic: "Budesonide", category: "nasal", dosage: "2 sprays/nostril daily, then lowest effective dose" },
+        { generic: "Azelastine/Fluticasone", dosage: "1 spray/nostril BID" },
+        { generic: "Chlorpheniramine", dosage: "4 mg q4–6h PRN" },
+        { generic: "Hydroxyzine", dosage: "10–25 mg TID–QID PRN" },
+        { generic: "Dimenhydrinate", dosage: "50–100 mg q4–6h PRN" },
+        { generic: "Diphenhydramine", dosage: "25–50 mg q4–6h PRN" },
+        { generic: "Loratadine", dosage: "10 mg once daily" },
+        { generic: "Cetirizine", dosage: "10 mg once daily" },
+        { generic: "Fexofenadine", dosage: "60 mg BID or 180 mg OD" },
+        { generic: "Bilastine", dosage: "20 mg once daily" },
+        { generic: "Desloratadine", dosage: "5 mg once daily" },
+        { generic: "Levocetirizine", dosage: "5 mg once daily" },
+        { generic: "Salbutamol", dosage: "1–2 puffs q4–6h PRN" },
+        { generic: "Tiotropium", dosage: "1 puff OD" },
+        { generic: "Budesonide", category: "respiratory", dosage: "200–400 mcg BID" },
+        { generic: "Budesonide/Formoterol", dosage: "1–2 inhalations BID" },
+        { generic: "Fluticasone/Salmeterol", dosage: "1 inhalation BID" },
+        { generic: "Ipratropium/Fenoterol", dosage: "1–2 puffs QID PRN or nebulized per product" },
+        { generic: "Tiotropium/Olodaterol", dosage: "2 inhalations OD" },
+        { generic: "Umeclidinium/Vilanterol", dosage: "1 inhalation OD" },
+        { generic: "Fluticasone/Umeclidinium/Vilanterol", dosage: "1 inhalation OD" },
+        { generic: "Montelukast", dosage: "10 mg OD" },
+        { generic: "Theophylline", dosage: "200–400 mg/day, titrated to serum level" },
+        { generic: "Omalizumab", dosage: "SC q 2–4 weeks" },
+        { generic: "N-acetyl cysteine", dosage: "600 mg OD–BID PRN" },
+        { generic: "Carbocysteine", dosage: "325–750 mg TID PRN, then reduce when improved" },
+        { generic: "Erdosteine", dosage: "300 mg BID PRN" },
+        { generic: "Bromhexine", dosage: "8–16 mg TID PRN" },
+        { generic: "Ambroxol", dosage: "30 mg TID or SR 75 mg OD PRN" },
+        { generic: "Guaifenesin", dosage: "200–400 mg q4h PRN" },
+        { generic: "Dextromethorphan", dosage: "10–20 mg q4h or 30 mg q6–8h PRN" },
+        { generic: "Nicotine gum", dosage: "2 mg or 4 mg q1–2h; then taper" },
+        { generic: "Nicotine patch", dosage: "15 mg or 25 mg/16 h OD; then taper" },
+        { generic: "Varenicline", dosage: "Start 0.5 mg daily → 0.5 mg BID → 1 mg BID" },
+        { generic: "Nortriptyline", dosage: "Start 10 mg–25 mg hs; then titrate" },
+        { generic: "Cytisine", dosage: "1.5 mg tablets in tapering schedule over ~25 days" }
+    ];
+
+    function attachDosagesToExamData(records) {
+        const dosageMap = new Map();
+        dosageReference.forEach(d => {
+            const key = `${normalize(d.generic)}|${normalize(d.category || '')}`;
+            dosageMap.set(key, d.dosage);
+        });
+        records.forEach(drug => {
+            const exactKey = `${normalize(drug.generic)}|${normalize(drug.category || '')}`;
+            const genericOnlyKey = `${normalize(drug.generic)}|`;
+            const matched = dosageMap.get(exactKey) || dosageMap.get(genericOnlyKey) || 'Check product-specific labeling';
+            drug.dosage = matched;
+        });
+    }
+
+    Object.values(examCatalog).forEach(exam => {
+        if (Array.isArray(exam.data) && exam.data.length) attachDosagesToExamData(exam.data);
+    });
+
     const contraindicationRules = [
         { label: 'COPD/asthma with nonselective beta-blocker risk', historyAny: ['copd', 'asthma'], actionAny: ['nonselective beta-blocker'], severity: 2 },
         { label: 'Hypertension with systemic adrenergic agonist caution', historyAny: ['hypertension'], actionAny: ['alpha-adrenergic agonist'], severity: 1 },
@@ -495,7 +582,7 @@
     function getActiveQuizType() {
         const selected = document.getElementById('quiztype-select').value || 'trade';
         if (selected !== 'mixed') return selected;
-        const list = ['trade', 'usage', 'mechanism'];
+        const list = ['trade', 'usage', 'mechanism', 'dosage'];
         return list[Math.floor(Math.random() * list.length)];
     }
 
@@ -503,6 +590,7 @@
         if (type === 'trade') return 'Trade Name';
         if (type === 'usage') return 'How to Use';
         if (type === 'mechanism') return 'Mechanism';
+        if (type === 'dosage') return 'Dosage';
         return 'Quiz';
     }
 
@@ -864,13 +952,19 @@
                 ? `What is the trade name for ${answer.generic}?`
                 : activeQuizType === 'usage'
                     ? `How is ${answer.generic} mainly used?`
-                    : `What is the mechanism of ${answer.generic}?`;
+                    : activeQuizType === 'mechanism'
+                        ? `What is the mechanism of ${answer.generic}?`
+                        : `What is the usual dosage format for ${answer.generic}?`;
             const newPatient = {
                 id: `pat_${patientCounter++}`,
                 name: randomName,
                 age: Math.floor(Math.random() * 40) + 20,
                 condition: `Mini Quiz: ${questionText}`,
-                history: activeQuizType === 'trade' ? `Mechanism hint: ${answer.action}` : `Trade name hint: ${answer.trade || 'None'}`,
+                history: activeQuizType === 'trade'
+                    ? `Mechanism hint: ${answer.action}`
+                    : activeQuizType === 'dosage'
+                        ? `Main use hint: ${answer.condition}`
+                        : `Trade name hint: ${answer.trade || 'None'}`,
                 allergies: 'None',
                 cautions: answer.cautions,
                 category: answer.category,
@@ -878,6 +972,7 @@
                 quizAnswerTrade: answer.trade,
                 quizAnswerUsage: answer.condition,
                 quizAnswerMechanism: answer.action,
+                quizAnswerDosage: answer.dosage || 'Not listed',
                 quizType: activeQuizType,
                 quizMode: true
             };
@@ -969,7 +1064,9 @@
                 ? 'Read the generic name and choose the correct trade name.'
                 : patient.quizType === 'usage'
                     ? 'Read the drug name and choose its main use.'
-                    : 'Read the drug name and choose its mechanism.';
+                    : patient.quizType === 'mechanism'
+                        ? 'Read the drug name and choose its mechanism.'
+                        : 'Read the drug name and choose the matching dosage format.';
             riskDiv.innerHTML = `<div class="risk-box"><strong>How to answer:</strong><br>${howTo}</div>`;
         } else {
             riskDiv.innerHTML = hints.length ? `<div class="risk-box"><strong>Clinical flags:</strong><br>${hints.join('<br>')}</div>` : '';
@@ -1014,7 +1111,13 @@
                         question: timedOutPatient.condition,
                         selected: 'TIMEOUT',
                         correct: timedOutPatient.quizMode
-                            ? (timedOutPatient.quizType === 'trade' ? timedOutPatient.quizAnswerTrade : timedOutPatient.quizType === 'usage' ? timedOutPatient.quizAnswerUsage : timedOutPatient.quizAnswerMechanism)
+                            ? (timedOutPatient.quizType === 'trade'
+                                ? timedOutPatient.quizAnswerTrade
+                                : timedOutPatient.quizType === 'usage'
+                                    ? timedOutPatient.quizAnswerUsage
+                                    : timedOutPatient.quizType === 'mechanism'
+                                        ? timedOutPatient.quizAnswerMechanism
+                                        : timedOutPatient.quizAnswerDosage)
                             : 'See valid list in result modal',
                         isCorrect: false
                     });
@@ -1076,13 +1179,16 @@
             const labelFor = (drug) => {
                 if (patient.quizType === 'trade') return drug.trade && drug.trade !== 'None' ? drug.trade : 'None';
                 if (patient.quizType === 'usage') return drug.condition;
+                if (patient.quizType === 'dosage') return drug.dosage || 'Not listed';
                 return drug.action;
             };
             const correctValue = patient.quizType === 'trade'
                 ? patient.quizAnswerTrade
                 : patient.quizType === 'usage'
                     ? patient.quizAnswerUsage
-                    : patient.quizAnswerMechanism;
+                    : patient.quizType === 'mechanism'
+                        ? patient.quizAnswerMechanism
+                        : patient.quizAnswerDosage;
             const pool = database
                 .map(d => ({ quizValue: labelFor(d), sourceDrug: d }))
                 .filter(x => x.quizValue && normalize(x.quizValue) !== 'none');
@@ -1206,10 +1312,18 @@
                 ? patient.quizAnswerTrade
                 : patient.quizType === 'usage'
                     ? patient.quizAnswerUsage
-                    : patient.quizAnswerMechanism;
+                    : patient.quizType === 'mechanism'
+                        ? patient.quizAnswerMechanism
+                        : patient.quizAnswerDosage;
             const isCorrectQuiz = normalize(submittedDrug.quizValue) === normalize(correctValue);
             if (isCorrectQuiz) totalCorrect += 1;
-            const label = patient.quizType === 'trade' ? 'trade name' : patient.quizType === 'usage' ? 'main use' : 'mechanism';
+            const label = patient.quizType === 'trade'
+                ? 'trade name'
+                : patient.quizType === 'usage'
+                    ? 'main use'
+                    : patient.quizType === 'mechanism'
+                        ? 'mechanism'
+                        : 'dosage';
             if (isCorrectQuiz) {
                 box.classList.add('success-box');
                 score += 1;
