@@ -521,7 +521,7 @@
 
     let activeExamKey = "exam_2026_05_07";
     let database = examCatalog[activeExamKey].data;
-    let pdfDoc = null, pdfPage = 1, pdfScale = 1.25, pdfRenderBusy = false, pendingPdfPage = null;
+    let pdfDoc = null, pdfPage = 1, pdfScale = 2, pdfRenderBusy = false, pendingPdfPage = null;
 
     const contraindicationRules = [
         { label: 'COPD/asthma with nonselective beta-blocker risk', historyAny: ['copd', 'asthma'], actionAny: ['nonselective beta-blocker'], severity: 2 },
@@ -1038,7 +1038,7 @@
             const loadingTask = window.pdfjsLib.getDocument({ url, disableWorker: true });
             pdfDoc = await loadingTask.promise;
             pdfPage = 1;
-            pdfScale = 1.25;
+            pdfScale = 2;
             if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages}`;
             renderPdfPage(pdfPage);
         } catch (_) {
@@ -1057,9 +1057,15 @@
         try {
             const page = await pdfDoc.getPage(pageNum);
             const viewport = page.getViewport({ scale: pdfScale });
+            const outputScale = window.devicePixelRatio || 1;
             const context = canvas.getContext('2d');
-            canvas.width = Math.ceil(viewport.width);
-            canvas.height = Math.ceil(viewport.height);
+            canvas.width = Math.ceil(viewport.width * outputScale);
+            canvas.height = Math.ceil(viewport.height * outputScale);
+            canvas.style.width = `${Math.ceil(viewport.width)}px`;
+            canvas.style.height = `${Math.ceil(viewport.height)}px`;
+            context.setTransform(outputScale, 0, 0, outputScale, 0, 0);
+            context.imageSmoothingEnabled = true;
+            context.imageSmoothingQuality = 'high';
             await page.render({ canvasContext: context, viewport }).promise;
             if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages} | Zoom ${Math.round(pdfScale * 100)}%`;
             const wrap = document.getElementById('pdf-canvas-wrap');
@@ -1088,20 +1094,20 @@
 
     function zoomInPdf() {
         if (!pdfDoc) return;
-        pdfScale = Math.min(3, +(pdfScale + 0.2).toFixed(2));
+        pdfScale = Math.min(5, +(pdfScale + 0.25).toFixed(2));
         renderPdfPage(pdfPage);
     }
 
     function zoomOutPdf() {
         if (!pdfDoc) return;
-        pdfScale = Math.max(0.6, +(pdfScale - 0.2).toFixed(2));
+        pdfScale = Math.max(1, +(pdfScale - 0.25).toFixed(2));
         renderPdfPage(pdfPage);
     }
 
     function resetPdfViewerState() {
         pdfDoc = null;
         pdfPage = 1;
-        pdfScale = 1.25;
+        pdfScale = 2;
         pdfRenderBusy = false;
         pendingPdfPage = null;
         const canvas = document.getElementById('pdf-canvas');
