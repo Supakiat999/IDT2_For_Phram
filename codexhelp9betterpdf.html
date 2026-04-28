@@ -523,7 +523,7 @@
 
     let activeExamKey = "exam_2026_05_07";
     let database = examCatalog[activeExamKey].data;
-    let pdfDoc = null, pdfPage = 1, pdfScale = 2, pdfRenderBusy = false, pendingPdfPage = null;
+    let pdfDoc = null, pdfPage = 1, pdfScale = 1, pdfRenderBusy = false, pendingPdfPage = null;
 
     const contraindicationRules = [
         { label: 'COPD/asthma with nonselective beta-blocker risk', historyAny: ['copd', 'asthma'], actionAny: ['nonselective beta-blocker'], severity: 2 },
@@ -1040,7 +1040,7 @@
             const loadingTask = window.pdfjsLib.getDocument({ url, disableWorker: true });
             pdfDoc = await loadingTask.promise;
             pdfPage = 1;
-            pdfScale = 2;
+            pdfScale = 1;
             if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages}`;
             renderPdfPage(pdfPage);
         } catch (_) {
@@ -1109,7 +1109,7 @@
     function resetPdfViewerState() {
         pdfDoc = null;
         pdfPage = 1;
-        pdfScale = 2;
+        pdfScale = 1;
         pdfRenderBusy = false;
         pendingPdfPage = null;
         const canvas = document.getElementById('pdf-canvas');
