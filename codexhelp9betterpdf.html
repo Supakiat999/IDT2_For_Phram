@@ -102,14 +102,23 @@
             padding: 6px 10px;
             cursor: pointer;
         }
-        #exam-pdf-frame {
+        .pdf-canvas-wrap {
             width: 100%;
             flex: 1;
             min-height: 58vh;
             border: 1px solid #cfd8dc;
             border-radius: 10px;
-            background: #fafafa;
-            touch-action: pan-x pan-y;
+            background: #f7f9fb;
+            overflow: auto;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 8px;
+        }
+        #pdf-canvas {
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            max-width: none;
         }
         .quick-ref { background: #f8f9fa; border: 1px solid #cfd8dc; padding: 10px; border-radius: 8px; margin-top: 10px; }
         .quick-ref input { width: 100%; padding: 8px; border: 1px solid #90a4ae; border-radius: 5px; box-sizing: border-box; }
@@ -161,6 +170,7 @@
 
   gtag('config', 'G-OD1BQ368VG');
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.js"></script>
 </head>
 <body data-build="2026-04-27-r3">
 <div id="game-container">
@@ -252,13 +262,21 @@
             <div class="pdf-toolbar">
                 <h2 id="exam-pdf-title">Exam Table PDF</h2>
                 <div class="pdf-toolbar-actions">
+                    <button class="pdf-mini-btn" type="button" onclick="prevPdfPage()">◀ Prev</button>
+                    <button class="pdf-mini-btn" type="button" onclick="nextPdfPage()">Next ▶</button>
+                    <button class="pdf-mini-btn" type="button" onclick="zoomOutPdf()">－</button>
+                    <button class="pdf-mini-btn" type="button" onclick="zoomInPdf()">＋</button>
+                    <span id="pdf-page-indicator" class="pdf-help" style="align-self:center;">Page -- / --</span>
                     <button class="pdf-mini-btn" type="button" id="pdf-size-toggle" onclick="togglePdfViewerSize()">Expand</button>
                     <button class="pdf-mini-btn" type="button" onclick="closeExamPdfOverlay()">Close</button>
                 </div>
             </div>
-            <div class="pdf-help">Minimal view for quick reference. Use mouse wheel / swipe to scroll the PDF.</div>
+            <div class="pdf-help">Each PDF page is rendered as an image-like page. Zoom and scroll, then go next/prev page.</div>
             <div id="exam-pdf-empty" class="hidden" style="padding: 16px; background:#eceff1; border-radius:8px;">No PDF is available for this exam yet.</div>
-            <iframe id="exam-pdf-frame" title="Exam table PDF"></iframe>
+            <div id="exam-pdf-error" class="hidden" style="padding: 16px; background:#ffebee; color:#b71c1c; border-radius:8px;">Unable to load PDF page viewer right now.</div>
+            <div id="pdf-canvas-wrap" class="pdf-canvas-wrap">
+                <canvas id="pdf-canvas" aria-label="Rendered PDF page"></canvas>
+            </div>
         </div>
     </div>
 
@@ -494,6 +512,7 @@
 
     let activeExamKey = "exam_2026_05_07";
     let database = examCatalog[activeExamKey].data;
+    let pdfDoc = null, pdfPage = 1, pdfScale = 1.25, pdfRenderBusy = false, pendingPdfPage = null;
 
     const contraindicationRules = [
         { label: 'COPD/asthma with nonselective beta-blocker risk', historyAny: ['copd', 'asthma'], actionAny: ['nonselective beta-blocker'], severity: 2 },
@@ -941,25 +960,118 @@
         const exam = examCatalog[(select && select.value) || activeExamKey] || examCatalog[activeExamKey];
         const modal = document.getElementById('exam-pdf-modal');
         const box = document.getElementById('exam-pdf-box');
-        const frame = document.getElementById('exam-pdf-frame');
+        const canvasWrap = document.getElementById('pdf-canvas-wrap');
         const empty = document.getElementById('exam-pdf-empty');
+        const error = document.getElementById('exam-pdf-error');
         const title = document.getElementById('exam-pdf-title');
         const sizeToggle = document.getElementById('pdf-size-toggle');
-        if (!modal || !frame || !empty || !title) return;
+        if (!modal || !canvasWrap || !empty || !error || !title) return;
 
         title.innerText = `${exam.label} - Table PDF`;
         if (box) box.classList.remove('expanded');
         if (sizeToggle) sizeToggle.innerText = 'Expand';
+        empty.classList.add('hidden');
+        error.classList.add('hidden');
+        canvasWrap.classList.remove('hidden');
         if (exam.pdfFile) {
-            frame.src = exam.pdfFile;
-            frame.classList.remove('hidden');
-            empty.classList.add('hidden');
+            loadPdfDocument(exam.pdfFile);
         } else {
-            frame.removeAttribute('src');
-            frame.classList.add('hidden');
+            resetPdfViewerState();
+            canvasWrap.classList.add('hidden');
             empty.classList.remove('hidden');
         }
         modal.classList.remove('hidden');
+    }
+
+    async function loadPdfDocument(url) {
+        const error = document.getElementById('exam-pdf-error');
+        const indicator = document.getElementById('pdf-page-indicator');
+        try {
+            if (!window.pdfjsLib) throw new Error('PDF.js not loaded');
+            if (window.pdfjsLib.GlobalWorkerOptions) {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.worker.min.js';
+            }
+            const loadingTask = window.pdfjsLib.getDocument(url);
+            pdfDoc = await loadingTask.promise;
+            pdfPage = 1;
+            pdfScale = 1.25;
+            if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages}`;
+            renderPdfPage(pdfPage);
+        } catch (_) {
+            if (error) error.classList.remove('hidden');
+            const wrap = document.getElementById('pdf-canvas-wrap');
+            if (wrap) wrap.classList.add('hidden');
+        }
+    }
+
+    async function renderPdfPage(pageNum) {
+        if (!pdfDoc) return;
+        const canvas = document.getElementById('pdf-canvas');
+        const indicator = document.getElementById('pdf-page-indicator');
+        if (!canvas) return;
+        if (pdfRenderBusy) { pendingPdfPage = pageNum; return; }
+        pdfRenderBusy = true;
+        try {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: pdfScale });
+            const context = canvas.getContext('2d');
+            canvas.width = Math.ceil(viewport.width);
+            canvas.height = Math.ceil(viewport.height);
+            await page.render({ canvasContext: context, viewport }).promise;
+            if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages} | Zoom ${Math.round(pdfScale * 100)}%`;
+            const wrap = document.getElementById('pdf-canvas-wrap');
+            if (wrap) { wrap.scrollTop = 0; wrap.scrollLeft = 0; }
+        } finally {
+            pdfRenderBusy = false;
+            if (pendingPdfPage !== null) {
+                const next = pendingPdfPage;
+                pendingPdfPage = null;
+                renderPdfPage(next);
+            }
+        }
+    }
+
+    function prevPdfPage() {
+        if (!pdfDoc || pdfPage <= 1) return;
+        pdfPage -= 1;
+        renderPdfPage(pdfPage);
+    }
+
+    function nextPdfPage() {
+        if (!pdfDoc || pdfPage >= pdfDoc.numPages) return;
+        pdfPage += 1;
+        renderPdfPage(pdfPage);
+    }
+
+    function zoomInPdf() {
+        if (!pdfDoc) return;
+        pdfScale = Math.min(3, +(pdfScale + 0.2).toFixed(2));
+        renderPdfPage(pdfPage);
+    }
+
+    function zoomOutPdf() {
+        if (!pdfDoc) return;
+        pdfScale = Math.max(0.6, +(pdfScale - 0.2).toFixed(2));
+        renderPdfPage(pdfPage);
+    }
+
+    function resetPdfViewerState() {
+        pdfDoc = null;
+        pdfPage = 1;
+        pdfScale = 1.25;
+        pdfRenderBusy = false;
+        pendingPdfPage = null;
+        const canvas = document.getElementById('pdf-canvas');
+        const indicator = document.getElementById('pdf-page-indicator');
+        const error = document.getElementById('exam-pdf-error');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.width = 1;
+            canvas.height = 1;
+        }
+        if (indicator) indicator.innerText = 'Page -- / --';
+        if (error) error.classList.add('hidden');
     }
 
     function togglePdfViewerSize() {
@@ -973,12 +1085,11 @@
     function closeExamPdfOverlay() {
         const modal = document.getElementById('exam-pdf-modal');
         const box = document.getElementById('exam-pdf-box');
-        const frame = document.getElementById('exam-pdf-frame');
         const sizeToggle = document.getElementById('pdf-size-toggle');
         if (modal) modal.classList.add('hidden');
         if (box) box.classList.remove('expanded');
         if (sizeToggle) sizeToggle.innerText = 'Expand';
-        if (frame) frame.removeAttribute('src');
+        resetPdfViewerState();
     }
 
     function startGame() {
