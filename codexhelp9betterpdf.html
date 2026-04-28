@@ -178,7 +178,7 @@
 
   gtag('config', 'G-OD1BQ368VG');
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body data-build="2026-04-27-r3">
 <div id="game-container">
@@ -281,7 +281,7 @@
             </div>
             <div class="pdf-help">Each PDF page is rendered as an image-like page. Zoom and scroll, then go next/prev page.</div>
             <div id="exam-pdf-empty" class="hidden" style="padding: 16px; background:#eceff1; border-radius:8px;">No PDF is available for this exam yet.</div>
-            <div id="exam-pdf-error" class="hidden" style="padding: 16px; background:#ffebee; color:#b71c1c; border-radius:8px;">Image-page viewer failed, switched to built-in PDF view.</div>
+            <div id="exam-pdf-error" class="hidden" style="padding: 16px; background:#ffebee; color:#b71c1c; border-radius:8px;">Unable to load PDF in this environment.</div>
             <div id="pdf-canvas-wrap" class="pdf-canvas-wrap">
                 <canvas id="pdf-canvas" aria-label="Rendered PDF page"></canvas>
             </div>
@@ -1000,30 +1000,49 @@
         const wrap = document.getElementById('pdf-canvas-wrap');
         const frame = document.getElementById('pdf-fallback-frame');
         const indicator = document.getElementById('pdf-page-indicator');
+        const error = document.getElementById('exam-pdf-error');
         if (wrap) wrap.classList.add('hidden');
         if (frame) {
             frame.src = url;
             frame.classList.remove('hidden');
+            frame.onerror = () => {
+                const err = document.getElementById('exam-pdf-error');
+                if (err) err.classList.remove('hidden');
+            };
         }
+        if (error) error.classList.add('hidden');
         if (indicator) indicator.innerText = 'Built-in PDF mode';
+    }
+
+    async function ensurePdfJsLoaded() {
+        if (window.pdfjsLib) return true;
+        await new Promise((resolve) => {
+            const s = document.createElement('script');
+            s.src = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js';
+            s.onload = () => resolve();
+            s.onerror = () => resolve();
+            document.head.appendChild(s);
+        });
+        return !!window.pdfjsLib;
     }
 
     async function loadPdfDocument(url) {
         const error = document.getElementById('exam-pdf-error');
         const indicator = document.getElementById('pdf-page-indicator');
         try {
-            if (!window.pdfjsLib) throw new Error('PDF.js not loaded');
+            const loaded = await ensurePdfJsLoaded();
+            if (!loaded) throw new Error('PDF.js not loaded');
             if (window.pdfjsLib.GlobalWorkerOptions) {
-                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.worker.min.js';
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             }
-            const loadingTask = window.pdfjsLib.getDocument(url);
+            const loadingTask = window.pdfjsLib.getDocument({ url, disableWorker: true });
             pdfDoc = await loadingTask.promise;
             pdfPage = 1;
             pdfScale = 1.25;
             if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages}`;
             renderPdfPage(pdfPage);
         } catch (_) {
-            if (error) error.classList.remove('hidden');
+            if (error) error.classList.add('hidden');
             showPdfFallback(url);
         }
     }
