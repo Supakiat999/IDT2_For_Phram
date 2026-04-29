@@ -245,6 +245,7 @@
         <div class="history-actions">
             <button class="action-btn" onclick="openHistory()">Review Past Answers</button>
             <button class="action-btn" onclick="exportSessionReport()">Export Report</button>
+            <button class="action-btn hidden" id="restart-table-btn" onclick="restartTableQuiz()" style="background:#6d4c41;">Restart Table Session</button>
         </div>
         <div class="creator-credit">
             Made by Supakiat - Konkruad (ICE 19)<br>
@@ -725,6 +726,8 @@
         document.getElementById('mode-tradequiz').classList.remove('active');
         document.getElementById('mode-tablequiz').classList.remove('active');
         document.getElementById(`mode-${mode}`).classList.add('active');
+        const restartBtn = document.getElementById('restart-table-btn');
+        if (restartBtn) restartBtn.classList.toggle('hidden', mode !== 'tablequiz');
     }
 
     function getActiveQuizType() {
@@ -1315,7 +1318,6 @@
         document.getElementById('risk-display').innerHTML =
             `<div class="risk-box"><strong>memorized ${tableQuizState.memorizedSet.size}/${database.length}</strong> | <strong>Mode:</strong> Interactive Table D&D</div>
              <div class="mini-panel"><strong>Instructions:</strong> Drag the correct answer from the pool below into the active dashed box.</div>
-             <div class="mini-panel"><button class="action-btn" onclick="restartTableQuiz()">Restart Table Session</button></div>
              <table class="dnd-table"><tr>${cols}</tr><tr>${cells}</tr></table>`;
         renderTableQuizChoices(drug, currentKey);
         renderTableQuizDrugList();
