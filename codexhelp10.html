@@ -1244,9 +1244,8 @@
 
     function setupTableQuizDrug() {
         const d = database[tableQuizState.drugIndex];
-        const order = shuffle(tableQuizState.fields.slice());
-        tableQuizState.fixedKey = order[0];
-        tableQuizState.pendingKeys = order.slice(1);
+        tableQuizState.fixedKey = 'generic';
+        tableQuizState.pendingKeys = shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
         tableQuizState.solvedCount = 0;
         renderTableQuizScreen(d);
     }
@@ -1349,6 +1348,13 @@
         isShiftPaused = false;
         document.getElementById('resume-shift-btn').classList.add('hidden');
         document.getElementById('start-shift-btn').innerText = 'Start New Shift';
+        if (currentMode === 'tablequiz' && tableQuizState) {
+            document.getElementById('mode-display').innerText = 'Table Quiz (Memorize)';
+            renderTableQuizDrugList();
+            renderTableQuizScreen(database[tableQuizState.drugIndex]);
+            trackEvent('shift_resumed', { mode: currentMode, memorized: tableQuizState.memorizedSet.size });
+            return;
+        }
         updateStats();
         renderQueue();
         if (selectedPatientId && queue.some(p => p.id === selectedPatientId)) {
@@ -1388,6 +1394,7 @@
     }
 
     function startSpawner() {
+        if (currentMode === 'tablequiz') return;
         clearInterval(spawnTimer);
         const level = getAdaptiveDifficulty();
         const s = diffSettings[level];
@@ -1480,7 +1487,7 @@
             const card = document.createElement('div');
             card.className = 'patient-card';
             if (pat.id === selectedPatientId) card.classList.add('selected');
-            if (index === 0 && queue.length >= 7) card.classList.add('urgent');
+            if (!noTimerMode && index === 0 && queue.length >= 7) card.classList.add('urgent');
             if (pat.quizMode) {
                 card.innerHTML = `<strong>Mini Quiz #${index + 1}</strong><br><small>${quizTypeLabel(pat.quizType)} question</small>`;
             } else {
