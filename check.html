@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Pharmacy Drug Memorization Quiz</title>
+    <style>
+        :root {
+            --dark-green: #0a4d46;
+            --teal: #1a6d63;
+            --light-teal: #d5e8e5;
+            --main-bg: #f4f7f6;
+            --sidebar-bg: #ffffff;
+            --text-dark: #333333;
+            --text-light: #ffffff;
+            --border: #e2e8f0;
+            --correct-green: #38a169;
+            --hover-bg: #e6f2f0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--main-bg);
+            color: var(--text-dark);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background-color: var(--dark-green);
+            color: var(--text-light);
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        .header h1 { font-size: 1.2rem; display: flex; align-items: center; gap: 10px;}
+        .header-stats span { margin-left: 20px; font-size: 0.95rem; font-weight: 500; }
+
+        /* Main Layout */
+        .container {
+            display: flex;
+            margin-top: 60px;
+            width: 100%;
+            height: calc(100vh - 60px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            padding: 20px;
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar h2 { font-size: 1.1rem; color: var(--dark-green); border-bottom: 2px solid var(--light-teal); padding-bottom: 8px; margin-top: 0; }
+        
+        .quiz-status { background-color: var(--light-teal); border: 1px solid var(--border); padding: 12px; border-radius: 6px; margin-bottom: 20px; }
+        .quiz-status strong { color: var(--dark-green); display: block; margin-bottom: 5px; }
+        .quiz-status span { font-size: 0.85rem; color: #555; }
+
+        .memorized-list { font-size: 0.95rem; }
+        .memorized-list h3 { font-size: 1rem; color: #555; margin-bottom: 10px;}
+        .drug-item { padding: 8px 0; border-bottom: 1px dashed #eee; color: #666; }
+        .drug-item.completed { text-decoration: line-through; color: #aaa; }
+        .drug-item.completed::after { content: ' ✓'; color: var(--correct-green); font-weight: bold; text-decoration: none; display: inline-block;}
+        .drug-item.active { font-weight: bold; color: var(--teal); border-left: 3px solid var(--teal); padding-left: 8px; text-decoration: none; }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .instructions {
+            background-color: #fff;
+            border-left: 4px solid var(--teal);
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        /* Table Styling */
+        .table-container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 900px; table-layout: fixed;}
+        th { 
+            background-color: var(--teal); 
+            color: white; 
+            padding: 12px 15px; 
+            text-align: left; 
+            font-weight: 600; 
+            font-size: 0.95rem;
+            border-right: 1px solid rgba(255,255,255,0.2);
+        }
+        th:last-child { border-right: none; }
+        td { 
+            padding: 15px; 
+            border-bottom: 1px solid var(--border); 
+            border-right: 1px solid var(--border);
+            vertical-align: top;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        td:last-child { border-right: none; }
+        
+        /* Column widths to match original image roughly */
+        th:nth-child(1) { width: 12%; } /* Generic */
+        th:nth-child(2) { width: 12%; } /* Trade */
+        th:nth-child(3) { width: 15%; } /* Action */
+        th:nth-child(4) { width: 15%; } /* Benefits */
+        th:nth-child(5) { width: 20%; } /* Cautions */
+        th:nth-child(6) { width: 26%; } /* Dosage */
+
+        /* Fixed text in table */
+        .fixed-text { display: block; margin-bottom: 5px; }
+        .fixed-text.completed::after { content: ' ✓'; color: var(--correct-green); font-weight: bold; }
+
+        /* Drop Zones */
+        .drop-zone {
+            background-color: #fafafa;
+            border: 2px dashed #cbd5e1;
+            border-radius: 6px;
+            padding: 10px;
+            min-height: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #888;
+            font-size: 0.85rem;
+        }
+        .drop-zone:hover { border-color: var(--teal); background-color: var(--hover-bg); }
+        .drop-zone.active { border-color: var(--teal); background-color: var(--hover-bg); border-style: solid; box-shadow: 0 0 0 3px rgba(26,109,99,0.1); color: var(--teal); font-weight: 500;}
+        .drop-zone.hovering { background-color: #d1fae5; border-color: var(--correct-green); }
+        .drop-zone.correct-drop { 
+            border-color: var(--correct-green); 
+            background-color: #f0fff4; 
+            border-style: solid; 
+            color: var(--text-dark);
+            cursor: default;
+            justify-content: flex-start;
+            text-align: left;
+        }
+        
+        /* Answers Pool */
+        .answers-section {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+        }
+        .answers-header {
+            background-color: #f8fafc;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .answers-header h3 { margin: 0; color: var(--dark-green); font-size: 1.1rem; }
+        .context-label { font-size: 0.9rem; color: #64748b; font-style: italic; }
+        
+        .answers-pool {
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: flex-start;
+            flex: 1;
+        }
+
+        /* Draggable Chips */
+        .chip {
+            background-color: #fff;
+            border: 1px solid var(--teal);
+            color: var(--teal);
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.1s;
+            max-width: 100%;
+            line-height: 1.3;
+        }
+        .chip:hover { background-color: var(--hover-bg); transform: translateY(-1px); box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .chip:active { cursor: grabbing; transform: scale(0.98); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .chip.dragging { opacity: 0.4; }
+
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>💊 City Pharmacy Learning Portal</h1>
+    <div class="header-stats">
+        <span>Memorized: <span id="memorized-count">1</span>/65</span>
+        <span>Accuracy: 100%</span>
+        <span>Mode: Interactive Table D&D</span>
+    </div>
+</div>
+
+<div class="container">
+    <div class="sidebar">
+        <h2>Queue Overview</h2>
+        <div class="quiz-status">
+            <strong>Current Target: Ibuprofen</strong>
+            <span>Progress: <span id="field-progress">3</span>/5 fields completed</span>
+        </div>
+        
+        <div class="memorized-list">
+            <h3>Drug Roster</h3>
+            <div class="drug-item completed">1. Paracetamol</div>
+            <div class="drug-item active">2. Ibuprofen</div>
+            <div class="drug-item">3. Diclofenac</div>
+            <div class="drug-item">4. Naproxen</div>
+            <div class="drug-item">5. Indomethacin</div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="instructions">
+            <strong>Instructions:</strong> Click an empty dashed box in the table to activate it. Then, drag the correct matching answer from the pool below into the active box.
+        </div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Generic name</th>
+                        <th>Trade name</th>
+                        <th>Action</th>
+                        <th>Benefits</th>
+                        <th>Cautions</th>
+                        <th>Dosage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Ibuprofen</strong></td>
+                        
+                        <!-- Trade Name: Drop Zone -->
+                        <td>
+                            <div class="drop-zone" data-field="tradename">
+                                Click to answer Trade Name...
+                            </div>
+                        </td>
+                        
+                        <!-- Completed Static Fields -->
+                        <td><span class="fixed-text completed">Traditional NSAID</span></td>
+                        <td><span class="fixed-text completed">Mild-moderate pain, inflammation, fever</span></td>
+                        <td><span class="fixed-text completed">Dyspepsia, GI bleed, fluid retention, renal injury, ↑CV risk, bronchospasm</span></td>
+                        
+                        <!-- Dosage: Active Drop Zone -->
+                        <td>
+                            <div class="drop-zone active" id="dosage-zone" data-field="dosage">
+                                Drop Dosage answer here...
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="answers-section">
+            <div class="answers-header">
+                <h3>Available Answers Pool</h3>
+                <span class="context-label" id="pool-context">Showing choices for: <strong>Dosage</strong></span>
+            </div>
+            <div class="answers-pool" id="answers-pool">
+                <!-- Chips will be generated by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data setup based on the screenshot
+    const drugData = {
+        ibuprofen: {
+            tradename: "/", // Representing None/Generic only in the original table
+            dosage: "200–800 mg q6–8h (max 3,200 mg/day)"
+        }
+    };
+
+    const choicesDatabase = {
+        tradename: [
+            "/ (None widely specific)",
+            "Voltaren, Cataflam",
+            "Synflex, Naprosyn",
+            "Ponstan",
+            "Mobic"
+        ],
+        dosage: [
+            "200–800 mg q6–8h (max 3,200 mg/day)",
+            "325–1000 mg q4–6h PRN",
+            "25–50 mg BID-TID (max 150 mg/day)",
+            "250–500 mg BID (max 1,500 mg/day)",
+            "7.5-15 mg OD (max 15 mg/day)"
+        ]
+    };
+
+    const dropZones = document.querySelectorAll('.drop-zone');
+    const answersPool = document.getElementById('answers-pool');
+    const poolContextLabel = document.getElementById('pool-context');
+    
+    let activeFieldType = 'dosage'; // Default to match UI visual state
+    let completedFields = 3;
+
+    // Initialize UI
+    function init() {
+        populatePool(activeFieldType);
+        setupDragAndDrop();
+    }
+
+    // Populate the answers pool based on the clicked field
+    function populatePool(fieldType) {
+        answersPool.innerHTML = ''; // Clear current
+        
+        let displayType = fieldType === 'tradename' ? 'Trade Name' : 'Dosage';
+        poolContextLabel.innerHTML = `Showing choices for: <strong>${displayType}</strong>`;
+
+        const choices = choicesDatabase[fieldType];
+        
+        // Shuffle choices for randomness
+        const shuffled = [...choices].sort(() => 0.5 - Math.random());
+
+        shuffled.forEach(choiceText => {
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.draggable = true;
+            
+            // Map the display text for '/' to something more readable in the chip
+            let displayText = choiceText;
+            if (choiceText === "/") displayText = "None / Generic Only";
+            
+            chip.textContent = displayText;
+            chip.dataset.value = choiceText; // Store actual value
+            chip.dataset.type = fieldType;
+
+            // Drag Start
+            chip.addEventListener('dragstart', (e) => {
+                chip.classList.add('dragging');
+                e.dataTransfer.setData('text/plain', choiceText);
+                e.dataTransfer.setData('sourceType', fieldType);
+            });
+
+            // Drag End
+            chip.addEventListener('dragend', () => {
+                chip.classList.remove('dragging');
+                dropZones.forEach(z => z.classList.remove('hovering'));
+            });
+
+            answersPool.appendChild(chip);
+        });
+    }
+
+    // Setup Zone Click and Drop Listeners
+    function setupDragAndDrop() {
+        dropZones.forEach(zone => {
+            
+            // 1. Click to activate zone and change pool
+            zone.addEventListener('click', () => {
+                if (zone.classList.contains('correct-drop')) return; // Ignore completed
+
+                dropZones.forEach(z => {
+                    if(!z.classList.contains('correct-drop')) z.classList.remove('active');
+                });
+                zone.classList.add('active');
+                zone.textContent = `Drop ${zone.dataset.field === 'tradename' ? 'Trade Name' : 'Dosage'} answer here...`;
+                
+                activeFieldType = zone.dataset.field;
+                populatePool(activeFieldType);
+            });
+
+            // 2. Drag Over
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault(); // allow drop
+                if (zone.classList.contains('active') && !zone.classList.contains('correct-drop')) {
+                    zone.classList.add('hovering');
+                }
+            });
+
+            // 3. Drag Leave
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('hovering');
+            });
+
+            // 4. Drop
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('hovering');
+
+                if (!zone.classList.contains('active') || zone.classList.contains('correct-drop')) return;
+
+                const droppedValue = e.dataTransfer.getData('text/plain');
+                const droppedType = e.dataTransfer.getData('sourceType');
+                const targetField = zone.dataset.field;
+
+                // Validate logic
+                const expectedAnswer = drugData.ibuprofen[targetField];
+
+                if (droppedType === targetField && droppedValue === expectedAnswer) {
+                    // Success!
+                    zone.classList.remove('active');
+                    zone.classList.add('correct-drop');
+                    
+                    // Display text logic
+                    let displayText = expectedAnswer;
+                    if (expectedAnswer === "/") displayText = "None / Generic Only";
+                    
+                    zone.innerHTML = `<span class="fixed-text completed" style="margin:0">${displayText}</span>`;
+                    
+                    completedFields++;
+                    document.getElementById('field-progress').textContent = completedFields;
+
+                    // Clear pool to encourage clicking the next field
+                    answersPool.innerHTML = '<span style="color:#888; font-style:italic;">Click the remaining empty table box to load choices.</span>';
+                    poolContextLabel.innerHTML = '';
+
+                    // Check if all done
+                    if (completedFields === 5) {
+                        setTimeout(() => {
+                            alert("Excellent! Ibuprofen memorized.");
+                            document.querySelector('.drug-item.active').classList.add('completed');
+                            document.querySelector('.drug-item.active').classList.remove('active');
+                            document.getElementById('memorized-count').textContent = "2";
+                        }, 300);
+                    } else {
+                        // Auto-activate the other empty zone
+                        const otherZone = document.querySelector('.drop-zone:not(.correct-drop)');
+                        if (otherZone) {
+                            otherZone.click();
+                        }
+                    }
+
+                } else {
+                    // Incorrect feedback
+                    zone.style.borderColor = 'red';
+                    zone.style.backgroundColor = '#fee2e2';
+                    setTimeout(() => {
+                        zone.style.borderColor = '';
+                        zone.style.backgroundColor = '';
+                    }, 400);
+                }
+            });
+        });
+    }
+
+    // Run on load
+    init();
+
+</script>
+</body>
+</html>
