@@ -577,6 +577,7 @@
             examKey: activeExamKey,
             drugIndex: tableQuizState.drugIndex,
             memorized: Array.from(tableQuizState.memorizedSet),
+            progressByDrug: tableQuizState.progressByDrug || {},
             fixedKey: tableQuizState.fixedKey,
             pendingKeys: tableQuizState.pendingKeys,
             solvedCount: tableQuizState.solvedCount
@@ -1250,6 +1251,7 @@
             fields: ['generic', 'trade', 'condition', 'action', 'dosage'],
             labels: { generic: 'Generic Name', trade: 'Trade Name', condition: 'Indications/Uses', action: 'Mechanism/Action', dosage: 'Dosage' },
             memorizedSet: new Set(),
+            progressByDrug: {},
             fixedKey: '',
             pendingKeys: [],
             solvedCount: 0
@@ -1258,6 +1260,7 @@
         if (saved) {
             tableQuizState.drugIndex = Math.min(Math.max(saved.drugIndex || 0, 0), Math.max(database.length - 1, 0));
             tableQuizState.memorizedSet = new Set((saved.memorized || []).filter(n => Number.isInteger(n) && n >= 0 && n < database.length));
+            tableQuizState.progressByDrug = saved.progressByDrug || {};
             tableQuizState.fixedKey = saved.fixedKey || 'generic';
             tableQuizState.pendingKeys = Array.isArray(saved.pendingKeys) && saved.pendingKeys.length ? saved.pendingKeys : shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
             tableQuizState.solvedCount = Math.min(saved.solvedCount || 0, tableQuizState.pendingKeys.length);
@@ -1284,9 +1287,16 @@
 
     function setupTableQuizDrug() {
         const d = database[tableQuizState.drugIndex];
-        tableQuizState.fixedKey = 'generic';
-        tableQuizState.pendingKeys = shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
-        tableQuizState.solvedCount = 0;
+        const savedDrug = tableQuizState.progressByDrug?.[tableQuizState.drugIndex];
+        if (savedDrug) {
+            tableQuizState.fixedKey = savedDrug.fixedKey || 'generic';
+            tableQuizState.pendingKeys = Array.isArray(savedDrug.pendingKeys) && savedDrug.pendingKeys.length ? savedDrug.pendingKeys : shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
+            tableQuizState.solvedCount = Math.min(savedDrug.solvedCount || 0, tableQuizState.pendingKeys.length);
+        } else {
+            tableQuizState.fixedKey = 'generic';
+            tableQuizState.pendingKeys = shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
+            tableQuizState.solvedCount = 0;
+        }
         saveTableQuizState();
         renderTableQuizScreen(d);
     }
@@ -1328,6 +1338,11 @@
         grid.innerHTML = '';
         if (tableQuizState.solvedCount >= tableQuizState.pendingKeys.length) {
             tableQuizState.memorizedSet.add(tableQuizState.drugIndex);
+            tableQuizState.progressByDrug[tableQuizState.drugIndex] = {
+                fixedKey: tableQuizState.fixedKey,
+                pendingKeys: tableQuizState.pendingKeys,
+                solvedCount: tableQuizState.pendingKeys.length
+            };
             saveTableQuizState();
             document.getElementById('risk-display').innerHTML += `<div class="mini-panel"><strong>Completed!</strong> memorized ${tableQuizState.memorizedSet.size}/${database.length}</div>`;
             renderTableQuizDrugList();
@@ -1373,6 +1388,11 @@
                     slot.classList.add('correct');
                     slot.innerText = `${dropped} ✅`;
                     tableQuizState.solvedCount += 1;
+                    tableQuizState.progressByDrug[tableQuizState.drugIndex] = {
+                        fixedKey: tableQuizState.fixedKey,
+                        pendingKeys: tableQuizState.pendingKeys,
+                        solvedCount: tableQuizState.solvedCount
+                    };
                     saveTableQuizState();
                     setTimeout(() => renderTableQuizScreen(drug), 350);
                 } else {
@@ -1388,6 +1408,7 @@
         if (!tableQuizState) return;
         tableQuizState.drugIndex = 0;
         tableQuizState.memorizedSet = new Set();
+        tableQuizState.progressByDrug = {};
         setupTableQuizDrug();
         trackEvent('tablequiz_restart_clicked', { mode: currentMode });
     }
