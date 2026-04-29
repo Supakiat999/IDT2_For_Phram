@@ -563,11 +563,39 @@
     const sessionLog = [];
     const progressByCategory = {};
     const SESSION_HISTORY_KEY = 'pharmacy_rush_session_history_v1';
+    const TABLE_QUIZ_STATE_KEY = 'pharmacy_rush_tablequiz_state_v1';
     const QUESTION_HISTORY_KEY = 'pharmacy_rush_question_history_v1';
     const ANALYTICS_QUEUE_KEY = 'pharmacy_rush_analytics_queue_v1';
     const ANALYTICS_COVERAGE_KEY = 'pharmacy_rush_analytics_coverage_v1';
     const ANALYTICS_CONSENT_KEY = 'pharmacy_rush_analytics_consent_v1';
     const ANALYTICS_ENDPOINT = ''; // optional: set to a first-party endpoint like /api/analytics
+
+    function saveTableQuizState() {
+        if (!tableQuizState) return;
+        const payload = {
+            examKey: activeExamKey,
+            drugIndex: tableQuizState.drugIndex,
+            memorized: Array.from(tableQuizState.memorizedSet),
+            fixedKey: tableQuizState.fixedKey,
+            pendingKeys: tableQuizState.pendingKeys,
+            solvedCount: tableQuizState.solvedCount
+        };
+        localStorage.setItem(TABLE_QUIZ_STATE_KEY, JSON.stringify(payload));
+    }
+
+    function loadTableQuizState() {
+        try {
+            const raw = localStorage.getItem(TABLE_QUIZ_STATE_KEY);
+            if (!raw) return null;
+            const s = JSON.parse(raw);
+            if (!s || s.examKey !== activeExamKey) return null;
+            return s;
+        } catch (_) { return null; }
+    }
+
+    function clearTableQuizState() {
+        localStorage.removeItem(TABLE_QUIZ_STATE_KEY);
+    }
 
     const diffSettings = {
         easy: { baseRate: 12000, minRate: 6000, decrement: 200, choices: 5, caseSec: 24 },
@@ -1223,9 +1251,18 @@
             pendingKeys: [],
             solvedCount: 0
         };
+        const saved = loadTableQuizState();
+        if (saved) {
+            tableQuizState.drugIndex = Math.min(Math.max(saved.drugIndex || 0, 0), Math.max(database.length - 1, 0));
+            tableQuizState.memorizedSet = new Set((saved.memorized || []).filter(n => Number.isInteger(n) && n >= 0 && n < database.length));
+            tableQuizState.fixedKey = saved.fixedKey || 'generic';
+            tableQuizState.pendingKeys = Array.isArray(saved.pendingKeys) && saved.pendingKeys.length ? saved.pendingKeys : shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
+            tableQuizState.solvedCount = Math.min(saved.solvedCount || 0, tableQuizState.pendingKeys.length);
+        }
         document.getElementById('mode-display').innerText = 'Table Quiz (Memorize)';
         renderTableQuizDrugList();
-        setupTableQuizDrug();
+        if (saved) renderTableQuizScreen(database[tableQuizState.drugIndex]);
+        else setupTableQuizDrug();
     }
 
     function renderTableQuizDrugList() {
@@ -1237,7 +1274,7 @@
             card.className = 'patient-card' + (i === tableQuizState.drugIndex ? ' selected' : '');
             const done = tableQuizState.memorizedSet.has(i);
             card.innerHTML = `<strong style="${done ? 'text-decoration:line-through;color:#2e7d32;' : ''}">${d.generic}</strong><br><small>${done ? 'memorized' : 'not memorized'}</small>`;
-            card.onclick = () => { tableQuizState.drugIndex = i; setupTableQuizDrug(); };
+            card.onclick = () => { tableQuizState.drugIndex = i; setupTableQuizDrug(); saveTableQuizState(); };
             el.appendChild(card);
         });
     }
@@ -1247,6 +1284,7 @@
         tableQuizState.fixedKey = 'generic';
         tableQuizState.pendingKeys = shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
         tableQuizState.solvedCount = 0;
+        saveTableQuizState();
         renderTableQuizScreen(d);
     }
 
@@ -1277,6 +1315,7 @@
         document.getElementById('risk-display').innerHTML =
             `<div class="risk-box"><strong>memorized ${tableQuizState.memorizedSet.size}/${database.length}</strong> | <strong>Mode:</strong> Interactive Table D&D</div>
              <div class="mini-panel"><strong>Instructions:</strong> Drag the correct answer from the pool below into the active dashed box.</div>
+             <div class="mini-panel"><button class="action-btn" onclick="restartTableQuiz()">Restart Table Session</button></div>
              <table class="dnd-table"><tr>${cols}</tr><tr>${cells}</tr></table>`;
         renderTableQuizChoices(drug, currentKey);
         renderTableQuizDrugList();
@@ -1287,6 +1326,7 @@
         grid.innerHTML = '';
         if (tableQuizState.solvedCount >= tableQuizState.pendingKeys.length) {
             tableQuizState.memorizedSet.add(tableQuizState.drugIndex);
+            saveTableQuizState();
             document.getElementById('risk-display').innerHTML += `<div class="mini-panel"><strong>Completed!</strong> memorized ${tableQuizState.memorizedSet.size}/${database.length}</div>`;
             renderTableQuizDrugList();
             setTimeout(() => {
@@ -1331,6 +1371,7 @@
                     slot.classList.add('correct');
                     slot.innerText = `${dropped} ✅`;
                     tableQuizState.solvedCount += 1;
+                    saveTableQuizState();
                     setTimeout(() => renderTableQuizScreen(drug), 350);
                 } else {
                     slot.style.background = '#ffebee';
@@ -1338,6 +1379,15 @@
                 }
             });
         }
+    }
+
+    function restartTableQuiz() {
+        clearTableQuizState();
+        if (!tableQuizState) return;
+        tableQuizState.drugIndex = 0;
+        tableQuizState.memorizedSet = new Set();
+        setupTableQuizDrug();
+        trackEvent('tablequiz_restart_clicked', { mode: currentMode });
     }
 
     function resumeShift() {
@@ -1391,6 +1441,7 @@
         document.getElementById('start-shift-btn').innerText = 'Start New Shift';
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
+        if (currentMode === 'tablequiz') saveTableQuizState();
     }
 
     function startSpawner() {
