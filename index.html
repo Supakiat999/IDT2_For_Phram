@@ -1,4 +1,4 @@
-﻿﻿<!DOCTYPE html>
+﻿﻿﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -44,9 +44,103 @@
         .history-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
         .history-actions .action-btn { min-width: 170px; }
         .action-btn { background: #00897b; color: white; border: none; padding: 10px 14px; font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .exam-select-wrap { display: flex; align-items: center; gap: 8px; }
+        .pdf-icon-btn { border: 2px solid #00695c; background: white; color: #00695c; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; }
+        .pdf-icon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+        .pdf-fab {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            z-index: 60;
+            width: 52px;
+            height: 52px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #0aa394, #00695c);
+            color: #fff;
+            font-size: 24px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+            cursor: pointer;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .pdf-fab:hover { transform: translateY(-1px); }
+        .pdf-fab:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+        .pdf-viewer-box {
+            max-width: 720px;
+            width: min(92vw, 720px);
+            height: min(84vh, 760px);
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+            border-color: #00897b;
+            padding: 12px;
+        }
+        .pdf-viewer-box.expanded {
+            max-width: 1120px;
+            width: min(96vw, 1120px);
+            height: min(90vh, 900px);
+        }
+        .pdf-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        .pdf-toolbar h2 { margin: 0; color: #004d40; }
+        .pdf-help { color: #546e7a; font-size: 0.82rem; }
+        .pdf-toolbar-actions { display: flex; gap: 8px; }
+        .pdf-mini-btn {
+            background: #e0f2f1;
+            border: 1px solid #80cbc4;
+            color: #004d40;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+        .pdf-canvas-wrap {
+            width: 100%;
+            flex: 1;
+            min-height: 58vh;
+            border: 1px solid #cfd8dc;
+            border-radius: 10px;
+            background: #f7f9fb;
+            overflow: auto;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+            padding: 8px;
+        }
+        #pdf-canvas {
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            max-width: none;
+            display: block;
+            margin: 0;
+        }
+        #pdf-fallback-frame {
+            width: 100%;
+            flex: 1;
+            min-height: 58vh;
+            border: 1px solid #cfd8dc;
+            border-radius: 10px;
+            background: #fff;
+        }
         .quick-ref { background: #f8f9fa; border: 1px solid #cfd8dc; padding: 10px; border-radius: 8px; margin-top: 10px; }
         .quick-ref input { width: 100%; padding: 8px; border: 1px solid #90a4ae; border-radius: 5px; box-sizing: border-box; }
         #ref-results { margin-top: 8px; max-height: 120px; overflow-y: auto; font-size: 0.88rem; }
+        .dnd-table { width: 100%; border-collapse: collapse; margin-top: 8px; background: #fff; border-radius: 8px; overflow: hidden; }
+        .dnd-table th { background: #3f766e; color: #fff; padding: 10px; }
+        .dnd-table td { border: 1px solid #d7dee3; padding: 12px; vertical-align: top; min-height: 72px; }
+        .drop-slot { border: 2px dashed #5f8f87; border-radius: 10px; padding: 14px; text-align: center; color: #3f766e; background: #f4fbf9; font-weight: 700; }
+        .drop-slot.active { box-shadow: 0 0 0 3px rgba(0,105,92,0.2); }
+        .drop-slot.correct { border-style: solid; background: #e9f7ef; color: #1b5e20; }
+        .pill-pool { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+        .pill-choice { border: 2px solid #5f8f87; border-radius: 999px; padding: 8px 14px; background: #fff; cursor: grab; user-select: none; }
         @media (max-width: 768px) {
             body { padding: 10px; align-items: flex-start; }
             #game-container { height: 96vh; }
@@ -60,6 +154,8 @@
             .stats { gap: 8px; }
             .stats span { font-size: 0.9rem; }
             .action-btn { min-height: 44px; }
+            .pdf-fab { width: 46px; height: 46px; top: 8px; right: 8px; border-radius: 14px; }
+            .pdf-viewer-box { width: 94vw; height: 82vh; padding: 10px; }
         }
     </style>
 <script type="text/javascript">
@@ -92,20 +188,24 @@
 
   gtag('config', 'G-OD1BQ368VG');
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body data-build="2026-04-27-r3">
 <div id="game-container">
     <div id="start-screen" class="overlay">
         <h1>&#x1F48A; Pharmacy Rush</h1>
-        <p>Review the patient's condition, history, and <strong>allergies</strong>. Choose the best medication from the buttons. This version also checks safety and gives short learning feedback.</p>
+        <p>Review the patient's condition, history, and <strong>allergies</strong>. Choose the best medication from the buttons.</p>
         <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Exam Set:</div>
         <div class="ctrl-row" style="margin-top:0;">
             <label for="exam-select">Exam:</label>
-            <select id="exam-select" onchange="onExamSelectionChange()">
-                <option value="exam_2026_05_07">Exam on 7 May 2026 (current)</option>
-                <option value="exam_2026_04_27">Exam on 27 April 2026 (previous)</option>
-                <option value="exam_next_placeholder">Future exam (coming soon)</option>
-            </select>
+            <div class="exam-select-wrap">
+                <select id="exam-select" onchange="onExamSelectionChange()">
+                    <option value="exam_2026_05_07">Exam on 7 May 2026 (current)</option>
+                    <option value="exam_2026_04_27">Exam on 27 April 2026 (previous)</option>
+                    <option value="exam_next_placeholder">Future exam (coming soon)</option>
+                </select>
+                <button id="exam-pdf-btn" class="pdf-icon-btn" type="button" title="Open exam table PDF" aria-label="Open exam table PDF" onclick="openExamPdfOverlay()">📄</button>
+            </div>
         </div>
         <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Shift Difficulty:</div>
         <div class="diff-controls">
@@ -117,6 +217,7 @@
         <div class="diff-controls">
             <button class="diff-btn active" id="mode-rush" onclick="setGameMode('rush')">Pharmacy Rush</button>
             <button class="diff-btn" id="mode-tradequiz" onclick="setGameMode('tradequiz')">Mini Quiz: Trade Name</button>
+            <button class="diff-btn" id="mode-tablequiz" onclick="setGameMode('tablequiz')">Table Quiz (Memorize)</button>
         </div>
         <div class="ctrl-row">
             <label>Mini quiz type:
@@ -144,6 +245,7 @@
         <div class="history-actions">
             <button class="action-btn" onclick="openHistory()">Review Past Answers</button>
             <button class="action-btn" onclick="exportSessionReport()">Export Report</button>
+            <button class="action-btn hidden" id="restart-table-btn" onclick="restartTableQuiz()" style="background:#6d4c41;">Restart Table Session</button>
         </div>
         <div class="creator-credit">
             Made by Supakiat - Konkruad (ICE 19)<br>
@@ -172,6 +274,30 @@
             <h2>Question History (Local Device)</h2>
             <div id="history-content" style="max-height: 60vh; overflow-y:auto; font-size:0.95rem;"></div>
             <div style="text-align: right; margin-top: 12px;"><button class="action-btn" onclick="closeHistory()">Close</button></div>
+        </div>
+    </div>
+
+    <div id="exam-pdf-modal" class="overlay hidden" style="background: rgba(16, 24, 32, 0.72); backdrop-filter: blur(3px); z-index: 70;">
+        <div id="exam-pdf-box" class="solution-box pdf-viewer-box">
+            <div class="pdf-toolbar">
+                <h2 id="exam-pdf-title">Exam Table PDF</h2>
+                <div class="pdf-toolbar-actions">
+                    <button class="pdf-mini-btn" type="button" onclick="prevPdfPage()">◀ Prev</button>
+                    <button class="pdf-mini-btn" type="button" onclick="nextPdfPage()">Next ▶</button>
+                    <button class="pdf-mini-btn" type="button" onclick="zoomOutPdf()">－</button>
+                    <button class="pdf-mini-btn" type="button" onclick="zoomInPdf()">＋</button>
+                    <span id="pdf-page-indicator" class="pdf-help" style="align-self:center;">Page -- / --</span>
+                    <button class="pdf-mini-btn" type="button" id="pdf-size-toggle" onclick="togglePdfViewerSize()">Expand</button>
+                    <button class="pdf-mini-btn" type="button" onclick="closeExamPdfOverlay()">Close</button>
+                </div>
+            </div>
+            <div class="pdf-help">Each PDF page is rendered as an image-like page. Zoom and scroll, then go next/prev page.</div>
+            <div id="exam-pdf-empty" class="hidden" style="padding: 16px; background:#eceff1; border-radius:8px;">No PDF is available for this exam yet.</div>
+            <div id="exam-pdf-error" class="hidden" style="padding: 16px; background:#ffebee; color:#b71c1c; border-radius:8px;">Unable to load PDF in this environment.</div>
+            <div id="pdf-canvas-wrap" class="pdf-canvas-wrap">
+                <canvas id="pdf-canvas" aria-label="Rendered PDF page"></canvas>
+            </div>
+            <iframe id="pdf-fallback-frame" class="hidden" title="Fallback PDF viewer"></iframe>
         </div>
     </div>
 
@@ -226,6 +352,7 @@
             </div>
         </div>
     </div>
+    <button id="exam-pdf-fab" class="pdf-fab" type="button" title="Open exam PDF" aria-label="Open exam PDF" onclick="openExamPdfOverlay()">📄</button>
 </div>
 
 <div id="consent-banner" class="overlay hidden" style="background: rgba(38,50,56,0.92); color: white; z-index: 50;">
@@ -239,7 +366,7 @@
 </div>
 
 <script>
-    const names = ["Aj.BD", "AJ.VT", "Aj.PC","Spy", "Pingpong", "Aim", "Jiw", "Cheer", "Film", "Bam", "Kan", "Tungngern", "Pluem", "Ing", "Noey", "Saiya", "Fook", "Boat", "Nurse", "Tata", "Prem", "Grace", "Pimpim", "Mink", "Amy", "Nam", "Jern", "Pun", "Nine", "Nicha", "Nan", "Nich", "Grace", "Nun", "Praewa", "Yok", "Ben", "Pan", "In", "Ada", "Porjai", "Bass", "Saifah", "Prae", "Rita", "Tent", "Pat", "Punch", "King", "Khaohom", "Pin", "Baibua", "Looktan", "Janjao", "Mintmind", "Wim", "Focus", "Gaga", "March", "Ton", "Haru", "Elle", "Creamy", "Tae", "Peak", "Real", "Poom", "Torboon", "Sian", "Film", "AJ (Uji)", "Palm", "Fresh", "Chino", "Ohm", "Mind", "Tonkhao", "Patty", "Mai", "Mew", "August", "Matoom", "Putter", "Earth", "Peaker", "Jai", "Aomsin", "Poom", "Oboon", "Mo", "Pretty", "Guitar", "Tin-Tin", "Pian", "Pat", "Mobile", "Muilin", "Khaimook", "Pangpond", "Tonnam", "Fight", "Pond", "First", "Fasai", "Foofoo", "Porfai", "C", "Nonny", "Kin", "Match", "Aom", "Ning", "Jolie", "Tangkwa", "Mook", "Preemmy", "Nun", "Baifern", "Bronze", "Jenny", "Palm", "Siwki", "Prae", "Ivy", "Pim", "Eclair", "Pond", "Emmy", "Kitty", "Film", "Ing", "Match", "Bo", "Boom", "Prom", "Game", "Pluem", "August", "Pangpond", "Baifern", "Panwad", "Baifern", "Tientien", "Nook", "Shogun", "Thach", "Nan", "Phu", "Han", "Few", "Sky", "Praewa", "Praewa", "Mobile"];
+    const names = ["Aj.BD", "AJ.VT", "Aj.PC","Spy", "Pingpong", "Aim", "Jiw", "Cheer", "Film", "Bam", "Kan", "Tungngern", "Pluem", "Ing", "Noey", "Saiya", "Fook", "Boat", "Nurse", "Tata", "Prem", "Grace", "Pimpim", "Mink", "Amy", "Nam", "Jern", "Pun", "Nine", "Nicha", "Nan", "Nich", "Grace", "Nun", "Praewa", "Yok", "Ben", "Pan", "In", "Ada", "Porjai", "Bass", "Saifah", "Prae", "Rita", "Tent", "Pat", "Punch", "King", "Khaohom", "Pin", "Baibua", "Looktan", "Janjao", "Mintmind", "Wim", "Focus", "Gaga", "March", "Ton", "Haru", "Elle", "Creamy", "Tae", "Peak", "Real", "Poom", "Torboon", "Sian", "Film", "AJ (Uji)", "Palm", "Fresh", "Chino", "Ohm", "Mind", "Tonkhao", "Patty", "Mai", "Mew", "August", "Matoom", "Putter", "Earth", "Peaker", "Jai", "Aomsin", "Poom", "Oboon", "Mo", "Pretty", "Guitar", "Tin-Tin", "Pian", "Pat", "Mobile", "Muilin", "Khaimook", "Pangpond", "Tonnam", "Fight", "Pond", "First", "Fasai", "Foofoo", "Porfai", "C", "Nonny", "Kin", "Match", "Aom", "Ning", "Jolie", "Tangkwa", "Mook", "Preemmy", "Nun", "Baifern", "Bronze", "Jenny", "Palm", "Siwki", "Prae", "Ivy", "Pim", "Eclair", "Pond", "Emmy", "Kitty", "Film", "Ing", "Match", "Bo", "Boom", "Prom", "Game", "Pluem", "August", "Pangpond", "Baifern", "Panwad", "Baifern", "Tientien", "Nook", "Shogun", "Thach", "Nan", "Phu", "Han", "Few", "Sky", "Praewa", "Praewa", "Mobile", "P.Yoth"];
 
     // current exam dataset for 27 April 2026
     const examDatabase_2026_04_27 = [
@@ -385,24 +512,28 @@
             label: "Exam on 7 May 2026",
             available: true,
             notes: "Loaded with medicine set for the May 7, 2026 exam.",
+            pdfFile: "Exam7May.pdf",
             data: examDatabase_2026_05_07
         },
         exam_2026_04_27: {
             label: "Exam on 27 April 2026",
             available: true,
             notes: "Loaded with medicine set for the April 27, 2026 exam.",
+            pdfFile: "Exam27April.pdf",
             data: examDatabase_2026_04_27
         },
         exam_next_placeholder: {
             label: "Next exam (coming soon)",
             available: false,
             notes: "Dataset structure is ready, but medicine data for the next exam has not been provided yet.",
+            pdfFile: "",
             data: examDatabase_next_placeholder
         }
     };
 
     let activeExamKey = "exam_2026_05_07";
     let database = examCatalog[activeExamKey].data;
+    let pdfDoc = null, pdfPage = 1, pdfScale = 1, pdfRenderBusy = false, pendingPdfPage = null;
 
     const contraindicationRules = [
         { label: 'COPD/asthma with nonselective beta-blocker risk', historyAny: ['copd', 'asthma'], actionAny: ['nonselective beta-blocker'], severity: 2 },
@@ -428,15 +559,45 @@
     let strictSafety = true, tutorMode = true, noTimerMode = false, drillWeakestMode = false, suddenDeathMode = false;
     let adaptiveDifficultyOffset = 0, bestChoiceStreak = 0, maxBestChoiceStreak = 0;
     let currentMode = 'rush', totalAttempts = 0, totalCorrect = 0;
+    let tableQuizState = null;
     let quizType = 'trade';
     const sessionLog = [];
     const progressByCategory = {};
     const SESSION_HISTORY_KEY = 'pharmacy_rush_session_history_v1';
+    const TABLE_QUIZ_STATE_KEY = 'pharmacy_rush_tablequiz_state_v1';
     const QUESTION_HISTORY_KEY = 'pharmacy_rush_question_history_v1';
     const ANALYTICS_QUEUE_KEY = 'pharmacy_rush_analytics_queue_v1';
     const ANALYTICS_COVERAGE_KEY = 'pharmacy_rush_analytics_coverage_v1';
     const ANALYTICS_CONSENT_KEY = 'pharmacy_rush_analytics_consent_v1';
     const ANALYTICS_ENDPOINT = ''; // optional: set to a first-party endpoint like /api/analytics
+
+    function saveTableQuizState() {
+        if (!tableQuizState) return;
+        const payload = {
+            examKey: activeExamKey,
+            drugIndex: tableQuizState.drugIndex,
+            memorized: Array.from(tableQuizState.memorizedSet),
+            progressByDrug: tableQuizState.progressByDrug || {},
+            fixedKey: tableQuizState.fixedKey,
+            pendingKeys: tableQuizState.pendingKeys,
+            solvedCount: tableQuizState.solvedCount
+        };
+        localStorage.setItem(TABLE_QUIZ_STATE_KEY, JSON.stringify(payload));
+    }
+
+    function loadTableQuizState() {
+        try {
+            const raw = localStorage.getItem(TABLE_QUIZ_STATE_KEY);
+            if (!raw) return null;
+            const s = JSON.parse(raw);
+            if (!s || s.examKey !== activeExamKey) return null;
+            return s;
+        } catch (_) { return null; }
+    }
+
+    function clearTableQuizState() {
+        localStorage.removeItem(TABLE_QUIZ_STATE_KEY);
+    }
 
     const diffSettings = {
         easy: { baseRate: 12000, minRate: 6000, decrement: 200, choices: 5, caseSec: 24 },
@@ -564,7 +725,10 @@
         currentMode = mode;
         document.getElementById('mode-rush').classList.remove('active');
         document.getElementById('mode-tradequiz').classList.remove('active');
+        document.getElementById('mode-tablequiz').classList.remove('active');
         document.getElementById(`mode-${mode}`).classList.add('active');
+        const restartBtn = document.getElementById('restart-table-btn');
+        if (restartBtn) restartBtn.classList.toggle('hidden', mode !== 'tablequiz');
     }
 
     function getActiveQuizType() {
@@ -824,10 +988,215 @@
 
     function onExamSelectionChange() {
         applyExamSelection({ allowUnavailable: false });
+        updateExamPdfButton();
+    }
+
+    function updateExamPdfButton() {
+        const btn = document.getElementById('exam-pdf-btn');
+        const fab = document.getElementById('exam-pdf-fab');
+        const select = document.getElementById('exam-select');
+        if (!select) return;
+        const exam = examCatalog[select.value] || examCatalog[activeExamKey];
+        const hasPdf = !!(exam && exam.pdfFile);
+        const titleText = hasPdf ? `Open ${exam.label} PDF` : 'No PDF for this exam yet';
+        if (btn) {
+            btn.disabled = !hasPdf;
+            btn.title = titleText;
+        }
+        if (fab) {
+            fab.disabled = !hasPdf;
+            fab.title = titleText;
+        }
+    }
+
+    function openExamPdfOverlay() {
+        const select = document.getElementById('exam-select');
+        const exam = examCatalog[(select && select.value) || activeExamKey] || examCatalog[activeExamKey];
+        const modal = document.getElementById('exam-pdf-modal');
+        const box = document.getElementById('exam-pdf-box');
+        const canvasWrap = document.getElementById('pdf-canvas-wrap');
+        const fallbackFrame = document.getElementById('pdf-fallback-frame');
+        const empty = document.getElementById('exam-pdf-empty');
+        const error = document.getElementById('exam-pdf-error');
+        const title = document.getElementById('exam-pdf-title');
+        const sizeToggle = document.getElementById('pdf-size-toggle');
+        if (!modal || !canvasWrap || !fallbackFrame || !empty || !error || !title) return;
+
+        title.innerText = `${exam.label} - Table PDF`;
+        if (box) box.classList.remove('expanded');
+        if (sizeToggle) sizeToggle.innerText = 'Expand';
+        empty.classList.add('hidden');
+        error.classList.add('hidden');
+        canvasWrap.classList.remove('hidden');
+        fallbackFrame.classList.add('hidden');
+        fallbackFrame.removeAttribute('src');
+        if (exam.pdfFile) {
+            loadPdfDocument(exam.pdfFile);
+        } else {
+            resetPdfViewerState();
+            canvasWrap.classList.add('hidden');
+            fallbackFrame.classList.add('hidden');
+            empty.classList.remove('hidden');
+        }
+        modal.classList.remove('hidden');
+    }
+
+    function showPdfFallback(url) {
+        const wrap = document.getElementById('pdf-canvas-wrap');
+        const frame = document.getElementById('pdf-fallback-frame');
+        const indicator = document.getElementById('pdf-page-indicator');
+        const error = document.getElementById('exam-pdf-error');
+        if (wrap) wrap.classList.add('hidden');
+        if (frame) {
+            frame.src = url;
+            frame.classList.remove('hidden');
+            frame.onerror = () => {
+                const err = document.getElementById('exam-pdf-error');
+                if (err) err.classList.remove('hidden');
+            };
+        }
+        if (error) error.classList.add('hidden');
+        if (indicator) indicator.innerText = 'Built-in PDF mode';
+    }
+
+    async function ensurePdfJsLoaded() {
+        if (window.pdfjsLib) return true;
+        await new Promise((resolve) => {
+            const s = document.createElement('script');
+            s.src = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js';
+            s.onload = () => resolve();
+            s.onerror = () => resolve();
+            document.head.appendChild(s);
+        });
+        return !!window.pdfjsLib;
+    }
+
+    async function loadPdfDocument(url) {
+        const error = document.getElementById('exam-pdf-error');
+        const indicator = document.getElementById('pdf-page-indicator');
+        try {
+            const loaded = await ensurePdfJsLoaded();
+            if (!loaded) throw new Error('PDF.js not loaded');
+            if (window.pdfjsLib.GlobalWorkerOptions) {
+                window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+            const loadingTask = window.pdfjsLib.getDocument({ url, disableWorker: true });
+            pdfDoc = await loadingTask.promise;
+            pdfPage = 1;
+            pdfScale = 1;
+            if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages}`;
+            renderPdfPage(pdfPage);
+        } catch (_) {
+            if (error) error.classList.add('hidden');
+            showPdfFallback(url);
+        }
+    }
+
+    async function renderPdfPage(pageNum) {
+        if (!pdfDoc) return;
+        const canvas = document.getElementById('pdf-canvas');
+        const indicator = document.getElementById('pdf-page-indicator');
+        if (!canvas) return;
+        if (pdfRenderBusy) { pendingPdfPage = pageNum; return; }
+        pdfRenderBusy = true;
+        try {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: pdfScale });
+            const outputScale = window.devicePixelRatio || 1;
+            const context = canvas.getContext('2d');
+            canvas.width = Math.ceil(viewport.width * outputScale);
+            canvas.height = Math.ceil(viewport.height * outputScale);
+            canvas.style.width = `${Math.ceil(viewport.width)}px`;
+            canvas.style.height = `${Math.ceil(viewport.height)}px`;
+            context.setTransform(outputScale, 0, 0, outputScale, 0, 0);
+            context.imageSmoothingEnabled = true;
+            context.imageSmoothingQuality = 'high';
+            await page.render({ canvasContext: context, viewport }).promise;
+            if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages} | Zoom ${Math.round(pdfScale * 100)}%`;
+            const wrap = document.getElementById('pdf-canvas-wrap');
+            if (wrap) { wrap.scrollTop = 0; wrap.scrollLeft = 0; }
+        } finally {
+            pdfRenderBusy = false;
+            if (pendingPdfPage !== null) {
+                const next = pendingPdfPage;
+                pendingPdfPage = null;
+                renderPdfPage(next);
+            }
+        }
+    }
+
+    function prevPdfPage() {
+        if (!pdfDoc || pdfPage <= 1) return;
+        pdfPage -= 1;
+        renderPdfPage(pdfPage);
+    }
+
+    function nextPdfPage() {
+        if (!pdfDoc || pdfPage >= pdfDoc.numPages) return;
+        pdfPage += 1;
+        renderPdfPage(pdfPage);
+    }
+
+    function zoomInPdf() {
+        if (!pdfDoc) return;
+        pdfScale = Math.min(5, +(pdfScale + 0.25).toFixed(2));
+        renderPdfPage(pdfPage);
+    }
+
+    function zoomOutPdf() {
+        if (!pdfDoc) return;
+        pdfScale = Math.max(1, +(pdfScale - 0.25).toFixed(2));
+        renderPdfPage(pdfPage);
+    }
+
+    function resetPdfViewerState() {
+        pdfDoc = null;
+        pdfPage = 1;
+        pdfScale = 1;
+        pdfRenderBusy = false;
+        pendingPdfPage = null;
+        const canvas = document.getElementById('pdf-canvas');
+        const indicator = document.getElementById('pdf-page-indicator');
+        const error = document.getElementById('exam-pdf-error');
+        const frame = document.getElementById('pdf-fallback-frame');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.width = 1;
+            canvas.height = 1;
+        }
+        if (indicator) indicator.innerText = 'Page -- / --';
+        if (error) error.classList.add('hidden');
+        if (frame) {
+            frame.classList.add('hidden');
+            frame.removeAttribute('src');
+        }
+    }
+
+    function togglePdfViewerSize() {
+        const box = document.getElementById('exam-pdf-box');
+        const btn = document.getElementById('pdf-size-toggle');
+        if (!box || !btn) return;
+        box.classList.toggle('expanded');
+        btn.innerText = box.classList.contains('expanded') ? 'Minimal' : 'Expand';
+    }
+
+    function closeExamPdfOverlay() {
+        const modal = document.getElementById('exam-pdf-modal');
+        const box = document.getElementById('exam-pdf-box');
+        const sizeToggle = document.getElementById('pdf-size-toggle');
+        if (modal) modal.classList.add('hidden');
+        if (box) box.classList.remove('expanded');
+        if (sizeToggle) sizeToggle.innerText = 'Expand';
+        resetPdfViewerState();
     }
 
     function startGame() {
         if (!applyExamSelection({ allowUnavailable: true }) || !database.length) {
+            return;
+        }
+        if (currentMode === 'tablequiz') {
+            launchTableQuizMode();
             return;
         }
 
@@ -867,6 +1236,188 @@
         trackEvent('shift_started', { mode: currentMode, quizType });
     }
 
+    function launchTableQuizMode() {
+        gameActive = true;
+        isShiftPaused = false;
+        queue = [];
+        selectedPatientId = null;
+        clearInterval(spawnTimer);
+        stopCaseTimer();
+        stopHeartbeat();
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+        tableQuizState = {
+            drugIndex: 0,
+            fields: ['generic', 'trade', 'condition', 'action', 'dosage'],
+            labels: { generic: 'Generic Name', trade: 'Trade Name', condition: 'Indications/Uses', action: 'Mechanism/Action', dosage: 'Dosage' },
+            memorizedSet: new Set(),
+            progressByDrug: {},
+            fixedKey: '',
+            pendingKeys: [],
+            solvedCount: 0
+        };
+        const saved = loadTableQuizState();
+        if (saved) {
+            tableQuizState.drugIndex = Math.min(Math.max(saved.drugIndex || 0, 0), Math.max(database.length - 1, 0));
+            tableQuizState.memorizedSet = new Set((saved.memorized || []).filter(n => Number.isInteger(n) && n >= 0 && n < database.length));
+            tableQuizState.progressByDrug = saved.progressByDrug || {};
+            tableQuizState.fixedKey = saved.fixedKey || 'generic';
+            tableQuizState.pendingKeys = Array.isArray(saved.pendingKeys) && saved.pendingKeys.length ? saved.pendingKeys : shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
+            tableQuizState.solvedCount = Math.min(saved.solvedCount || 0, tableQuizState.pendingKeys.length);
+        }
+        document.getElementById('mode-display').innerText = 'Table Quiz (Memorize)';
+        renderTableQuizDrugList();
+        if (saved) renderTableQuizScreen(database[tableQuizState.drugIndex]);
+        else setupTableQuizDrug();
+    }
+
+    function renderTableQuizDrugList() {
+        const el = document.getElementById('queue-list');
+        if (!tableQuizState) return;
+        el.innerHTML = '';
+        database.forEach((d, i) => {
+            const card = document.createElement('div');
+            card.className = 'patient-card' + (i === tableQuizState.drugIndex ? ' selected' : '');
+            const done = tableQuizState.memorizedSet.has(i);
+            card.innerHTML = `<strong style="${done ? 'text-decoration:line-through;color:#2e7d32;' : ''}">${d.generic}</strong><br><small>${done ? 'memorized' : 'not memorized'}</small>`;
+            card.onclick = () => { tableQuizState.drugIndex = i; setupTableQuizDrug(); saveTableQuizState(); };
+            el.appendChild(card);
+        });
+    }
+
+    function setupTableQuizDrug() {
+        const d = database[tableQuizState.drugIndex];
+        const savedDrug = tableQuizState.progressByDrug?.[tableQuizState.drugIndex];
+        if (savedDrug) {
+            tableQuizState.fixedKey = savedDrug.fixedKey || 'generic';
+            tableQuizState.pendingKeys = Array.isArray(savedDrug.pendingKeys) && savedDrug.pendingKeys.length ? savedDrug.pendingKeys : shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
+            tableQuizState.solvedCount = Math.min(savedDrug.solvedCount || 0, tableQuizState.pendingKeys.length);
+        } else {
+            tableQuizState.fixedKey = 'generic';
+            tableQuizState.pendingKeys = shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
+            tableQuizState.solvedCount = 0;
+        }
+        saveTableQuizState();
+        renderTableQuizScreen(d);
+    }
+
+    function renderTableQuizScreen(drug) {
+        document.getElementById('empty-exam').classList.add('hidden');
+        document.getElementById('active-exam').classList.remove('hidden');
+        document.getElementById('pat-name').innerText = `Table Quiz: ${drug.generic}`;
+        document.getElementById('pat-age').innerText = '-';
+        document.getElementById('pat-condition').innerText = 'One field is given. Complete the remaining topics with MCQ.';
+        document.getElementById('pat-history').innerText = 'Answer correctly to move topic-by-topic.';
+        document.getElementById('pat-allergies').innerText = 'N/A';
+        document.getElementById('pat-cautions').innerText = 'N/A';
+        document.getElementById('condition-label').innerText = 'Instructions:';
+        document.getElementById('history-label').innerText = 'Flow:';
+        ['row-age', 'row-allergies', 'row-cautions'].forEach(id => document.getElementById(id).style.display = 'none');
+        document.getElementById('row-condition').style.display = 'block';
+        document.getElementById('row-history').style.display = 'block';
+
+        const solvedKeys = new Set(tableQuizState.pendingKeys.slice(0, tableQuizState.solvedCount));
+        const currentKey = tableQuizState.pendingKeys[tableQuizState.solvedCount] || null;
+        const cols = tableQuizState.fields.map(k => `<th>${tableQuizState.labels[k]}</th>`).join('');
+        const cells = tableQuizState.fields.map(k => {
+            if (k === tableQuizState.fixedKey) return `<td><strong>${drug[k] || 'None'}</strong></td>`;
+            if (solvedKeys.has(k)) return `<td>${drug[k] || 'None'} ✅</td>`;
+            if (k === currentKey) return `<td><div class="drop-slot active" data-key="${k}">Drop ${tableQuizState.labels[k]} answer here...</div></td>`;
+            return `<td><div class="drop-slot" data-key="${k}">Locked until previous topic is correct</div></td>`;
+        }).join('');
+        document.getElementById('risk-display').innerHTML =
+            `<div class="risk-box"><strong>memorized ${tableQuizState.memorizedSet.size}/${database.length}</strong> | <strong>Mode:</strong> Interactive Table D&D</div>
+             <div class="mini-panel"><strong>Instructions:</strong> Drag the correct answer from the pool below into the active dashed box.</div>
+             <table class="dnd-table"><tr>${cols}</tr><tr>${cells}</tr></table>`;
+        renderTableQuizChoices(drug, currentKey);
+        renderTableQuizDrugList();
+    }
+
+    function renderTableQuizChoices(drug, currentKey) {
+        const grid = document.getElementById('choice-grid');
+        grid.innerHTML = '';
+        if (tableQuizState.solvedCount >= tableQuizState.pendingKeys.length) {
+            const firstTimeCompletion = !tableQuizState.memorizedSet.has(tableQuizState.drugIndex);
+            tableQuizState.memorizedSet.add(tableQuizState.drugIndex);
+            tableQuizState.progressByDrug[tableQuizState.drugIndex] = {
+                fixedKey: tableQuizState.fixedKey,
+                pendingKeys: tableQuizState.pendingKeys,
+                solvedCount: tableQuizState.pendingKeys.length
+            };
+            saveTableQuizState();
+            document.getElementById('risk-display').innerHTML += `<div class="mini-panel"><strong>Completed!</strong> memorized ${tableQuizState.memorizedSet.size}/${database.length}</div>`;
+            renderTableQuizDrugList();
+            if (firstTimeCompletion) {
+                setTimeout(() => {
+                    tableQuizState.drugIndex = (tableQuizState.drugIndex + 1) % database.length;
+                    setupTableQuizDrug();
+                }, 800);
+            } else {
+                grid.innerHTML = '<div class="mini-panel">Review mode: this row is already memorized. Select another drug from the left panel to continue.</div>';
+            }
+            return;
+        }
+        const key = currentKey;
+        const correct = drug[key] || 'None';
+        const values = shuffle(database.map(x => x[key] || 'None'));
+        const wrong = [];
+        for (const v of values) {
+            if (normalize(v) !== normalize(correct) && !wrong.some(w => normalize(w) === normalize(v))) wrong.push(v);
+            if (wrong.length >= 3) break;
+        }
+        const options = shuffle([correct, ...wrong]);
+        document.getElementById('risk-display').innerHTML += `<div class="mini-panel"><strong>Now answer:</strong> ${tableQuizState.labels[key]}</div>`;
+        const poolWrap = document.createElement('div');
+        poolWrap.className = 'pill-pool';
+        options.forEach(opt => {
+            const pill = document.createElement('div');
+            pill.className = 'pill-choice';
+            pill.innerText = opt;
+            pill.draggable = true;
+            pill.dataset.value = opt;
+            pill.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', opt);
+            });
+            poolWrap.appendChild(pill);
+        });
+        grid.appendChild(poolWrap);
+
+        const slot = document.querySelector(`.drop-slot.active[data-key="${key}"]`);
+        if (slot) {
+            slot.addEventListener('dragover', (e) => e.preventDefault());
+            slot.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const dropped = e.dataTransfer.getData('text/plain');
+                if (normalize(dropped) === normalize(correct)) {
+                    slot.classList.remove('active');
+                    slot.classList.add('correct');
+                    slot.innerText = `${dropped} ✅`;
+                    tableQuizState.solvedCount += 1;
+                    tableQuizState.progressByDrug[tableQuizState.drugIndex] = {
+                        fixedKey: tableQuizState.fixedKey,
+                        pendingKeys: tableQuizState.pendingKeys,
+                        solvedCount: tableQuizState.solvedCount
+                    };
+                    saveTableQuizState();
+                    setTimeout(() => renderTableQuizScreen(drug), 350);
+                } else {
+                    slot.style.background = '#ffebee';
+                    setTimeout(() => { slot.style.background = '#f4fbf9'; }, 350);
+                }
+            });
+        }
+    }
+
+    function restartTableQuiz() {
+        clearTableQuizState();
+        if (!tableQuizState) return;
+        tableQuizState.drugIndex = 0;
+        tableQuizState.memorizedSet = new Set();
+        tableQuizState.progressByDrug = {};
+        setupTableQuizDrug();
+        trackEvent('tablequiz_restart_clicked', { mode: currentMode });
+    }
+
     function resumeShift() {
         if (!isShiftPaused) return;
         document.getElementById('start-screen').classList.add('hidden');
@@ -875,6 +1426,13 @@
         isShiftPaused = false;
         document.getElementById('resume-shift-btn').classList.add('hidden');
         document.getElementById('start-shift-btn').innerText = 'Start New Shift';
+        if (currentMode === 'tablequiz' && tableQuizState) {
+            document.getElementById('mode-display').innerText = 'Table Quiz (Memorize)';
+            renderTableQuizDrugList();
+            renderTableQuizScreen(database[tableQuizState.drugIndex]);
+            trackEvent('shift_resumed', { mode: currentMode, memorized: tableQuizState.memorizedSet.size });
+            return;
+        }
         updateStats();
         renderQueue();
         if (selectedPatientId && queue.some(p => p.id === selectedPatientId)) {
@@ -911,9 +1469,11 @@
         document.getElementById('start-shift-btn').innerText = 'Start New Shift';
         document.getElementById('start-screen').classList.remove('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
+        if (currentMode === 'tablequiz') saveTableQuizState();
     }
 
     function startSpawner() {
+        if (currentMode === 'tablequiz') return;
         clearInterval(spawnTimer);
         const level = getAdaptiveDifficulty();
         const s = diffSettings[level];
@@ -1006,7 +1566,7 @@
             const card = document.createElement('div');
             card.className = 'patient-card';
             if (pat.id === selectedPatientId) card.classList.add('selected');
-            if (index === 0 && queue.length >= 7) card.classList.add('urgent');
+            if (!noTimerMode && index === 0 && queue.length >= 7) card.classList.add('urgent');
             if (pat.quizMode) {
                 card.innerHTML = `<strong>Mini Quiz #${index + 1}</strong><br><small>${quizTypeLabel(pat.quizType)} question</small>`;
             } else {
@@ -1539,6 +2099,10 @@
         console.warn('Quick Drug Reference search input (#ref-search) was not found.');
     }
     document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !document.getElementById('exam-pdf-modal').classList.contains('hidden')) {
+            closeExamPdfOverlay();
+            return;
+        }
         if (!selectedPatientId) return;
         if (!document.getElementById('solution-modal').classList.contains('hidden')) return;
         const n = Number(e.key);
@@ -1547,6 +2111,7 @@
         if (buttons[n - 1]) buttons[n - 1].click();
     });
     applyExamSelection({ allowUnavailable: true });
+    updateExamPdfButton();
     validateDatabase();
     runLogicSmokeChecks();
     initAnalyticsConsentAndDebug();
