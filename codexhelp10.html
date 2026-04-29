@@ -1337,6 +1337,7 @@
         const grid = document.getElementById('choice-grid');
         grid.innerHTML = '';
         if (tableQuizState.solvedCount >= tableQuizState.pendingKeys.length) {
+            const firstTimeCompletion = !tableQuizState.memorizedSet.has(tableQuizState.drugIndex);
             tableQuizState.memorizedSet.add(tableQuizState.drugIndex);
             tableQuizState.progressByDrug[tableQuizState.drugIndex] = {
                 fixedKey: tableQuizState.fixedKey,
@@ -1346,10 +1347,14 @@
             saveTableQuizState();
             document.getElementById('risk-display').innerHTML += `<div class="mini-panel"><strong>Completed!</strong> memorized ${tableQuizState.memorizedSet.size}/${database.length}</div>`;
             renderTableQuizDrugList();
-            setTimeout(() => {
-                tableQuizState.drugIndex = (tableQuizState.drugIndex + 1) % database.length;
-                setupTableQuizDrug();
-            }, 800);
+            if (firstTimeCompletion) {
+                setTimeout(() => {
+                    tableQuizState.drugIndex = (tableQuizState.drugIndex + 1) % database.length;
+                    setupTableQuizDrug();
+                }, 800);
+            } else {
+                grid.innerHTML = '<div class="mini-panel">Review mode: this row is already memorized. Select another drug from the left panel to continue.</div>';
+            }
             return;
         }
         const key = currentKey;
