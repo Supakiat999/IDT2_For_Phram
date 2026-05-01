@@ -33,6 +33,14 @@
         .diff-controls { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; }
         .diff-btn { background: transparent; border: 2px solid #00695c; color: #00695c; padding: 8px 16px; border-radius: 30px; font-weight: bold; cursor: pointer; }
         .diff-btn.active { background: #00695c; color: white; }
+        .styled-select {
+            border: 2px solid #80cbc4;
+            border-radius: 12px;
+            padding: 8px 12px;
+            color: #004d40;
+            background: #f7fffd;
+            font-weight: 700;
+        }
         .solution-box { background: white; padding: 20px; border-radius: 10px; text-align: left; max-width: 780px; width: 92%; border: 2px solid #00695c; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 86vh; overflow-y: auto; }
         .solution-box.success-box { border-color: #2e7d32; background: #f1f8e9; }
         .solution-box.error-box { border-color: #c62828; background: #ffebee; }
@@ -219,7 +227,7 @@
             <button class="diff-btn" id="mode-tradequiz" onclick="setGameMode('tradequiz')">Mini Quiz: Trade Name</button>
             <button class="diff-btn" id="mode-tablequiz" onclick="setGameMode('tablequiz')">Table Quiz (Memorize)</button>
         </div>
-        <div class="ctrl-row">
+        <div class="ctrl-row" id="rush-options-row">
             <label>Mini quiz type:
                 <select id="quiztype-select">
                     <option value="trade">Drug name &rarr; Trade name</option>
@@ -227,6 +235,18 @@
                     <option value="mechanism">Drug name &rarr; Mechanism</option>
                     <option value="dosage">Drug name &rarr; Dosage</option>
                     <option value="mixed">Mixed quiz</option>
+                </select>
+            </label>
+            <label>Queue Behavior:
+                <select id="queue-behavior-select" class="styled-select">
+                    <option value="batch_queue">Normal</option>
+                    <option value="sequential_queue">Sequential (1-by-1)</option>
+                </select>
+            </label>
+            <label>Queue Limit:
+                <select id="queue-limit-select" class="styled-select">
+                    <option value="classic_10">Classic (10)</option>
+                    <option value="unlimited">Unlimited</option>
                 </select>
             </label>
         </div>
@@ -257,6 +277,7 @@
         <h1 style="color: #c62828;">Game Over</h1>
         <p id="end-message">The queue got too long!</p>
         <h2 style="color: #00695c;">Final Score: <span id="final-score">0</span></h2>
+        <div id="end-setup-summary" class="mini-panel" style="max-width:700px; text-align:left; margin-bottom:12px;"></div>
         <div id="analytics-panel" class="mini-panel" style="max-width:700px; text-align:left; margin-bottom:12px;"></div>
         <button class="start-btn" onclick="resetGame()">Try Again</button>
     </div>
@@ -308,7 +329,7 @@
             <span>Streak: <span id="streak-display">0</span></span>
             <span>Mastery: <span id="mastery-display">Novice</span></span>
             <span>Strikes: <span id="strike-display">0</span>/3</span>
-            <span>Queue: <span id="queue-count">0</span>/10</span>
+            <span>Queue: <span id="queue-count">0</span><span id="queue-limit-display">/10</span></span>
             <span>Case timer: <span id="case-timer">--</span></span>
             <span>Accuracy: <span id="accuracy-display">0%</span></span>
             <span>Mode: <span id="mode-display">Rush</span></span>
@@ -558,6 +579,7 @@
     let maxQueue = 10, currentDifficulty = 'med', caseTimer = null, caseTimeLeft = 0;
     let strictSafety = true, tutorMode = true, noTimerMode = false, drillWeakestMode = false, suddenDeathMode = false;
     let queueBehavior = 'batch_queue';
+    let queueLimitMode = 'classic_10';
     let adaptiveDifficultyOffset = 0, bestChoiceStreak = 0, maxBestChoiceStreak = 0;
     let currentMode = 'rush', totalAttempts = 0, totalCorrect = 0;
     let tableQuizState = null;
@@ -745,6 +767,13 @@
         if (type === 'mechanism') return 'Mechanism';
         if (type === 'dosage') return 'Dosage';
         return 'Quiz';
+    }
+
+    function getSelectedSetupLabel() {
+        const modeLabel = currentMode === 'tradequiz' ? `Mini Quiz (${quizType})` : currentMode === 'tablequiz' ? 'Table Quiz (Memorize)' : 'Rush';
+        const behaviorLabel = queueBehavior === 'sequential_queue' ? 'Sequential (1-by-1)' : 'Normal';
+        const limitLabel = queueLimitMode === 'unlimited' ? 'Unlimited' : 'Classic (10)';
+        return `${modeLabel} | ${behaviorLabel} | ${limitLabel}`;
     }
 
     function validateDatabase() {
@@ -1204,7 +1233,9 @@
         tutorMode = document.getElementById('tutor-toggle').checked;
         strictSafety = document.getElementById('strict-toggle').checked;
         noTimerMode = document.getElementById('notimed-toggle').checked;
-        queueBehavior = noTimerMode ? 'sequential_queue' : 'batch_queue';
+        queueBehavior = document.getElementById('queue-behavior-select').value || queueBehavior;
+        queueLimitMode = document.getElementById('queue-limit-select').value || queueLimitMode;
+        maxQueue = queueLimitMode === 'unlimited' ? Number.POSITIVE_INFINITY : 10;
         drillWeakestMode = document.getElementById('drill-toggle').checked;
         suddenDeathMode = document.getElementById('suddendeath-toggle').checked;
         quizType = document.getElementById('quiztype-select').value || 'trade';
@@ -1227,7 +1258,7 @@
         Object.keys(progressByCategory).forEach(k => delete progressByCategory[k]);
         sessionLog.length = 0;
         stopCaseTimer();
-        document.getElementById('mode-display').innerText = currentMode === 'tradequiz' ? `Mini Quiz (${quizType})` : 'Rush';
+        document.getElementById('mode-display').innerText = getSelectedSetupLabel();
         updateStats();
         spawnPatient();
         startSpawner();
@@ -1235,7 +1266,7 @@
         const stats = getCoverageStats();
         stats.sessionStarts += 1;
         setCoverageStats(stats);
-        trackEvent('shift_started', { mode: currentMode, quizType });
+        trackEvent('shift_started', { mode: currentMode, quizType, queueBehavior, queueLimitMode });
     }
 
     function launchTableQuizMode() {
@@ -2041,6 +2072,8 @@
         document.getElementById('accuracy-display').innerText = `${getAccuracyPercent()}%`;
         const q = document.getElementById('queue-count');
         q.innerText = queue.length;
+        const queueLimitDisplay = document.getElementById('queue-limit-display');
+        queueLimitDisplay.innerText = queueLimitMode === 'unlimited' ? '/∞' : '/10';
         q.style.color = (queueBehavior !== 'sequential_queue' && queue.length >= 7) ? '#ffeb3b' : 'inherit';
         updateMastery();
     }
@@ -2072,6 +2105,7 @@
         stopHeartbeat();
         document.getElementById('end-message').innerText = reason;
         document.getElementById('final-score').innerText = score;
+        document.getElementById('end-setup-summary').innerHTML = `<strong>Selected setup:</strong> ${getSelectedSetupLabel()}`;
         saveSessionHistory();
         loadSessionHistory();
         renderAnalytics();
