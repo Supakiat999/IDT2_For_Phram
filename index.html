@@ -1072,11 +1072,7 @@
     }
 
     function resolvePdfUrl(pdfFile) {
-        const path = window.location.pathname || '/';
-        const looksLikeFile = /\.[^/]+$/.test(path);
-        const basePath = looksLikeFile
-            ? path.replace(/[^/]*$/, '')
-            : (path.endsWith('/') ? path : `${path}/`);
+        const basePath = window.location.pathname.replace(/[^/]*$/, '');
         return new URL(encodeURI(pdfFile), `${window.location.origin}${basePath}`).href;
     }
 
@@ -1085,6 +1081,8 @@
         const indicator = document.getElementById('pdf-page-indicator');
         const resolvedUrl = resolvePdfUrl(url);
         try {
+            const probe = await fetch(resolvedUrl, { method: 'HEAD', cache: 'no-store' });
+            if (!probe.ok) throw new Error('PDF not found');
             const loaded = await ensurePdfJsLoaded();
             if (!loaded) throw new Error('PDF.js not loaded');
             if (window.pdfjsLib.GlobalWorkerOptions) {
