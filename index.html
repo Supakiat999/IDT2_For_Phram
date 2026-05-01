@@ -1071,24 +1071,59 @@
         return !!window.pdfjsLib;
     }
 
+    function resolvePdfCandidates(pdfFile) {
+        const path = window.location.pathname || '/';
+        const looksLikeFile = /\.[^/]+$/.test(path);
+        const basePath = looksLikeFile ? path.replace(/[^/]*$/, '') : (path.endsWith('/') ? path : `${path}/`);
+        const origin = window.location.origin;
+        const encoded = encodeURI(pdfFile);
+
+        const candidates = [
+            new URL(encoded, `${origin}${basePath}`).href,
+            new URL(`./${encoded}`, window.location.href.endsWith('/') ? window.location.href : `${window.location.href}/`).href
+        ];
+
+        const gh = window.location.hostname.match(/^([^.]+)\.github\.io$/i);
+        const repo = path.split('/').filter(Boolean)[0];
+        if (gh && repo) {
+            candidates.push(`${origin}/${repo}/${encoded}`);
+            candidates.push(`https://raw.githubusercontent.com/${gh[1]}/${repo}/main/${encoded}`);
+        }
+
+        return [...new Set(candidates)];
+    }
+
+    async function pickReachablePdfUrl(pdfFile) {
+        const candidates = resolvePdfCandidates(pdfFile);
+        for (const candidate of candidates) {
+            try {
+                const res = await fetch(candidate, { method: 'GET', cache: 'no-store' });
+                const type = (res.headers.get('content-type') || '').toLowerCase();
+                if (res.ok && (type.includes('pdf') || candidate.toLowerCase().endsWith('.pdf'))) return candidate;
+            } catch (_) {}
+        }
+        return candidates[0];
+    }
+
     async function loadPdfDocument(url) {
         const error = document.getElementById('exam-pdf-error');
         const indicator = document.getElementById('pdf-page-indicator');
+        const resolvedUrl = await pickReachablePdfUrl(url);
         try {
             const loaded = await ensurePdfJsLoaded();
             if (!loaded) throw new Error('PDF.js not loaded');
             if (window.pdfjsLib.GlobalWorkerOptions) {
                 window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             }
-            const loadingTask = window.pdfjsLib.getDocument({ url, disableWorker: true });
+            const loadingTask = window.pdfjsLib.getDocument({ url: resolvedUrl, disableWorker: true });
             pdfDoc = await loadingTask.promise;
             pdfPage = 1;
             pdfScale = 1;
             if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages}`;
             renderPdfPage(pdfPage);
         } catch (_) {
-            if (error) error.classList.add('hidden');
-            showPdfFallback(url);
+            if (error) error.classList.remove('hidden');
+            showPdfFallback(resolvedUrl);
         }
     }
 
