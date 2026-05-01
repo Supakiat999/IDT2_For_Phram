@@ -257,7 +257,6 @@
         <h1 style="color: #c62828;">Game Over</h1>
         <p id="end-message">The queue got too long!</p>
         <h2 style="color: #00695c;">Final Score: <span id="final-score">0</span></h2>
-        <p id="final-mode-summary" style="font-weight:bold; color:#455a64;"></p>
         <div id="analytics-panel" class="mini-panel" style="max-width:700px; text-align:left; margin-bottom:12px;"></div>
         <button class="start-btn" onclick="resetGame()">Try Again</button>
     </div>
@@ -558,6 +557,7 @@
     let heartbeatTimer = null;
     let maxQueue = 10, currentDifficulty = 'med', caseTimer = null, caseTimeLeft = 0;
     let strictSafety = true, tutorMode = true, noTimerMode = false, drillWeakestMode = false, suddenDeathMode = false;
+    let queueBehavior = 'batch_queue';
     let adaptiveDifficultyOffset = 0, bestChoiceStreak = 0, maxBestChoiceStreak = 0;
     let currentMode = 'rush', totalAttempts = 0, totalCorrect = 0;
     let tableQuizState = null;
@@ -722,24 +722,6 @@
         document.getElementById(`btn-${level}`).classList.add('active');
     }
 
-
-    function formatModeSummary(mode = currentMode, selectedQuizType = quizType) {
-        if (mode === 'tablequiz') return 'Table Quiz (Memorize)';
-        if (mode === 'tradequiz') return `Mini Quiz (${selectedQuizType})`;
-        const queueStyle = noTimerMode ? 'Sequential 1-by-1' : 'Normal Queue';
-        const queueLimit = noTimerMode ? 'Unlimited' : `Max ${maxQueue}`;
-        return `Rush | ${queueStyle} | ${queueLimit}`;
-    }
-
-    function syncModeSummaryDisplay(mode = currentMode, selectedQuizType = quizType) {
-        const summary = formatModeSummary(mode, selectedQuizType);
-        const modeDisplay = document.getElementById('mode-display');
-        if (modeDisplay) modeDisplay.innerText = summary;
-        const finalSummary = document.getElementById('final-mode-summary');
-        if (finalSummary) finalSummary.innerText = summary;
-        return summary;
-    }
-
     function setGameMode(mode) {
         currentMode = mode;
         document.getElementById('mode-rush').classList.remove('active');
@@ -748,7 +730,6 @@
         document.getElementById(`mode-${mode}`).classList.add('active');
         const restartBtn = document.getElementById('restart-table-btn');
         if (restartBtn) restartBtn.classList.toggle('hidden', mode !== 'tablequiz');
-        syncModeSummaryDisplay(mode, document.getElementById('quiztype-select').value || quizType);
     }
 
     function getActiveQuizType() {
@@ -1223,6 +1204,7 @@
         tutorMode = document.getElementById('tutor-toggle').checked;
         strictSafety = document.getElementById('strict-toggle').checked;
         noTimerMode = document.getElementById('notimed-toggle').checked;
+        queueBehavior = noTimerMode ? 'sequential_queue' : 'batch_queue';
         drillWeakestMode = document.getElementById('drill-toggle').checked;
         suddenDeathMode = document.getElementById('suddendeath-toggle').checked;
         quizType = document.getElementById('quiztype-select').value || 'trade';
@@ -1245,7 +1227,7 @@
         Object.keys(progressByCategory).forEach(k => delete progressByCategory[k]);
         sessionLog.length = 0;
         stopCaseTimer();
-        syncModeSummaryDisplay();
+        document.getElementById('mode-display').innerText = currentMode === 'tradequiz' ? `Mini Quiz (${quizType})` : 'Rush';
         updateStats();
         spawnPatient();
         startSpawner();
@@ -1285,7 +1267,7 @@
             tableQuizState.pendingKeys = Array.isArray(saved.pendingKeys) && saved.pendingKeys.length ? saved.pendingKeys : shuffle(tableQuizState.fields.filter(k => k !== 'generic'));
             tableQuizState.solvedCount = Math.min(saved.solvedCount || 0, tableQuizState.pendingKeys.length);
         }
-        syncModeSummaryDisplay();
+        document.getElementById('mode-display').innerText = 'Table Quiz (Memorize)';
         renderTableQuizDrugList();
         if (saved) renderTableQuizScreen(database[tableQuizState.drugIndex]);
         else setupTableQuizDrug();
@@ -1447,7 +1429,7 @@
         document.getElementById('resume-shift-btn').classList.add('hidden');
         document.getElementById('start-shift-btn').innerText = 'Start New Shift';
         if (currentMode === 'tablequiz' && tableQuizState) {
-            syncModeSummaryDisplay();
+            document.getElementById('mode-display').innerText = 'Table Quiz (Memorize)';
             renderTableQuizDrugList();
             renderTableQuizScreen(database[tableQuizState.drugIndex]);
             trackEvent('shift_resumed', { mode: currentMode, memorized: tableQuizState.memorizedSet.size });
@@ -1495,6 +1477,7 @@
     function startSpawner() {
         if (currentMode === 'tablequiz') return;
         clearInterval(spawnTimer);
+        if (queueBehavior === 'sequential_queue') return;
         const level = getAdaptiveDifficulty();
         const s = diffSettings[level];
         const rate = Math.max(s.minRate, s.baseRate - (score * s.decrement));
@@ -1515,6 +1498,7 @@
 
     function spawnPatient() {
         if (queue.length >= maxQueue) { triggerGameOver('The waiting room reached 10 patients!'); return; }
+        if (queueBehavior === 'sequential_queue' && queue.length > 0) return;
         if (currentMode === 'tradequiz') {
             const activeQuizType = getActiveQuizType();
             const quizPool = activeQuizType === 'trade'
@@ -1586,7 +1570,7 @@
             const card = document.createElement('div');
             card.className = 'patient-card';
             if (pat.id === selectedPatientId) card.classList.add('selected');
-            if (!noTimerMode && index === 0 && queue.length >= 7) card.classList.add('urgent');
+            if (queueBehavior !== 'sequential_queue' && !noTimerMode && index === 0 && queue.length >= 7) card.classList.add('urgent');
             if (pat.quizMode) {
                 card.innerHTML = `<strong>Mini Quiz #${index + 1}</strong><br><small>${quizTypeLabel(pat.quizType)} question</small>`;
             } else {
@@ -1634,7 +1618,7 @@
         const hints = getPatientRiskHints(patient);
         const riskDiv = document.getElementById('risk-display');
         if (patient.quizMode) {
-            syncModeSummaryDisplay('tradequiz', patient.quizType);
+            document.getElementById('mode-display').innerText = `Mini Quiz (${patient.quizType})`;
             const howTo = patient.quizType === 'trade'
                 ? 'Read the generic name and choose the correct trade name.'
                 : patient.quizType === 'usage'
@@ -1644,7 +1628,6 @@
                         : 'Read the drug name and choose the matching dosage format.';
             riskDiv.innerHTML = `<div class="risk-box"><strong>How to answer:</strong><br>${howTo}</div>`;
         } else {
-            syncModeSummaryDisplay();
             riskDiv.innerHTML = hints.length ? `<div class="risk-box"><strong>Clinical flags:</strong><br>${hints.join('<br>')}</div>` : '';
         }
 
@@ -1699,6 +1682,7 @@
                     });
                 }
                 sessionLog.push({ patientId: selectedPatientId, result: 'timeout', score, strikes, when: new Date().toISOString() });
+                queue = queue.filter(p => p.id !== selectedPatientId);
                 updateStats();
                 showTimeoutModal();
                 if (strikes >= 3) setTimeout(() => triggerGameOver('You reached 3 strikes. Shift terminated.'), 900);
@@ -1904,7 +1888,6 @@
                 box.classList.add('success-box');
                 score += 1;
                 streak += 1;
-                queue = queue.filter(p => p.id !== selectedPatientId);
                 title.innerHTML = "\u2705 <span style='color:#2e7d32;'>Correct Quiz Answer</span>";
                 content.innerHTML = `<strong>Drug:</strong> ${patient.quizAnswerGeneric}<br><strong>Correct ${label}:</strong> ${correctValue}<br><strong>Your answer:</strong> ${submittedDrug.quizValue}`;
             } else {
@@ -1933,6 +1916,7 @@
                 score,
                 safetyNotes: ''
             });
+            queue = queue.filter(p => p.id !== selectedPatientId);
             trackEvent('question_answered', { mode: 'quiz', correct: isCorrectQuiz, score, strikes });
             modal.classList.remove('hidden');
             updateStats();
@@ -1966,7 +1950,6 @@
             bestChoiceStreak = isBestChoice ? bestChoiceStreak + 1 : 0;
             if (bestChoiceStreak > maxBestChoiceStreak) maxBestChoiceStreak = bestChoiceStreak;
             adaptiveDifficultyOffset = Math.min(3, adaptiveDifficultyOffset + (safetyFlagged ? 0 : (isBestChoice ? 1 : 0)));
-            queue = queue.filter(p => p.id !== selectedPatientId);
             title.innerHTML = "\u2705 <span style='color:#2e7d32;'>Correct Dispensation</span>";
             content.innerHTML = `
                 <strong>Selected:</strong> ${formatDrugLabel(submittedDrug)}<br>
@@ -2004,6 +1987,7 @@
                 : '';
             content.innerHTML = `<strong>Selected:</strong> ${formatDrugLabel(submittedDrug)}<br><strong>Strikes added:</strong> ${strikeAdd}<br><div class='drug-list'>Valid drugs: ${validNames}</div>${tutorExtra}`;
         }
+        queue = queue.filter(p => p.id !== selectedPatientId);
 
         updateProgress(patient.category, isCorrect);
         saveQuestionHistory({
@@ -2041,7 +2025,13 @@
         const box = modal.querySelector('.solution-box');
         box.classList.remove('success-box', 'error-box');
         clearExamPanel();
-        if (strikes < 3) { gameActive = true; startSpawner(); }
+        if (strikes < 3) {
+            gameActive = true;
+            if (queueBehavior === 'sequential_queue' && queue.length === 0) {
+                setTimeout(() => { if (gameActive) spawnPatient(); }, 120);
+            }
+            startSpawner();
+        }
     }
 
     function updateStats() {
@@ -2051,7 +2041,7 @@
         document.getElementById('accuracy-display').innerText = `${getAccuracyPercent()}%`;
         const q = document.getElementById('queue-count');
         q.innerText = queue.length;
-        q.style.color = queue.length >= 7 ? '#ffeb3b' : 'inherit';
+        q.style.color = (queueBehavior !== 'sequential_queue' && queue.length >= 7) ? '#ffeb3b' : 'inherit';
         updateMastery();
     }
 
@@ -2082,7 +2072,6 @@
         stopHeartbeat();
         document.getElementById('end-message').innerText = reason;
         document.getElementById('final-score').innerText = score;
-        syncModeSummaryDisplay();
         saveSessionHistory();
         loadSessionHistory();
         renderAnalytics();
