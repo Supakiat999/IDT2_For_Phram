@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿﻿﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -366,7 +366,7 @@
 </div>
 
 <script>
-    const names = ["Aj.BD", "AJ.VT", "Aj.PC","Spy", "Pingpong", "Aim", "Jiw", "Cheer", "Film", "Bam", "Kan", "Tungngern", "Pluem", "Ing", "Noey", "Saiya", "Fook", "Boat", "Nurse", "Tata", "Prem", "Grace", "Pimpim", "Mink", "Amy", "Nam", "Jern", "Pun", "Nine", "Nicha", "Nan", "Nich", "Grace", "Nun", "Praewa", "Yok", "Ben", "Pan", "In", "Ada", "Porjai", "Bass", "Saifah", "Prae", "Rita", "Tent", "Pat", "Punch", "King", "Khaohom", "Pin", "Baibua", "Looktan", "Janjao", "Mintmind", "Wim", "Focus", "Gaga", "March", "Ton", "Haru", "Elle", "Creamy", "Tae", "Peak", "Real", "Poom", "Torboon", "Sian", "Film", "AJ (Uji)", "Palm", "Fresh", "Chino", "Ohm", "Mind", "Tonkhao", "Patty", "Mai", "Mew", "August", "Matoom", "Putter", "Earth", "Peaker", "Jai", "Aomsin", "Poom", "Oboon", "Mo", "Pretty", "Guitar", "Tin-Tin", "Pian", "Pat", "Mobile", "Muilin", "Khaimook", "Pangpond", "Tonnam", "Fight", "Pond", "First", "Fasai", "Foofoo", "Porfai", "C", "Nonny", "Kin", "Match", "Aom", "Ning", "Jolie", "Tangkwa", "Mook", "Preemmy", "Nun", "Baifern", "Bronze", "Jenny", "Palm", "Siwki", "Prae", "Ivy", "Pim", "Eclair", "Pond", "Emmy", "Kitty", "Film", "Ing", "Match", "Bo", "Boom", "Prom", "Game", "Pluem", "August", "Pangpond", "Baifern", "Panwad", "Baifern", "Tientien", "Nook", "Shogun", "Thach", "Nan", "Phu", "Han", "Few", "Sky", "Praewa", "Praewa", "Mobile"];
+    const names = ["Aj.BD", "AJ.VT", "Aj.PC","Spy", "Pingpong", "Aim", "Jiw", "Cheer", "Film", "Bam", "Kan", "Tungngern", "Pluem", "Ing", "Noey", "Saiya", "Fook", "Boat", "Nurse", "Tata", "Prem", "Grace", "Pimpim", "Mink", "Amy", "Nam", "Jern", "Pun", "Nine", "Nicha", "Nan", "Nich", "Grace", "Nun", "Praewa", "Yok", "Ben", "Pan", "In", "Ada", "Porjai", "Bass", "Saifah", "Prae", "Rita", "Tent", "Pat", "Punch", "King", "Khaohom", "Pin", "Baibua", "Looktan", "Janjao", "Mintmind", "Wim", "Focus", "Gaga", "March", "Ton", "Haru", "Elle", "Creamy", "Tae", "Peak", "Real", "Poom", "Torboon", "Sian", "Film", "AJ (Uji)", "Palm", "Fresh", "Chino", "Ohm", "Mind", "Tonkhao", "Patty", "Mai", "Mew", "August", "Matoom", "Putter", "Earth", "Peaker", "Jai", "Aomsin", "Poom", "Oboon", "Mo", "Pretty", "Guitar", "Tin-Tin", "Pian", "Pat", "Mobile", "Muilin", "Khaimook", "Pangpond", "Tonnam", "Fight", "Pond", "First", "Fasai", "Foofoo", "Porfai", "C", "Nonny", "Kin", "Match", "Aom", "Ning", "Jolie", "Tangkwa", "Mook", "Preemmy", "Nun", "Baifern", "Bronze", "Jenny", "Palm", "Siwki", "Prae", "Ivy", "Pim", "Eclair", "Pond", "Emmy", "Kitty", "Film", "Ing", "Match", "Bo", "Boom", "Prom", "Game", "Pluem", "August", "Pangpond", "Baifern", "Panwad", "Baifern", "Tientien", "Nook", "Shogun", "Thach", "Nan", "Phu", "Han", "Few", "Sky", "Praewa", "Praewa", "Mobile", "P.Yoth"];
 
     // current exam dataset for 27 April 2026
     const examDatabase_2026_04_27 = [
@@ -512,14 +512,14 @@
             label: "Exam on 7 May 2026",
             available: true,
             notes: "Loaded with medicine set for the May 7, 2026 exam.",
-            pdfFile: "Exam7May.pdf",
+            pdfFile: "/IDT2_For_Phram/Exam7May.pdf",
             data: examDatabase_2026_05_07
         },
         exam_2026_04_27: {
             label: "Exam on 27 April 2026",
             available: true,
             notes: "Loaded with medicine set for the April 27, 2026 exam.",
-            pdfFile: "Exam27April.pdf",
+            pdfFile: "/IDT2_For_Phram/Exam27April.pdf",
             data: examDatabase_2026_04_27
         },
         exam_next_placeholder: {
@@ -1071,24 +1071,32 @@
         return !!window.pdfjsLib;
     }
 
+    function resolvePdfUrl(pdfFile) {
+        const basePath = window.location.pathname.replace(/[^/]*$/, '');
+        return new URL(encodeURI(pdfFile), `${window.location.origin}${basePath}`).href;
+    }
+
     async function loadPdfDocument(url) {
         const error = document.getElementById('exam-pdf-error');
         const indicator = document.getElementById('pdf-page-indicator');
+        const resolvedUrl = resolvePdfUrl(url);
         try {
+            const probe = await fetch(resolvedUrl, { method: 'HEAD', cache: 'no-store' });
+            if (!probe.ok) throw new Error('PDF not found');
             const loaded = await ensurePdfJsLoaded();
             if (!loaded) throw new Error('PDF.js not loaded');
             if (window.pdfjsLib.GlobalWorkerOptions) {
                 window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             }
-            const loadingTask = window.pdfjsLib.getDocument({ url, disableWorker: true });
+            const loadingTask = window.pdfjsLib.getDocument({ url: resolvedUrl, disableWorker: true });
             pdfDoc = await loadingTask.promise;
             pdfPage = 1;
             pdfScale = 1;
             if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages}`;
             renderPdfPage(pdfPage);
         } catch (_) {
-            if (error) error.classList.add('hidden');
-            showPdfFallback(url);
+            if (error) error.classList.remove('hidden');
+            showPdfFallback(resolvedUrl);
         }
     }
 
