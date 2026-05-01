@@ -1260,7 +1260,7 @@
         const stats = getCoverageStats();
         stats.sessionStarts += 1;
         setCoverageStats(stats);
-        trackEvent('shift_started', { mode: currentMode, quizType });
+        trackEvent('shift_started', { mode: currentMode, quizType, queueBehavior, queueLimitMode });
     }
 
     function launchTableQuizMode() {
