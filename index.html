@@ -1071,69 +1071,18 @@
         return !!window.pdfjsLib;
     }
 
-    function resolvePdfCandidates(pdfFile) {
-        const path = window.location.pathname || '/';
-        const looksLikeFile = /\.[^/]+$/.test(path);
-        const basePath = looksLikeFile ? path.replace(/[^/]*$/, '') : (path.endsWith('/') ? path : `${path}/`);
-        const origin = window.location.origin;
-        const encoded = encodeURI(pdfFile);
-
-        const candidates = [
-            new URL(encoded, `${origin}${basePath}`).href,
-            new URL(`./${encoded}`, window.location.href.endsWith('/') ? window.location.href : `${window.location.href}/`).href
-        ];
-
-        const gh = window.location.hostname.match(/^([^.]+)\.github\.io$/i);
-        const repo = path.split('/').filter(Boolean)[0];
-        if (gh && repo) {
-            candidates.push(`${origin}/${repo}/${encoded}`);
-            candidates.push(`https://raw.githubusercontent.com/${gh[1]}/${repo}/main/${encoded}`);
-        }
-
-        return [...new Set(candidates)];
-    }
-
-    let githubDefaultBranchCache = null;
-
-    async function getGithubDefaultBranch(user, repo) {
-        if (githubDefaultBranchCache) return githubDefaultBranchCache;
-        try {
-            const res = await fetch(`https://api.github.com/repos/${user}/${repo}`, { cache: 'no-store' });
-            if (!res.ok) throw new Error('GitHub repo lookup failed');
-            const data = await res.json();
-            githubDefaultBranchCache = data.default_branch || 'main';
-        } catch (_) {
-            githubDefaultBranchCache = 'main';
-        }
-        return githubDefaultBranchCache;
-    }
-
-    async function pickReachablePdfUrl(pdfFile) {
-        const candidates = resolvePdfCandidates(pdfFile);
-        const gh = window.location.hostname.match(/^([^.]+)\.github\.io$/i);
-        const repo = (window.location.pathname || '/').split('/').filter(Boolean)[0];
-        if (gh && repo) {
-            const branch = await getGithubDefaultBranch(gh[1], repo);
-            candidates.push(`https://raw.githubusercontent.com/${gh[1]}/${repo}/${branch}/${encodeURI(pdfFile)}`);
-            candidates.push(`https://cdn.jsdelivr.net/gh/${gh[1]}/${repo}@${branch}/${encodeURI(pdfFile)}`);
-            candidates.push(`https://raw.githubusercontent.com/${gh[1]}/${repo}/master/${encodeURI(pdfFile)}`);
-        }
-
-        for (const candidate of [...new Set(candidates)]) {
-            try {
-                const res = await fetch(candidate, { method: 'GET', cache: 'no-store' });
-                const type = (res.headers.get('content-type') || '').toLowerCase();
-                if (res.ok && (type.includes('pdf') || candidate.toLowerCase().endsWith('.pdf'))) return candidate;
-            } catch (_) {}
-        }
-        return candidates[0];
+    function resolvePdfUrl(pdfFile) {
+        const basePath = window.location.pathname.replace(/[^/]*$/, '');
+        return new URL(encodeURI(pdfFile), `${window.location.origin}${basePath}`).href;
     }
 
     async function loadPdfDocument(url) {
         const error = document.getElementById('exam-pdf-error');
         const indicator = document.getElementById('pdf-page-indicator');
-        const resolvedUrl = await pickReachablePdfUrl(url);
+        const resolvedUrl = resolvePdfUrl(url);
         try {
+            const probe = await fetch(resolvedUrl, { method: 'HEAD', cache: 'no-store' });
+            if (!probe.ok) throw new Error('PDF not found');
             const loaded = await ensurePdfJsLoaded();
             if (!loaded) throw new Error('PDF.js not loaded');
             if (window.pdfjsLib.GlobalWorkerOptions) {
