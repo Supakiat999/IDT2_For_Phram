@@ -263,6 +263,20 @@
             </div>
         </div>
         <div class="ctrl-row">
+            <label>Queue Behavior:
+                <select id="queue-behavior-select">
+                    <option value="batch_queue">Normal</option>
+                    <option value="sequential_queue">Sequential (1-by-1)</option>
+                </select>
+            </label>
+            <label>Queue Limit:
+                <select id="queue-limit-select">
+                    <option value="classic_10">Classic (10)</option>
+                    <option value="unlimited">Unlimited</option>
+                </select>
+            </label>
+        </div>
+        <div class="ctrl-row">
             <label><input type="checkbox" id="tutor-toggle" checked> Tutor mode explanations</label>
             <label><input type="checkbox" id="strict-toggle" checked> Strict safety checks</label>
             <label><input type="checkbox" id="notimed-toggle"> No timer mode</label>
@@ -793,7 +807,7 @@
         return 'Quiz';
     }
 
-    function getSelectedSetupLabel() {
+    function getRushSetupLabel() {
         const modeLabel = currentMode === 'tradequiz' ? `Mini Quiz (${quizType})` : currentMode === 'tablequiz' ? 'Table Quiz (Memorize)' : 'Rush';
         const behaviorLabel = queueBehavior === 'sequential_queue' ? 'Sequential (1-by-1)' : 'Normal';
         const limitLabel = queueLimitMode === 'unlimited' ? 'Unlimited' : 'Classic (10)';
@@ -1257,6 +1271,8 @@
         tutorMode = document.getElementById('tutor-toggle').checked;
         strictSafety = document.getElementById('strict-toggle').checked;
         noTimerMode = document.getElementById('notimed-toggle').checked;
+        queueBehavior = document.getElementById('queue-behavior-select').value || 'batch_queue';
+        queueLimitMode = document.getElementById('queue-limit-select').value || 'classic_10';
         maxQueue = queueLimitMode === 'unlimited' ? Number.POSITIVE_INFINITY : 10;
         drillWeakestMode = document.getElementById('drill-toggle').checked;
         suddenDeathMode = document.getElementById('suddendeath-toggle').checked;
@@ -1280,7 +1296,7 @@
         Object.keys(progressByCategory).forEach(k => delete progressByCategory[k]);
         sessionLog.length = 0;
         stopCaseTimer();
-        document.getElementById('mode-display').innerText = getSelectedSetupLabel();
+        document.getElementById('mode-display').innerText = getRushSetupLabel();
         updateStats();
         spawnPatient();
         startSpawner();
@@ -2127,7 +2143,7 @@
         stopHeartbeat();
         document.getElementById('end-message').innerText = reason;
         document.getElementById('final-score').innerText = score;
-        document.getElementById('end-setup-summary').innerHTML = `<strong>Selected setup:</strong> ${getSelectedSetupLabel()}`;
+        document.getElementById('end-setup-summary').innerHTML = `<strong>Selected setup:</strong> ${getRushSetupLabel()}`;
         saveSessionHistory();
         loadSessionHistory();
         renderAnalytics();
