@@ -763,7 +763,7 @@
         return 'Quiz';
     }
 
-    function getSelectedSetupLabel() {
+    function getRushSetupLabel() {
         const modeLabel = currentMode === 'tradequiz' ? `Mini Quiz (${quizType})` : currentMode === 'tablequiz' ? 'Table Quiz (Memorize)' : 'Rush';
         const behaviorLabel = queueBehavior === 'sequential_queue' ? 'Sequential (1-by-1)' : 'Normal';
         const limitLabel = queueLimitMode === 'unlimited' ? 'Unlimited' : 'Classic (10)';
@@ -1252,7 +1252,7 @@
         Object.keys(progressByCategory).forEach(k => delete progressByCategory[k]);
         sessionLog.length = 0;
         stopCaseTimer();
-        document.getElementById('mode-display').innerText = getSelectedSetupLabel();
+        document.getElementById('mode-display').innerText = getRushSetupLabel();
         updateStats();
         spawnPatient();
         startSpawner();
@@ -2099,7 +2099,7 @@
         stopHeartbeat();
         document.getElementById('end-message').innerText = reason;
         document.getElementById('final-score').innerText = score;
-        document.getElementById('end-setup-summary').innerHTML = `<strong>Selected setup:</strong> ${getSelectedSetupLabel()}`;
+        document.getElementById('end-setup-summary').innerHTML = `<strong>Selected setup:</strong> ${getRushSetupLabel()}`;
         saveSessionHistory();
         loadSessionHistory();
         renderAnalytics();
