@@ -1071,24 +1071,34 @@
         return !!window.pdfjsLib;
     }
 
+    function resolvePdfUrl(pdfFile) {
+        const path = window.location.pathname || '/';
+        const looksLikeFile = /\.[^/]+$/.test(path);
+        const basePath = looksLikeFile
+            ? path.replace(/[^/]*$/, '')
+            : (path.endsWith('/') ? path : `${path}/`);
+        return new URL(encodeURI(pdfFile), `${window.location.origin}${basePath}`).href;
+    }
+
     async function loadPdfDocument(url) {
         const error = document.getElementById('exam-pdf-error');
         const indicator = document.getElementById('pdf-page-indicator');
+        const resolvedUrl = resolvePdfUrl(url);
         try {
             const loaded = await ensurePdfJsLoaded();
             if (!loaded) throw new Error('PDF.js not loaded');
             if (window.pdfjsLib.GlobalWorkerOptions) {
                 window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             }
-            const loadingTask = window.pdfjsLib.getDocument({ url, disableWorker: true });
+            const loadingTask = window.pdfjsLib.getDocument({ url: resolvedUrl, disableWorker: true });
             pdfDoc = await loadingTask.promise;
             pdfPage = 1;
             pdfScale = 1;
             if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages}`;
             renderPdfPage(pdfPage);
         } catch (_) {
-            if (error) error.classList.add('hidden');
-            showPdfFallback(url);
+            if (error) error.classList.remove('hidden');
+            showPdfFallback(resolvedUrl);
         }
     }
 
