@@ -512,14 +512,14 @@
             label: "Exam on 7 May 2026",
             available: true,
             notes: "Loaded with medicine set for the May 7, 2026 exam.",
-            pdfFile: "Exam7May.pdf",
+            pdfFile: "/IDT2_For_Phram/Exam7May.pdf",
             data: examDatabase_2026_05_07
         },
         exam_2026_04_27: {
             label: "Exam on 27 April 2026",
             available: true,
             notes: "Loaded with medicine set for the April 27, 2026 exam.",
-            pdfFile: "Exam27April.pdf",
+            pdfFile: "/IDT2_For_Phram/Exam27April.pdf",
             data: examDatabase_2026_04_27
         },
         exam_next_placeholder: {
@@ -1071,24 +1071,83 @@
         return !!window.pdfjsLib;
     }
 
+    function resolvePdfCandidates(pdfFile) {
+        const path = window.location.pathname || '/';
+        const looksLikeFile = /\.[^/]+$/.test(path);
+        const basePath = looksLikeFile ? path.replace(/[^/]*$/, '') : (path.endsWith('/') ? path : `${path}/`);
+        const origin = window.location.origin;
+        const encoded = encodeURI(pdfFile);
+
+        const candidates = [
+            new URL(encoded, `${origin}${basePath}`).href,
+            new URL(`./${encoded}`, window.location.href.endsWith('/') ? window.location.href : `${window.location.href}/`).href
+        ];
+
+        const gh = window.location.hostname.match(/^([^.]+)\.github\.io$/i);
+        const repo = path.split('/').filter(Boolean)[0];
+        if (gh && repo) {
+            candidates.push(`${origin}/${repo}/${encoded}`);
+            candidates.push(`https://raw.githubusercontent.com/${gh[1]}/${repo}/main/${encoded}`);
+        }
+
+        return [...new Set(candidates)];
+    }
+
+    let githubDefaultBranchCache = null;
+
+    async function getGithubDefaultBranch(user, repo) {
+        if (githubDefaultBranchCache) return githubDefaultBranchCache;
+        try {
+            const res = await fetch(`https://api.github.com/repos/${user}/${repo}`, { cache: 'no-store' });
+            if (!res.ok) throw new Error('GitHub repo lookup failed');
+            const data = await res.json();
+            githubDefaultBranchCache = data.default_branch || 'main';
+        } catch (_) {
+            githubDefaultBranchCache = 'main';
+        }
+        return githubDefaultBranchCache;
+    }
+
+    async function pickReachablePdfUrl(pdfFile) {
+        const candidates = resolvePdfCandidates(pdfFile);
+        const gh = window.location.hostname.match(/^([^.]+)\.github\.io$/i);
+        const repo = (window.location.pathname || '/').split('/').filter(Boolean)[0];
+        if (gh && repo) {
+            const branch = await getGithubDefaultBranch(gh[1], repo);
+            candidates.push(`https://raw.githubusercontent.com/${gh[1]}/${repo}/${branch}/${encodeURI(pdfFile)}`);
+            candidates.push(`https://cdn.jsdelivr.net/gh/${gh[1]}/${repo}@${branch}/${encodeURI(pdfFile)}`);
+            candidates.push(`https://raw.githubusercontent.com/${gh[1]}/${repo}/master/${encodeURI(pdfFile)}`);
+        }
+
+        for (const candidate of [...new Set(candidates)]) {
+            try {
+                const res = await fetch(candidate, { method: 'GET', cache: 'no-store' });
+                const type = (res.headers.get('content-type') || '').toLowerCase();
+                if (res.ok && (type.includes('pdf') || candidate.toLowerCase().endsWith('.pdf'))) return candidate;
+            } catch (_) {}
+        }
+        return candidates[0];
+    }
+
     async function loadPdfDocument(url) {
         const error = document.getElementById('exam-pdf-error');
         const indicator = document.getElementById('pdf-page-indicator');
+        const resolvedUrl = await pickReachablePdfUrl(url);
         try {
             const loaded = await ensurePdfJsLoaded();
             if (!loaded) throw new Error('PDF.js not loaded');
             if (window.pdfjsLib.GlobalWorkerOptions) {
                 window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             }
-            const loadingTask = window.pdfjsLib.getDocument({ url, disableWorker: true });
+            const loadingTask = window.pdfjsLib.getDocument({ url: resolvedUrl, disableWorker: true });
             pdfDoc = await loadingTask.promise;
             pdfPage = 1;
             pdfScale = 1;
             if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages}`;
             renderPdfPage(pdfPage);
         } catch (_) {
-            if (error) error.classList.add('hidden');
-            showPdfFallback(url);
+            if (error) error.classList.remove('hidden');
+            showPdfFallback(resolvedUrl);
         }
     }
 
