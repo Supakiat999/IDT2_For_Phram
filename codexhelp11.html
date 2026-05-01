@@ -291,6 +291,20 @@
             </label>
         </div>
         <div class="ctrl-row">
+            <label>Queue Behavior:
+                <select id="queue-behavior-select" class="styled-select">
+                    <option value="batch_queue">Normal</option>
+                    <option value="sequential_queue">Sequential (1-by-1)</option>
+                </select>
+            </label>
+            <label>Queue Limit:
+                <select id="queue-limit-select" class="styled-select">
+                    <option value="classic_10">Classic (10)</option>
+                    <option value="unlimited">Unlimited</option>
+                </select>
+            </label>
+        </div>
+        <div class="ctrl-row">
             <label><input type="checkbox" id="tutor-toggle" checked> Tutor mode explanations</label>
             <label><input type="checkbox" id="strict-toggle" checked> Strict safety checks</label>
             <label><input type="checkbox" id="notimed-toggle"> No timer mode</label>
