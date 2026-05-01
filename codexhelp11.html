@@ -33,6 +33,24 @@
         .diff-controls { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; }
         .diff-btn { background: transparent; border: 2px solid #00695c; color: #00695c; padding: 8px 16px; border-radius: 30px; font-weight: bold; cursor: pointer; }
         .diff-btn.active { background: #00695c; color: white; }
+        .setting-group { width: min(760px, 100%); text-align: left; margin: 4px auto 10px; }
+        .setting-label { font-weight: bold; color: #00695c; margin-bottom: 6px; }
+        .segmented { display: flex; flex-wrap: wrap; gap: 8px; }
+        .segment-btn {
+            border: 2px solid #80cbc4;
+            background: #f1f8f7;
+            color: #004d40;
+            border-radius: 999px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+        .segment-btn.active {
+            background: #00695c;
+            border-color: #00695c;
+            color: #fff;
+            box-shadow: 0 6px 14px rgba(0,105,92,0.2);
+        }
         .solution-box { background: white; padding: 20px; border-radius: 10px; text-align: left; max-width: 780px; width: 92%; border: 2px solid #00695c; box-shadow: 0 10px 30px rgba(0,0,0,0.2); max-height: 86vh; overflow-y: auto; }
         .solution-box.success-box { border-color: #2e7d32; background: #f1f8e9; }
         .solution-box.error-box { border-color: #c62828; background: #ffebee; }
@@ -229,6 +247,20 @@
                     <option value="mixed">Mixed quiz</option>
                 </select>
             </label>
+        </div>
+        <div class="setting-group">
+            <div class="setting-label">Rush Queue Behavior</div>
+            <div class="segmented">
+                <button type="button" class="segment-btn active" id="queue-behavior-batch" onclick="setQueueBehavior('batch_queue')">Normal Queue</button>
+                <button type="button" class="segment-btn" id="queue-behavior-sequential" onclick="setQueueBehavior('sequential_queue')">Sequential (1-by-1)</button>
+            </div>
+        </div>
+        <div class="setting-group">
+            <div class="setting-label">Rush Queue Limit</div>
+            <div class="segmented">
+                <button type="button" class="segment-btn active" id="queue-limit-classic" onclick="setQueueLimitMode('classic_10')">Classic (10)</button>
+                <button type="button" class="segment-btn" id="queue-limit-unlimited" onclick="setQueueLimitMode('unlimited')">Unlimited</button>
+            </div>
         </div>
         <div class="ctrl-row">
             <label>Queue Behavior:
@@ -746,6 +778,18 @@
         document.getElementById(`mode-${mode}`).classList.add('active');
         const restartBtn = document.getElementById('restart-table-btn');
         if (restartBtn) restartBtn.classList.toggle('hidden', mode !== 'tablequiz');
+    }
+
+    function setQueueBehavior(mode) {
+        queueBehavior = mode === 'sequential_queue' ? 'sequential_queue' : 'batch_queue';
+        document.getElementById('queue-behavior-batch').classList.toggle('active', queueBehavior === 'batch_queue');
+        document.getElementById('queue-behavior-sequential').classList.toggle('active', queueBehavior === 'sequential_queue');
+    }
+
+    function setQueueLimitMode(mode) {
+        queueLimitMode = mode === 'unlimited' ? 'unlimited' : 'classic_10';
+        document.getElementById('queue-limit-classic').classList.toggle('active', queueLimitMode === 'classic_10');
+        document.getElementById('queue-limit-unlimited').classList.toggle('active', queueLimitMode === 'unlimited');
     }
 
     function getActiveQuizType() {
