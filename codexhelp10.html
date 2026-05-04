@@ -44,6 +44,8 @@
         .history-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
         .history-actions .action-btn { min-width: 170px; }
         .action-btn { background: #00897b; color: white; border: none; padding: 10px 14px; font-size: 14px; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .pause-box { text-align: center; max-width: 520px; }
+        .pause-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
         .exam-select-wrap { display: flex; align-items: center; gap: 8px; }
         .pdf-icon-btn { border: 2px solid #00695c; background: white; color: #00695c; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; }
         .pdf-icon-btn:disabled { opacity: 0.45; cursor: not-allowed; }
@@ -137,10 +139,15 @@
         .dnd-table th { background: #3f766e; color: #fff; padding: 10px; }
         .dnd-table td { border: 1px solid #d7dee3; padding: 12px; vertical-align: top; min-height: 72px; }
         .drop-slot { border: 2px dashed #5f8f87; border-radius: 10px; padding: 14px; text-align: center; color: #3f766e; background: #f4fbf9; font-weight: 700; }
-        .drop-slot.active { box-shadow: 0 0 0 3px rgba(0,105,92,0.2); }
+        .drop-slot.active { background: #fff9c4; border-color: #f9a825; color: #5f4500; box-shadow: 0 0 0 3px rgba(249,168,37,0.26); }
         .drop-slot.correct { border-style: solid; background: #e9f7ef; color: #1b5e20; }
+        .drop-slot.wrong { background: #ffebee; border-color: #c62828; color: #b71c1c; }
         .pill-pool { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
-        .pill-choice { border: 2px solid #5f8f87; border-radius: 999px; padding: 8px 14px; background: #fff; cursor: grab; user-select: none; }
+        .pill-choice { border: 2px solid #5f8f87; border-radius: 999px; padding: 9px 15px; background: #fff; cursor: pointer; user-select: none; touch-action: manipulation; line-height: 1.25; }
+        .pill-choice:hover, .pill-choice:focus { background: #e0f2f1; outline: none; box-shadow: 0 0 0 3px rgba(0,105,92,0.18); }
+        .pill-choice.wrong { background: #ffebee; border-color: #c62828; color: #b71c1c; }
+        .empty-queue-panel { width: 100%; box-sizing: border-box; text-align: center; }
+        .empty-queue-panel .action-btn { margin-top: 8px; width: 100%; }
         @media (max-width: 768px) {
             body { padding: 10px; align-items: flex-start; }
             #game-container { height: 96vh; }
@@ -216,6 +223,8 @@
         <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Mode:</div>
         <div class="diff-controls">
             <button class="diff-btn active" id="mode-rush" onclick="setGameMode('rush')">Pharmacy Rush</button>
+            <button class="diff-btn" id="mode-endless" onclick="setGameMode('endless')">Endless Queue</button>
+            <button class="diff-btn" id="mode-onecase" onclick="setGameMode('onecase')">One Case At A Time</button>
             <button class="diff-btn" id="mode-tradequiz" onclick="setGameMode('tradequiz')">Mini Quiz: Trade Name</button>
             <button class="diff-btn" id="mode-tablequiz" onclick="setGameMode('tablequiz')">Table Quiz (Memorize)</button>
         </div>
@@ -249,7 +258,7 @@
         </div>
         <div class="creator-credit">
             Made by Supakiat - Konkruad (ICE 19)<br>
-            Instagram : @_supakiatm_<br>'
+            Instagram : @_supakiatm_<br>
         </div>
     </div>
 
@@ -274,6 +283,17 @@
             <h2>Question History (Local Device)</h2>
             <div id="history-content" style="max-height: 60vh; overflow-y:auto; font-size:0.95rem;"></div>
             <div style="text-align: right; margin-top: 12px;"><button class="action-btn" onclick="closeHistory()">Close</button></div>
+        </div>
+    </div>
+
+    <div id="pause-modal" class="overlay hidden" style="background: rgba(224, 247, 250, 0.92); z-index: 65;">
+        <div class="solution-box pause-box">
+            <h2 style="color:#00695c; margin-top:0;">Game Paused</h2>
+            <p>Your shift is paused. Timers and new patients are stopped until you resume.</p>
+            <div class="pause-actions">
+                <button class="action-btn" type="button" onclick="resumePausedGame()">Resume Game</button>
+                <button class="action-btn" type="button" onclick="returnToHome()">To Home</button>
+            </div>
         </div>
     </div>
 
@@ -307,11 +327,12 @@
             <span>Score: <span id="score-display">0</span></span>
             <span>Streak: <span id="streak-display">0</span></span>
             <span>Mastery: <span id="mastery-display">Novice</span></span>
-            <span>Strikes: <span id="strike-display">0</span>/3</span>
-            <span>Queue: <span id="queue-count">0</span>/10</span>
+            <span>Strikes: <span id="strike-display">0</span><span id="strike-limit-display">/3</span></span>
+            <span>Queue: <span id="queue-count">0</span><span id="queue-limit-display">/10</span></span>
             <span>Case timer: <span id="case-timer">--</span></span>
             <span>Accuracy: <span id="accuracy-display">0%</span></span>
             <span>Mode: <span id="mode-display">Rush</span></span>
+            <button class="action-btn" type="button" onclick="pauseGame()">Pause</button>
             <button class="action-btn" onclick="returnToHome()">To Home</button>
             <button class="action-btn" onclick="openHistory()">Review History</button>
             <button class="action-btn" onclick="exportSessionReport()">Export Report</button>
@@ -717,18 +738,40 @@
 
     function setDifficulty(level){
         currentDifficulty = level;
-        document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+        ['easy', 'med', 'hard'].forEach(id => document.getElementById(`btn-${id}`).classList.remove('active'));
         document.getElementById(`btn-${level}`).classList.add('active');
     }
 
     function setGameMode(mode) {
         currentMode = mode;
         document.getElementById('mode-rush').classList.remove('active');
+        document.getElementById('mode-endless').classList.remove('active');
+        document.getElementById('mode-onecase').classList.remove('active');
         document.getElementById('mode-tradequiz').classList.remove('active');
         document.getElementById('mode-tablequiz').classList.remove('active');
         document.getElementById(`mode-${mode}`).classList.add('active');
         const restartBtn = document.getElementById('restart-table-btn');
         if (restartBtn) restartBtn.classList.toggle('hidden', mode !== 'tablequiz');
+    }
+
+    function isEndlessMode() {
+        return currentMode === 'endless';
+    }
+
+    function isOneCaseMode() {
+        return currentMode === 'onecase';
+    }
+
+    function canContinueShift() {
+        return isEndlessMode() || strikes < 3;
+    }
+
+    function getModeLabel() {
+        if (currentMode === 'tradequiz') return `Mini Quiz (${quizType})`;
+        if (currentMode === 'endless') return 'Endless Queue';
+        if (currentMode === 'onecase') return 'One Case At A Time';
+        if (currentMode === 'tablequiz') return 'Table Quiz (Memorize)';
+        return 'Rush';
     }
 
     function getActiveQuizType() {
@@ -1203,6 +1246,7 @@
         if (!applyExamSelection({ allowUnavailable: true }) || !database.length) {
             return;
         }
+        document.getElementById('pause-modal').classList.add('hidden');
         if (currentMode === 'tablequiz') {
             launchTableQuizMode();
             return;
@@ -1212,7 +1256,7 @@
         strictSafety = document.getElementById('strict-toggle').checked;
         noTimerMode = document.getElementById('notimed-toggle').checked;
         drillWeakestMode = document.getElementById('drill-toggle').checked;
-        suddenDeathMode = document.getElementById('suddendeath-toggle').checked;
+        suddenDeathMode = !isEndlessMode() && document.getElementById('suddendeath-toggle').checked;
         quizType = document.getElementById('quiztype-select').value || 'trade';
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
@@ -1233,7 +1277,7 @@
         Object.keys(progressByCategory).forEach(k => delete progressByCategory[k]);
         sessionLog.length = 0;
         stopCaseTimer();
-        document.getElementById('mode-display').innerText = currentMode === 'tradequiz' ? `Mini Quiz (${quizType})` : 'Rush';
+        document.getElementById('mode-display').innerText = getModeLabel();
         updateStats();
         spawnPatient();
         startSpawner();
@@ -1254,6 +1298,7 @@
         stopHeartbeat();
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
+        document.getElementById('pause-modal').classList.add('hidden');
         tableQuizState = {
             drugIndex: 0,
             fields: ['generic', 'trade', 'condition', 'action', 'dosage'],
@@ -1330,15 +1375,51 @@
         const cells = tableQuizState.fields.map(k => {
             if (k === tableQuizState.fixedKey) return `<td><strong>${drug[k] || 'None'}</strong></td>`;
             if (solvedKeys.has(k)) return `<td>${drug[k] || 'None'} ✅</td>`;
-            if (k === currentKey) return `<td><div class="drop-slot active" data-key="${k}">Drop ${tableQuizState.labels[k]} answer here...</div></td>`;
+            if (k === currentKey) return `<td><div class="drop-slot active" data-key="${k}">Tap an answer below or drop it here</div></td>`;
             return `<td><div class="drop-slot" data-key="${k}">Locked until previous topic is correct</div></td>`;
         }).join('');
         document.getElementById('risk-display').innerHTML =
-            `<div class="risk-box"><strong>memorized ${tableQuizState.memorizedSet.size}/${database.length}</strong> | <strong>Mode:</strong> Interactive Table D&D</div>
-             <div class="mini-panel"><strong>Instructions:</strong> Drag the correct answer from the pool below into the active dashed box.</div>
+            `<div class="risk-box"><strong>memorized ${tableQuizState.memorizedSet.size}/${database.length}</strong> | <strong>Mode:</strong> Interactive Table Quiz</div>
+             <div class="mini-panel"><strong>Instructions:</strong> Tap/click an answer, or drag it into the active dashed box.</div>
              <table class="dnd-table"><tr>${cols}</tr><tr>${cells}</tr></table>`;
         renderTableQuizChoices(drug, currentKey);
         renderTableQuizDrugList();
+    }
+
+    function flashWrongTableQuizAnswer(slot, pill) {
+        if (slot) {
+            slot.classList.add('wrong');
+            setTimeout(() => slot.classList.remove('wrong'), 350);
+        }
+        if (pill) {
+            pill.classList.add('wrong');
+            setTimeout(() => pill.classList.remove('wrong'), 350);
+        }
+    }
+
+    function submitTableQuizAnswer(value, drug, key, pill) {
+        if (!tableQuizState || !drug || !key) return;
+        const currentKey = tableQuizState.pendingKeys[tableQuizState.solvedCount] || null;
+        const slot = document.querySelector(`.drop-slot.active[data-key="${key}"]`);
+        if (key !== currentKey || !slot) return;
+
+        const correct = drug[key] || 'None';
+        if (normalize(value) === normalize(correct)) {
+            slot.classList.remove('active', 'wrong');
+            slot.classList.add('correct');
+            slot.innerText = `${value} ✅`;
+            tableQuizState.solvedCount += 1;
+            tableQuizState.progressByDrug[tableQuizState.drugIndex] = {
+                fixedKey: tableQuizState.fixedKey,
+                pendingKeys: tableQuizState.pendingKeys,
+                solvedCount: tableQuizState.solvedCount
+            };
+            saveTableQuizState();
+            setTimeout(() => renderTableQuizScreen(drug), 350);
+            return;
+        }
+
+        flashWrongTableQuizAnswer(slot, pill);
     }
 
     function renderTableQuizChoices(drug, currentKey) {
@@ -1383,6 +1464,15 @@
             pill.innerText = opt;
             pill.draggable = true;
             pill.dataset.value = opt;
+            pill.setAttribute('role', 'button');
+            pill.setAttribute('tabindex', '0');
+            pill.setAttribute('aria-label', `Answer ${opt}`);
+            pill.addEventListener('click', () => submitTableQuizAnswer(opt, drug, key, pill));
+            pill.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault();
+                submitTableQuizAnswer(opt, drug, key, pill);
+            });
             pill.addEventListener('dragstart', (e) => {
                 e.dataTransfer.setData('text/plain', opt);
             });
@@ -1396,22 +1486,7 @@
             slot.addEventListener('drop', (e) => {
                 e.preventDefault();
                 const dropped = e.dataTransfer.getData('text/plain');
-                if (normalize(dropped) === normalize(correct)) {
-                    slot.classList.remove('active');
-                    slot.classList.add('correct');
-                    slot.innerText = `${dropped} ✅`;
-                    tableQuizState.solvedCount += 1;
-                    tableQuizState.progressByDrug[tableQuizState.drugIndex] = {
-                        fixedKey: tableQuizState.fixedKey,
-                        pendingKeys: tableQuizState.pendingKeys,
-                        solvedCount: tableQuizState.solvedCount
-                    };
-                    saveTableQuizState();
-                    setTimeout(() => renderTableQuizScreen(drug), 350);
-                } else {
-                    slot.style.background = '#ffebee';
-                    setTimeout(() => { slot.style.background = '#f4fbf9'; }, 350);
-                }
+                submitTableQuizAnswer(dropped, drug, key);
             });
         }
     }
@@ -1430,6 +1505,7 @@
         if (!isShiftPaused) return;
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
+        document.getElementById('pause-modal').classList.add('hidden');
         gameActive = true;
         isShiftPaused = false;
         document.getElementById('resume-shift-btn').classList.add('hidden');
@@ -1451,6 +1527,55 @@
         trackEvent('shift_resumed', { mode: currentMode, score, strikes, queueSize: queue.length });
     }
 
+    function pauseCaseTimer() {
+        if (caseTimer) clearInterval(caseTimer);
+        caseTimer = null;
+        if (selectedPatientId && !noTimerMode && caseTimeLeft > 0) {
+            document.getElementById('case-timer').innerText = `Paused (${caseTimeLeft}s)`;
+        }
+    }
+
+    function pauseGame() {
+        if (!gameActive || strikes >= 3) return;
+        if (!document.getElementById('solution-modal').classList.contains('hidden')) return;
+        if (!document.getElementById('game-over-screen').classList.contains('hidden')) return;
+        gameActive = false;
+        isShiftPaused = true;
+        clearInterval(spawnTimer);
+        pauseCaseTimer();
+        stopHeartbeat();
+        if (currentMode === 'tablequiz') saveTableQuizState();
+        document.getElementById('pause-modal').classList.remove('hidden');
+        trackEvent('game_paused', { mode: currentMode, score, strikes, queueSize: queue.length });
+    }
+
+    function resumePausedGame() {
+        if (!isShiftPaused) return;
+        document.getElementById('pause-modal').classList.add('hidden');
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-over-screen').classList.add('hidden');
+        gameActive = true;
+        isShiftPaused = false;
+
+        if (currentMode === 'tablequiz' && tableQuizState) {
+            document.getElementById('mode-display').innerText = 'Table Quiz (Memorize)';
+            renderTableQuizDrugList();
+            renderTableQuizScreen(database[tableQuizState.drugIndex]);
+            trackEvent('game_resumed_from_pause', { mode: currentMode, memorized: tableQuizState.memorizedSet.size });
+            return;
+        }
+
+        updateStats();
+        renderQueue();
+        if (selectedPatientId && queue.some(p => p.id === selectedPatientId)) {
+            if (!noTimerMode && caseTimeLeft > 0) startCaseTimer(caseTimeLeft);
+            else if (noTimerMode) document.getElementById('case-timer').innerText = 'OFF';
+        }
+        startSpawner();
+        startHeartbeat();
+        trackEvent('game_resumed_from_pause', { mode: currentMode, score, strikes, queueSize: queue.length });
+    }
+
     function resetGame() {
         gameActive = false;
         isShiftPaused = false;
@@ -1458,6 +1583,7 @@
         stopCaseTimer();
         stopHeartbeat();
         clearExamPanel();
+        document.getElementById('pause-modal').classList.add('hidden');
         document.getElementById('resume-shift-btn').classList.add('hidden');
         document.getElementById('start-shift-btn').innerText = 'Start New Shift';
         document.getElementById('start-screen').classList.remove('hidden');
@@ -1471,6 +1597,7 @@
         stopCaseTimer();
         stopHeartbeat();
         trackEvent('to_home_clicked', { score, strikes, attempts: totalAttempts, queueSize: queue.length });
+        document.getElementById('pause-modal').classList.add('hidden');
         document.getElementById('solution-modal').classList.add('hidden');
         document.getElementById('history-modal').classList.add('hidden');
         document.getElementById('resume-shift-btn').classList.remove('hidden');
@@ -1481,7 +1608,7 @@
     }
 
     function startSpawner() {
-        if (currentMode === 'tablequiz') return;
+        if (currentMode === 'tablequiz' || isOneCaseMode()) return;
         clearInterval(spawnTimer);
         const level = getAdaptiveDifficulty();
         const s = diffSettings[level];
@@ -1502,7 +1629,8 @@
     }
 
     function spawnPatient() {
-        if (queue.length >= maxQueue) { triggerGameOver('The waiting room reached 10 patients!'); return; }
+        if (isOneCaseMode() && queue.length >= 1) return;
+        if (!isEndlessMode() && queue.length >= maxQueue) { triggerGameOver('The waiting room reached 10 patients!'); return; }
         if (currentMode === 'tradequiz') {
             const activeQuizType = getActiveQuizType();
             const quizPool = activeQuizType === 'trade'
@@ -1567,14 +1695,39 @@
         updateStats();
     }
 
+    function requestPatientNow() {
+        if (!gameActive || currentMode === 'tablequiz' || !canContinueShift()) return;
+        if (isOneCaseMode() && queue.length >= 1) return;
+        if (!isEndlessMode() && queue.length >= maxQueue) {
+            triggerGameOver('The waiting room reached 10 patients!');
+            return;
+        }
+        spawnPatient();
+        trackEvent('manual_patient_requested', { mode: currentMode, queueSize: queue.length });
+    }
+
     function renderQueue() {
         const el = document.getElementById('queue-list');
         el.innerHTML = '';
+        if (queue.length === 0 && gameActive && currentMode !== 'tablequiz' && canContinueShift()) {
+            const emptyPanel = document.createElement('div');
+            emptyPanel.className = 'mini-panel empty-queue-panel';
+            emptyPanel.innerHTML = '<strong>No patients waiting.</strong><br><small>Need another case right away?</small>';
+
+            const button = document.createElement('button');
+            button.className = 'action-btn';
+            button.type = 'button';
+            button.innerText = 'Receive Patient Now';
+            button.addEventListener('click', requestPatientNow);
+            emptyPanel.appendChild(button);
+            el.appendChild(emptyPanel);
+            return;
+        }
         queue.forEach((pat, index) => {
             const card = document.createElement('div');
             card.className = 'patient-card';
             if (pat.id === selectedPatientId) card.classList.add('selected');
-            if (!noTimerMode && index === 0 && queue.length >= 7) card.classList.add('urgent');
+            if (!isEndlessMode() && !noTimerMode && index === 0 && queue.length >= 7) card.classList.add('urgent');
             if (pat.quizMode) {
                 card.innerHTML = `<strong>Mini Quiz #${index + 1}</strong><br><small>${quizTypeLabel(pat.quizType)} question</small>`;
             } else {
@@ -1594,6 +1747,11 @@
         if (a !== 'none') hints.push(`Allergy alert: ${patient.allergies}.`);
         if (patient.caseNote) hints.push(`Hard case note: ${patient.caseNote}.`);
         return hints;
+    }
+
+    function displayPatient(patient) {
+        if (!patient) return;
+        selectPatient(patient.id);
     }
 
     function selectPatient(id) {
@@ -1670,7 +1828,7 @@
                 const timedOutPatient = queue.find(p => p.id === selectedPatientId);
                 if (timedOutPatient) {
                     saveQuestionHistory({
-                        mode: timedOutPatient.quizMode ? `Mini Quiz (${timedOutPatient.quizType})` : 'Rush',
+                        mode: timedOutPatient.quizMode ? `Mini Quiz (${timedOutPatient.quizType})` : getModeLabel(),
                         question: timedOutPatient.condition,
                         selected: 'TIMEOUT',
                         correct: timedOutPatient.quizMode
@@ -1688,7 +1846,7 @@
                 sessionLog.push({ patientId: selectedPatientId, result: 'timeout', score, strikes, when: new Date().toISOString() });
                 updateStats();
                 showTimeoutModal();
-                if (strikes >= 3) setTimeout(() => triggerGameOver('You reached 3 strikes. Shift terminated.'), 900);
+                if (!isEndlessMode() && strikes >= 3) setTimeout(() => triggerGameOver('You reached 3 strikes. Shift terminated.'), 900);
             }
         }, 1000);
     }
@@ -1923,11 +2081,11 @@
             trackEvent('question_answered', { mode: 'quiz', correct: isCorrectQuiz, score, strikes });
             modal.classList.remove('hidden');
             updateStats();
-            if (suddenDeathMode && strikes > 0) {
+            if (!isEndlessMode() && suddenDeathMode && strikes > 0) {
                 setTimeout(() => triggerGameOver('Sudden death mode: one error ends the shift.'), 800);
                 return;
             }
-            if (strikes >= 3) setTimeout(() => triggerGameOver('You reached 3 strikes. Shift terminated.'), 1200);
+            if (!isEndlessMode() && strikes >= 3) setTimeout(() => triggerGameOver('You reached 3 strikes. Shift terminated.'), 1200);
             return;
         }
 
@@ -1994,7 +2152,7 @@
 
         updateProgress(patient.category, isCorrect);
         saveQuestionHistory({
-            mode: 'Rush',
+            mode: getModeLabel(),
             question: patient.condition,
             selected: formatDrugLabel(submittedDrug),
             correct: validNames,
@@ -2011,15 +2169,15 @@
             score,
             safetyNotes: safety.reasons.join('; ')
         });
-        trackEvent('question_answered', { mode: 'rush', correct: isCorrect, score, strikes, safetyFlags: safety.reasons.length });
+        trackEvent('question_answered', { mode: currentMode, correct: isCorrect, score, strikes, safetyFlags: safety.reasons.length });
 
         modal.classList.remove('hidden');
         updateStats();
-        if (suddenDeathMode && strikes > 0) {
+        if (!isEndlessMode() && suddenDeathMode && strikes > 0) {
             setTimeout(() => triggerGameOver('Sudden death mode: one error ends the shift.'), 800);
             return;
         }
-        if (strikes >= 3) setTimeout(() => triggerGameOver('You reached 3 strikes. Shift terminated.'), 1200);
+        if (!isEndlessMode() && strikes >= 3) setTimeout(() => triggerGameOver('You reached 3 strikes. Shift terminated.'), 1200);
     }
 
     function closeSolution() {
@@ -2027,18 +2185,24 @@
         modal.classList.add('hidden');
         const box = modal.querySelector('.solution-box');
         box.classList.remove('success-box', 'error-box');
+        if (canContinueShift()) gameActive = true;
         clearExamPanel();
-        if (strikes < 3) { gameActive = true; startSpawner(); }
+        if (canContinueShift()) {
+            if (isOneCaseMode() && queue.length === 0) spawnPatient();
+            startSpawner();
+        }
     }
 
     function updateStats() {
         document.getElementById('score-display').innerText = score;
         document.getElementById('strike-display').innerText = strikes;
+        document.getElementById('strike-limit-display').innerText = isEndlessMode() ? '/∞' : '/3';
         document.getElementById('streak-display').innerText = streak;
         document.getElementById('accuracy-display').innerText = `${getAccuracyPercent()}%`;
         const q = document.getElementById('queue-count');
         q.innerText = queue.length;
-        q.style.color = queue.length >= 7 ? '#ffeb3b' : 'inherit';
+        document.getElementById('queue-limit-display').innerText = isEndlessMode() ? '/∞' : '/10';
+        q.style.color = !isEndlessMode() && queue.length >= 7 ? '#ffeb3b' : 'inherit';
         updateMastery();
     }
 
@@ -2073,6 +2237,7 @@
         loadSessionHistory();
         renderAnalytics();
         trackEvent('shift_completed', { reason, score, attempts: totalAttempts, correct: totalCorrect, accuracy: getAccuracyPercent() });
+        document.getElementById('pause-modal').classList.add('hidden');
         document.getElementById('solution-modal').classList.add('hidden');
         document.getElementById('game-over-screen').classList.remove('hidden');
     }
@@ -2113,6 +2278,7 @@
         }
         if (!selectedPatientId) return;
         if (!document.getElementById('solution-modal').classList.contains('hidden')) return;
+        if (!document.getElementById('pause-modal').classList.contains('hidden')) return;
         const n = Number(e.key);
         if (!Number.isInteger(n) || n < 1 || n > 9) return;
         const buttons = Array.from(document.querySelectorAll('#choice-grid .choice-btn'));
