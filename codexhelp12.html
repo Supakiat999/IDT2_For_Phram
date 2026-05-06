@@ -2,25 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Pharmacy Rush: Clinical Simulator (codexhelp13)</title>
-    <script>
-        (function () {
-            function detectPhoneLayout() {
-                const ua = navigator.userAgent || '';
-                const isTablet = /iPad|Tablet|Kindle|Silk/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua));
-                const phoneUa = /Mobi|Android.*Mobile|iPhone|iPod|Windows Phone/i.test(ua);
-                const smallTouch = window.matchMedia && window.matchMedia('(max-width: 540px) and (pointer: coarse)').matches;
-                const usePhoneLayout = !isTablet && (phoneUa || smallTouch);
-                document.documentElement.classList.toggle('phone-layout', usePhoneLayout);
-                document.documentElement.classList.toggle('default-layout', !usePhoneLayout);
-                window.__phoneLayoutDetected = usePhoneLayout;
-            }
-            detectPhoneLayout();
-            window.addEventListener('resize', detectPhoneLayout, { passive: true });
-            window.addEventListener('orientationchange', detectPhoneLayout, { passive: true });
-        })();
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pharmacy Rush: Clinical Simulator (codexhelp12)</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #e0f7fa; margin: 0; padding: 12px; color: #333; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; box-sizing: border-box; overflow-x: hidden; }
         #game-container { width: 100%; max-width: 1050px; height: min(760px, calc(100vh - 24px)); background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); overflow: hidden; position: relative; display: flex; flex-direction: column; }
@@ -55,7 +38,7 @@
         #start-screen .creator-credit { margin-top: 12px; }
         .overlay button.start-btn { background: #ff7043; color: white; border: none; padding: 13px 34px; font-size: 1.1rem; font-weight: bold; border-radius: 40px; cursor: pointer; }
         .diff-controls { display: flex; gap: 10px; margin-bottom: 15px; justify-content: center; flex-wrap: wrap; }
-        .diff-btn { background: transparent; border: 2px solid #00695c; color: #00695c; padding: 8px 16px; border-radius: 30px; font-weight: bold; cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+        .diff-btn { background: transparent; border: 2px solid #00695c; color: #00695c; padding: 8px 16px; border-radius: 30px; font-weight: bold; cursor: pointer; }
         .diff-btn.active { background: #00695c; color: white; }
         .queue-settings-panel {
             width: min(680px, 100%);
@@ -218,143 +201,6 @@
         .mastery-grid { display: grid; gap: 6px; }
         .mastery-chip { background: #fff; border: 1px solid #c5e1a5; border-left: 4px solid #00897b; border-radius: 6px; padding: 7px; font-size: 0.84rem; }
         .why-box { margin-top: 10px; padding: 10px; background: #e8f5e9; border-left: 4px solid #2e7d32; border-radius: 6px; }
-        .mobile-only { display: none; }
-        .queue-chip { display: none; }
-        .mobile-flow-guide { background: #eef7f6; border: 1px solid #b2dfdb; border-radius: 8px; padding: 8px; margin-bottom: 10px; }
-        .mobile-flow-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-        .mobile-flow-step { background: #ffffff; border: 1px solid #b2dfdb; border-radius: 7px; padding: 7px 5px; color: #004d40; font-size: 0.78rem; font-weight: 700; text-align: center; line-height: 1.15; }
-        .mobile-flow-step strong { display: block; color: #00695c; font-size: 0.72rem; margin-bottom: 2px; }
-        .mobile-empty-help { color: #607d8b; font-size: 0.95rem; line-height: 1.4; text-align: center; margin: 10px auto 0; max-width: 280px; }
-        .mobile-case-strip { display: none; }
-        .mobile-case-actions { display: none; }
-        .mobile-more-options { display: none; }
-        .mobile-result { display: grid; gap: 10px; }
-        .mobile-result-hero, .mobile-result-section { border-radius: 8px; padding: 12px; background: #f8fafb; border: 1px solid #e5ecef; }
-        .mobile-result-hero { text-align: center; border-color: #a5d6a7; background: #f1f8e9; color: #1b5e20; }
-        .mobile-result-hero.error { border-color: #ef9a9a; background: #ffebee; color: #b71c1c; }
-        .mobile-result-icon { font-size: 1.45rem; display: block; margin-bottom: 5px; }
-        .mobile-result-kicker { color: #607d8b; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; }
-        .mobile-badge-list { display: flex; flex-wrap: wrap; gap: 6px; }
-        .mobile-drug-badge { border-radius: 999px; padding: 5px 8px; background: #e0f2f1; color: #004d40; font-size: 0.72rem; font-weight: 800; }
-        .mobile-drug-badge.unsafe { background: #ffebee; color: #b71c1c; text-decoration: line-through; }
-        @media (min-width: 1024px) {
-            html.default-layout,
-            html.default-layout body {
-                height: 100vh;
-                overflow: hidden;
-            }
-            html.default-layout body {
-                align-items: center;
-                padding: 14px 18px;
-                background: #e0f7fa;
-            }
-            html.default-layout #game-container {
-                width: min(1180px, calc(100vw - 36px));
-                max-width: 1180px;
-                height: min(690px, calc(100vh - 28px));
-                border-radius: 10px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            }
-            html.default-layout #header {
-                padding: 12px 16px;
-                font-size: 1rem;
-                gap: 12px;
-            }
-            html.default-layout #main-area { flex: 1; min-height: 0; }
-            html.default-layout #start-screen {
-                overflow-x: hidden;
-                overflow-y: auto;
-                padding: 12px 18px 10px;
-                background: rgba(255,255,255,0.95);
-                scrollbar-width: thin;
-            }
-            html.default-layout #start-screen h1 {
-                color: #00695c;
-                font-size: clamp(2.15rem, 3.1vw, 2.55rem);
-                line-height: 1.1;
-                margin: 0 0 6px;
-            }
-            html.default-layout #start-screen > p {
-                max-width: 760px;
-                color: #546e7a;
-                font-size: 0.94rem;
-                line-height: 1.28;
-                margin: 0 auto 8px;
-            }
-            html.default-layout #start-screen > div[style*="font-weight"] {
-                color: #00695c !important;
-                font-size: 1rem;
-                margin: 0 auto 8px !important;
-            }
-            html.default-layout #start-screen .ctrl-row {
-                gap: 12px;
-                margin: 5px auto;
-                font-size: 0.96rem;
-            }
-            html.default-layout #exam-select,
-            html.default-layout #quiztype-select {
-                min-height: 0;
-                font-size: 1rem;
-            }
-            html.default-layout #start-screen .diff-controls {
-                gap: 10px;
-                margin-bottom: 8px;
-            }
-            html.default-layout #start-screen .diff-btn {
-                min-height: 0;
-                padding: 7px 15px;
-                border-radius: 30px;
-                font-size: 0.96rem;
-            }
-            html.default-layout .queue-settings-panel {
-                width: min(760px, 78%);
-                margin: 4px auto 6px;
-                padding: 7px;
-                border-radius: 8px;
-            }
-            html.default-layout .settings-toggles {
-                max-width: 100%;
-                width: auto;
-                margin: 6px auto;
-                gap: 10px;
-                font-size: 0.94rem;
-            }
-            html.default-layout .overlay button.start-btn {
-                min-width: 0;
-                min-height: 0;
-                padding: 11px 32px;
-                font-size: 1.04rem;
-                background: #ff7043;
-            }
-            html.default-layout #session-history {
-                width: min(840px, 86%);
-                max-width: none !important;
-                padding: 7px 9px;
-                margin-top: 6px !important;
-                font-size: 0.84rem;
-                line-height: 1.24;
-            }
-            html.default-layout #start-screen .history-actions {
-                gap: 10px;
-                margin-top: 6px;
-            }
-            html.default-layout .creator-credit {
-                margin-top: 7px;
-                padding-bottom: 2px;
-                font-size: 0.78rem;
-                line-height: 1.16;
-            }
-            html.default-layout #exam-pdf-fab {
-                top: 14px;
-                right: 14px;
-                width: 52px;
-                height: 52px;
-                border-radius: 16px;
-                font-size: 24px;
-            }
-        }
-        .advanced-options { display: contents; }
-        .advanced-options summary { display: none; }
         @media (max-width: 768px) {
             body { padding: 8px; align-items: flex-start; }
             #game-container { height: calc(100vh - 16px); border-radius: 8px; }
@@ -390,1349 +236,6 @@
             .queue-preset-group { grid-template-columns: repeat(3, minmax(0, 1fr)); }
             .queue-preset-group .segment-btn { padding: 6px 5px; font-size: 0.78rem; min-height: 40px; }
         }
-        @media all {
-            html.phone-layout, html.phone-layout body{ width: 100%; height: 100%; }
-            html.phone-layout body{
-                padding: 0;
-                background: #ffffff;
-                justify-content: flex-start;
-                min-height: 100vh;
-                min-height: 100dvh;
-                overflow: hidden;
-            }
-            html.phone-layout button, html.phone-layout select, html.phone-layout input{ font-size: 16px; }
-            html.phone-layout #game-container{
-                width: min(100%, 390px);
-                max-width: 390px;
-                height: 100vh;
-                height: 100dvh;
-                min-height: 100vh;
-                min-height: 100dvh;
-                border-radius: 0;
-                box-shadow: none;
-            }
-            html.phone-layout #header{
-                position: sticky;
-                top: 0;
-                z-index: 20;
-                padding: calc(7px + env(safe-area-inset-top)) 8px 7px;
-                gap: 6px;
-                background: #356f63;
-                font-size: 0.78rem;
-                border-bottom: 1px solid rgba(255,255,255,0.16);
-            }
-            html.phone-layout .header-brand{
-                width: auto;
-                flex: 1 1 auto;
-                min-width: 105px;
-                font-size: 0.78rem;
-                line-height: 1.1;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            html.phone-layout .header-brand small{ display: none; }
-            html.phone-layout .stats{
-                width: auto;
-                display: flex;
-                gap: 5px;
-                flex-wrap: nowrap;
-                align-items: center;
-            }
-            html.phone-layout .stats > span{
-                min-height: 26px;
-                padding: 4px 7px;
-                border-radius: 999px;
-                background: rgba(255,255,255,0.14);
-                justify-content: center;
-                text-align: center;
-                font-size: 0.72rem;
-                line-height: 1;
-                white-space: nowrap;
-            }
-            html.phone-layout .stats .stat-primary:nth-of-type(3),
-            html.phone-layout .stats .stat-secondary{ display: none; }
-            html.phone-layout .header-action-menu{
-                grid-column: auto;
-                position: relative;
-                min-width: 0;
-            }
-            html.phone-layout .header-action-menu summary.action-btn{
-                min-height: 26px;
-                padding: 5px 8px;
-                font-size: 0.68rem;
-                line-height: 1;
-                border-radius: 999px;
-                background: rgba(255,255,255,0.18);
-            }
-            html.phone-layout .header-action-list{
-                position: absolute;
-                right: 0;
-                top: calc(100% + 6px);
-                min-width: min(88vw, 230px);
-                box-shadow: 0 12px 26px rgba(0,0,0,0.2);
-            }
-            html.phone-layout #header{
-                padding: calc(7px + env(safe-area-inset-top)) 8px 7px;
-                gap: 6px;
-                font-size: 0.78rem;
-            }
-            html.phone-layout .header-brand{
-                width: auto;
-                font-size: 0.78rem;
-                line-height: 1.1;
-                white-space: nowrap;
-            }
-            html.phone-layout .stats{
-                display: flex;
-                width: auto;
-                gap: 5px;
-            }
-            html.phone-layout .stats > span{
-                min-height: 26px;
-                padding: 4px 7px;
-                justify-content: center;
-                text-align: center;
-                font-size: 0.72rem;
-                line-height: 1;
-            }
-            html.phone-layout .header-action-menu{
-                grid-column: auto;
-                position: relative;
-                min-width: 0;
-            }
-            html.phone-layout .header-action-menu summary.action-btn{
-                min-height: 34px;
-                padding: 7px 6px;
-                font-size: 0.78rem;
-                line-height: 1.1;
-            }
-            html.phone-layout .header-action-list{
-                position: absolute;
-                right: 0;
-                top: calc(100% + 6px);
-                min-width: min(88vw, 230px);
-                box-shadow: 0 12px 26px rgba(0,0,0,0.2);
-            }
-            html.phone-layout #main-area{
-                flex: 1;
-                min-height: 0;
-                overflow: hidden;
-            }
-            html.phone-layout .mobile-only{ display: block; }
-            html.phone-layout #queue-panel{
-                display: none;
-            }
-            html.phone-layout #game-container.mobile-case-picker-open #queue-panel{
-                position: fixed;
-                top: var(--phone-header-offset, calc(54px + env(safe-area-inset-top)));
-                left: 0;
-                z-index: 38;
-                display: block;
-                width: min(100%, 390px);
-                height: auto;
-                max-height: min(315px, calc(100vh - 150px));
-                max-height: min(315px, calc(100dvh - 150px));
-                padding: 10px;
-                background: rgba(246, 255, 251, 0.98);
-                border-right: 0;
-                border-bottom: 1px solid rgba(0,105,92,0.16);
-                box-shadow: 0 14px 30px rgba(8, 55, 49, 0.18);
-                box-sizing: border-box;
-                overflow-y: auto;
-            }
-            html.phone-layout #queue-panel h3{
-                margin: 0 0 6px;
-                padding: 0;
-                border: 0;
-                font-size: 0.76rem;
-                letter-spacing: 0;
-                text-transform: uppercase;
-            }
-            html.phone-layout #queue-panel h3::after{
-                content: attr(data-mobile-suffix);
-                color: #78909c;
-                font-weight: 600;
-                text-transform: none;
-            }
-            html.phone-layout #game-container.mobile-case-picker-open #queue-list{
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 8px;
-                overflow: visible;
-                padding: 0 0 4px;
-                scroll-snap-type: none;
-            }
-            html.phone-layout #game-container.mobile-case-picker-open .patient-card{
-                min-width: 0;
-                max-width: none;
-                width: 100%;
-                box-sizing: border-box;
-                min-height: 60px;
-                padding: 10px 56px 10px 12px;
-                border-top-width: 0;
-                border-left: 5px solid #00897b;
-                border-radius: 14px;
-                box-shadow: 0 6px 14px rgba(10, 76, 64, 0.1);
-            }
-            html.phone-layout #game-container.mobile-case-picker-open .patient-card.medicine-card{
-                border-left-color: #ff9f43;
-            }
-            html.phone-layout #game-container.mobile-case-picker-open .patient-card small{
-                display: block;
-                margin-top: 3px;
-                color: #5f7b75;
-                line-height: 1.25;
-            }
-            html.phone-layout .mobile-medicine-search{
-                display: grid;
-                gap: 6px;
-                margin: 0 0 9px;
-            }
-            html.phone-layout .mobile-medicine-search input{
-                width: 100%;
-                min-height: 44px;
-                box-sizing: border-box;
-                border: 1px solid rgba(0,105,92,0.22);
-                border-radius: 14px;
-                padding: 0 12px;
-                background: #ffffff;
-                color: #17352f;
-                font-weight: 750;
-                box-shadow: 0 5px 12px rgba(10, 76, 64, 0.08);
-            }
-            html.phone-layout #queue-list{
-                display: flex;
-                gap: 8px;
-                overflow-x: auto;
-                overflow-y: hidden;
-                padding-bottom: 6px;
-                scroll-snap-type: x proximity;
-                -webkit-overflow-scrolling: touch;
-            }
-            html.phone-layout .patient-card{
-                position: relative;
-                min-width: 162px;
-                max-width: 196px;
-                min-height: 58px;
-                padding: 9px 50px 9px 10px;
-                margin: 0;
-                border-left: 0;
-                border-top: 4px solid #00897b;
-                border-radius: 8px;
-                font-size: 0.84rem;
-                line-height: 1.25;
-                scroll-snap-align: start;
-            }
-            html.phone-layout .patient-card:hover{ transform: none; }
-            html.phone-layout .patient-card.selected{
-                outline: 2px solid #004d40;
-                outline-offset: -2px;
-            }
-            html.phone-layout .queue-chip{
-                position: absolute;
-                top: 8px;
-                right: 8px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-width: 34px;
-                min-height: 24px;
-                padding: 0 7px;
-                border-radius: 999px;
-                background: #eceff1;
-                color: #455a64;
-                font-size: 0.68rem;
-                font-weight: 800;
-            }
-            html.phone-layout .patient-card.selected .queue-chip{
-                background: #00695c;
-                color: #ffffff;
-            }
-            html.phone-layout #progress-panel,
-            html.phone-layout #category-mastery-panel,
-            html.phone-layout #data-quality,
-            html.phone-layout #queue-panel .quick-ref{
-                display: none;
-            }
-            html.phone-layout #exam-panel{
-                width: 100%;
-                flex: 1;
-                min-height: 0;
-                padding: 0 0 calc(var(--phone-answer-reserve, 220px) + env(safe-area-inset-bottom));
-                overflow-y: auto;
-                -webkit-overflow-scrolling: touch;
-                scroll-padding-bottom: calc(var(--phone-answer-reserve, 220px) + env(safe-area-inset-bottom));
-                overscroll-behavior-y: contain;
-                background: #ffffff;
-            }
-            html.phone-layout #empty-exam h2{
-                max-width: 270px;
-                margin: 42px auto 0 !important;
-                font-size: 1rem;
-                line-height: 1.35;
-            }
-            html.phone-layout .exam-title{
-                display: none;
-            }
-            html.phone-layout #active-exam{
-                min-height: 100%;
-            }
-            html.phone-layout .mobile-flow-guide{
-                display: none;
-            }
-            html.phone-layout .mobile-case-strip{
-                position: sticky;
-                top: 0;
-                z-index: 8;
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) auto;
-                align-items: center;
-                gap: 8px;
-                padding: 8px 12px;
-                background: #e6f2f0;
-                border-bottom: 1px solid #cfe2de;
-                box-shadow: 0 3px 8px rgba(0,0,0,0.06);
-            }
-            html.phone-layout .mobile-case-actions{
-                display: inline-flex;
-                align-items: center;
-                gap: 6px;
-                flex-wrap: wrap;
-                justify-content: flex-end;
-                max-width: 190px;
-            }
-            html.phone-layout .mobile-case-action-btn{
-                min-height: 44px;
-                min-width: 54px;
-                padding: 0 9px;
-                border: 1px solid rgba(0,105,92,0.2);
-                border-radius: 999px;
-                background: #ffffff;
-                color: #004d40;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-                font-size: 0.7rem;
-                font-weight: 900;
-                cursor: pointer;
-            }
-            html.phone-layout .mobile-case-action-btn.skip{
-                color: #8a3a17;
-                border-color: rgba(255,117,72,0.35);
-                background: #fff8f1;
-            }
-            html.phone-layout .mobile-case-action-btn:disabled{
-                opacity: 0.45;
-                cursor: not-allowed;
-            }
-            html.phone-layout .mobile-case-action-btn.hidden-control{
-                display: none;
-            }
-            html.phone-layout .mobile-case-title{
-                min-width: 0;
-                color: #004d40;
-                font-size: 0.9rem;
-                font-weight: 800;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-            html.phone-layout .mobile-case-meta{
-                margin-top: 2px;
-                color: #607d8b;
-                font-size: 0.7rem;
-                line-height: 1.2;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-            html.phone-layout .mobile-case-timer{
-                background: #004d40;
-                color: #ffffff;
-                min-width: 44px;
-                min-height: 28px;
-                border-radius: 999px;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 0.78rem;
-                font-weight: 800;
-            }
-            html.phone-layout .exam-info{
-                display: grid;
-                gap: 8px;
-                margin: 0;
-                padding: 12px 12px calc(var(--phone-answer-reserve, 220px) + env(safe-area-inset-bottom));
-                font-size: 0.9rem;
-                line-height: 1.35;
-            }
-            html.phone-layout .exam-info > div{
-                background: #f8fafb;
-                border: 0;
-                border-left: 4px solid #00897b;
-                border-radius: 7px;
-                padding: 10px 11px;
-            }
-            html.phone-layout .exam-info strong{
-                display: block;
-                margin-bottom: 4px;
-                color: #356f63;
-                font-size: 0.67rem;
-                text-transform: uppercase;
-            }
-            html.phone-layout #row-age{ display: none !important; }
-            html.phone-layout #row-allergies{
-                background: #fff4f2;
-                border-left-color: #d8432f;
-            }
-            html.phone-layout #row-cautions{
-                background: #fff8ed;
-                border-left-color: #e65100;
-            }
-            html.phone-layout #risk-display{
-                padding: 0 12px;
-            }
-            html.phone-layout #risk-display .risk-box{
-                margin: 8px 0 0;
-                border-left-color: #d8432f;
-                background: #fff4f2;
-                color: #7f1d1d;
-            }
-            html.phone-layout .exam-title{
-                line-height: 1.25;
-                margin-bottom: 8px;
-                padding-bottom: 8px;
-            }
-            html.phone-layout .risk-box,
-            html.phone-layout .mini-panel,
-            html.phone-layout .why-box{
-                font-size: 0.92rem;
-                line-height: 1.35;
-            }
-            html.phone-layout .prescription-area{
-                position: fixed;
-                left: 0;
-                bottom: 0;
-                bottom: 0;
-                z-index: 4;
-                width: min(100%, 390px);
-                box-sizing: border-box;
-                margin: 0;
-                padding: 10px 12px calc(12px + env(safe-area-inset-bottom));
-                border-radius: 0;
-                background: #ffffff;
-                border-top: 1px solid #dfe8eb;
-                box-shadow: 0 -6px 16px rgba(0,0,0,0.08);
-                max-height: none;
-                overflow: visible;
-            }
-            html.phone-layout .prescription-area label{
-                position: static;
-                display: flex !important;
-                justify-content: space-between;
-                margin: 0 0 8px !important;
-                padding: 0;
-                background: transparent;
-                font-size: 0.68rem;
-                text-transform: uppercase;
-                letter-spacing: 0;
-            }
-            html.phone-layout .prescription-area label::after{
-                content: "Tap or press 1-4";
-                color: #004d40;
-            }
-            html.phone-layout .choice-grid{
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 8px;
-                margin-bottom: 0;
-            }
-            html.phone-layout .choice-btn{
-                min-height: 46px;
-                max-height: 58px;
-                padding: 8px 9px;
-                border-radius: 8px;
-                font-size: 0.78rem;
-                line-height: 1.18;
-                overflow: hidden;
-            }
-            html.phone-layout .overlay{
-                position: fixed;
-                left: 0;
-                right: auto;
-                width: min(100vw, 390px);
-                max-width: 390px;
-                box-sizing: border-box;
-                padding: calc(12px + env(safe-area-inset-top)) 10px calc(12px + env(safe-area-inset-bottom));
-            }
-            html.phone-layout #start-screen{
-                height: 100vh;
-                height: 100dvh;
-                background: #ffffff;
-                z-index: 90;
-                width: min(100%, 390px);
-                padding: calc(8px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));
-            }
-            html.phone-layout #start-screen h1{
-                font-size: 1.35rem;
-                line-height: 1.2;
-            }
-            html.phone-layout #start-screen > p{
-                font-size: 0.84rem;
-                line-height: 1.35;
-                margin-bottom: 6px;
-            }
-            html.phone-layout #start-screen .ctrl-row{
-                width: 100%;
-                max-width: 366px;
-                display: grid;
-                grid-template-columns: 1fr;
-                justify-items: stretch;
-                gap: 6px;
-            }
-            html.phone-layout #start-screen label{ text-align: left; }
-            html.phone-layout .exam-select-wrap{
-                width: 100%;
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) 46px;
-                gap: 8px;
-            }
-            html.phone-layout #exam-select,
-            html.phone-layout #quiztype-select{
-                width: 100%;
-                min-height: 44px;
-            }
-            html.phone-layout #start-screen .diff-controls{
-                width: 100%;
-                max-width: 366px;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 7px;
-            }
-            html.phone-layout #start-screen .difficulty-controls{
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-            html.phone-layout #start-screen .diff-btn{
-                padding: 8px 7px;
-                font-size: 0.82rem;
-                line-height: 1.15;
-                border-radius: 12px;
-            }
-            html.phone-layout #start-screen .diff-btn,
-            html.phone-layout .segment-btn,
-            html.phone-layout .action-btn,
-            html.phone-layout .overlay button.start-btn{
-                min-height: 44px;
-            }
-            html.phone-layout #start-screen .history-actions{
-                width: 100%;
-                max-width: 366px;
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-            html.phone-layout #start-screen .history-actions .action-btn,
-            html.phone-layout .overlay button.start-btn{
-                width: 100%;
-                max-width: 360px;
-                justify-self: center;
-            }
-            html.phone-layout .settings-toggles{
-                width: 100%;
-                max-width: 366px;
-                display: grid;
-                grid-template-columns: 1fr;
-                gap: 7px;
-                margin: 8px 0;
-            }
-            html.phone-layout .toggle-row{
-                min-height: 42px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 10px;
-                padding: 8px 10px;
-                box-sizing: border-box;
-                background: #f7f8f8;
-                border: 1px solid #edf1f2;
-                border-radius: 8px;
-                color: #263238;
-                font-size: 0.84rem;
-            }
-            html.phone-layout .toggle-row input{
-                order: 2;
-                width: 38px;
-                height: 22px;
-                flex: 0 0 38px;
-                accent-color: #4d8f81;
-            }
-            html.phone-layout .advanced-options{
-                display: grid;
-                gap: 7px;
-            }
-            html.phone-layout .advanced-options summary{
-                display: block;
-                min-height: 32px;
-                padding: 8px 10px;
-                color: #607d8b;
-                font-size: 0.72rem;
-                font-weight: 700;
-                text-align: center;
-                cursor: pointer;
-            }
-            html.phone-layout .advanced-options:not([open]) .advanced-toggle{
-                display: none;
-            }
-            html.phone-layout .queue-settings-panel{
-                display: none;
-            }
-            html.phone-layout .solution-box{
-                width: calc(100vw - 20px);
-                max-height: calc(100vh - 24px);
-                max-height: calc(100dvh - 24px);
-                padding: 14px;
-                border-radius: 8px;
-            }
-            html.phone-layout #solution-modal{
-                background: rgba(245, 249, 248, 0.98) !important;
-                z-index: 130 !important;
-                justify-content: flex-start;
-                padding-top: calc(12px + env(safe-area-inset-top));
-            }
-            html.phone-layout #solution-modal .solution-box{
-                width: calc(100% - 24px);
-                max-width: 366px;
-                max-height: calc(100vh - 24px);
-                max-height: calc(100dvh - 24px);
-                box-sizing: border-box;
-                border: 1px solid #d7e5e1;
-                box-shadow: 0 10px 24px rgba(0,0,0,0.14);
-                overflow-y: auto;
-            }
-            html.phone-layout #sol-title{
-                display: none;
-            }
-            html.phone-layout #sol-content{
-                font-size: 0.84rem !important;
-                line-height: 1.38 !important;
-            }
-            html.phone-layout #solution-modal .solution-box > div:last-child{
-                text-align: center !important;
-            }
-            html.phone-layout #solution-modal .solution-box > div:last-child .action-btn{
-                width: 100%;
-                min-height: 46px;
-                border-radius: 10px;
-                font-size: 0.92rem;
-            }
-            html.phone-layout .solution-box h2,
-            html.phone-layout .pdf-toolbar h2{
-                font-size: 1.15rem;
-                line-height: 1.25;
-            }
-            html.phone-layout .pdf-fab{
-                top: auto;
-                right: 12px;
-                bottom: calc(132px + env(safe-area-inset-bottom));
-                z-index: 6;
-                width: 44px;
-                height: 44px;
-                border-radius: 14px;
-                font-size: 21px;
-            }
-            html.phone-layout .pdf-viewer-box{
-                width: calc(100vw - 18px);
-                height: calc(100vh - 24px);
-                height: calc(100dvh - 24px);
-                padding: 9px;
-            }
-            html.phone-layout .pdf-toolbar{
-                align-items: flex-start;
-                gap: 8px;
-            }
-            html.phone-layout .pdf-toolbar-actions{
-                width: 100%;
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-            }
-            html.phone-layout .pdf-mini-btn{ min-height: 40px; }
-            html.phone-layout .pdf-canvas-wrap,
-            html.phone-layout #pdf-fallback-frame{
-                min-height: 0;
-            }
-            html.phone-layout .dnd-table{
-                font-size: 0.78rem;
-            }
-            html.phone-layout .dnd-table th,
-            html.phone-layout .dnd-table td{
-                padding: 7px;
-            }
-            html.phone-layout .drop-slot,
-            html.phone-layout .pill-choice{
-                min-height: 44px;
-                box-sizing: border-box;
-            }
-        }
-        @media (max-width: 380px), (max-device-width: 380px) {
-            html.phone-layout .stats > span,
-            html.phone-layout .header-action-menu summary.action-btn {
-                font-size: 0.72rem;
-                padding-left: 4px;
-                padding-right: 4px;
-            }
-            html.phone-layout .patient-card {
-                min-width: 146px;
-                font-size: 0.8rem;
-            }
-            html.phone-layout #start-screen .diff-btn {
-                font-size: 0.8rem;
-            }
-            html.phone-layout .mobile-case-actions {
-                gap: 5px;
-                max-width: 174px;
-            }
-            html.phone-layout .mobile-case-action-btn {
-                min-width: 50px;
-                padding-left: 7px;
-                padding-right: 7px;
-                font-size: 0.66rem;
-            }
-            html.phone-layout .mobile-case-timer {
-                min-width: 46px;
-                font-size: 0.7rem;
-            }
-        }
-        @media all {
-            html.phone-layout {
-                --game-bg: #f3fbf5;
-                --game-panel: #ffffff;
-                --game-panel-soft: #f8fff9;
-                --game-teal: #006b5f;
-                --game-teal-dark: #06483f;
-                --game-teal-mid: #0f8b78;
-                --game-mint: #dff5eb;
-                --game-orange: #ff7548;
-                --game-orange-dark: #e95e35;
-                --game-yellow: #ffd166;
-                --game-danger: #d8432f;
-                --game-ink: #17352f;
-                --game-muted: #5f7b75;
-                --game-shadow: 0 10px 24px rgba(10, 76, 64, 0.13);
-                --game-soft-shadow: 0 6px 14px rgba(10, 76, 64, 0.1);
-                --phone-answer-reserve: 220px;
-                --phone-header-offset: 58px;
-            }
-            html.phone-layout body {
-                background:
-                    radial-gradient(circle at 18% 0%, rgba(255, 209, 102, 0.32), transparent 28%),
-                    radial-gradient(circle at 92% 16%, rgba(0, 137, 123, 0.16), transparent 30%),
-                    var(--game-bg);
-                color: var(--game-ink);
-            }
-            html.phone-layout #game-container {
-                background: transparent;
-                overflow: hidden;
-            }
-            html.phone-layout #header {
-                display: flex;
-                align-items: center;
-                flex-wrap: nowrap;
-                gap: 6px;
-                padding: calc(8px + env(safe-area-inset-top)) 8px 8px;
-                background: linear-gradient(135deg, var(--game-teal-dark), var(--game-teal));
-                border-bottom: 0;
-                box-shadow: 0 8px 20px rgba(4, 55, 49, 0.22);
-            }
-            html.phone-layout .header-brand {
-                flex: 1 1 74px;
-                min-width: 0;
-                color: #ffffff;
-                font-size: 0;
-                font-weight: 900;
-                letter-spacing: 0;
-                overflow: hidden;
-                white-space: nowrap;
-            }
-            html.phone-layout .header-brand::before {
-                content: "Pharmacy";
-                font-size: 0.82rem;
-            }
-            html.phone-layout .stats {
-                flex: 0 1 auto;
-                display: inline-flex;
-                gap: 4px;
-                width: auto;
-                min-width: 0;
-                align-items: center;
-            }
-            html.phone-layout .stats > span {
-                min-height: 40px;
-                padding: 5px 7px;
-                border-radius: 999px;
-                background: rgba(255, 255, 255, 0.16);
-                border: 1px solid rgba(255, 255, 255, 0.18);
-                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
-                color: #ffffff;
-                font-size: 0;
-                font-weight: 900;
-                white-space: nowrap;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                gap: 3px;
-            }
-            html.phone-layout .stats .stat-primary:first-child::before {
-                content: "*";
-                font-size: 0.82rem;
-            }
-            html.phone-layout .stats .stat-primary:nth-child(2)::before {
-                content: "!";
-                font-size: 0.82rem;
-            }
-            html.phone-layout #score-display,
-            html.phone-layout #strike-display,
-            html.phone-layout #strike-limit-display {
-                font-size: 0.74rem;
-            }
-            html.phone-layout .stats .stat-primary:first-child {
-                background: linear-gradient(135deg, #ffc857, #ff9f43);
-                color: #3d2a00;
-            }
-            html.phone-layout .stats .stat-primary:nth-child(2) {
-                background: rgba(255, 255, 255, 0.14);
-            }
-            html.phone-layout .stats .stat-primary:nth-child(3),
-            html.phone-layout .stats .stat-secondary {
-                display: none;
-            }
-            html.phone-layout .header-action-menu summary.action-btn {
-                min-width: 44px;
-                min-height: 40px;
-                border-radius: 999px;
-                padding: 0;
-                background: rgba(255, 255, 255, 0.18);
-                color: #ffffff;
-                font-size: 0;
-                font-weight: 900;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-            }
-            html.phone-layout .header-action-menu summary.action-btn::before {
-                content: "Menu";
-                font-size: 0.68rem;
-            }
-            html.phone-layout .header-action-list {
-                border-radius: 14px;
-                border: 1px solid rgba(0, 105, 92, 0.22);
-                box-shadow: var(--game-shadow);
-            }
-            html.phone-layout #start-screen {
-                width: min(100%, 390px);
-                background:
-                    radial-gradient(circle at 12% 4%, rgba(255, 209, 102, 0.28), transparent 28%),
-                    radial-gradient(circle at 92% 10%, rgba(0, 137, 123, 0.14), transparent 32%),
-                    var(--game-bg);
-                color: var(--game-ink);
-                padding: calc(12px + env(safe-area-inset-top)) 12px calc(92px + env(safe-area-inset-bottom));
-            }
-            html.phone-layout #start-screen h1 {
-                color: var(--game-teal-dark);
-                font-size: 1.52rem;
-                font-weight: 950;
-                margin: 0 0 5px;
-                text-shadow: 0 1px 0 rgba(255,255,255,0.8);
-            }
-            html.phone-layout #start-screen > p {
-                color: var(--game-muted);
-                font-size: 0.83rem;
-                line-height: 1.35;
-                margin: 0 auto 10px;
-                max-width: 330px;
-            }
-            html.phone-layout #start-screen > div[style*="font-weight"] {
-                width: 100%;
-                max-width: 366px;
-                margin: 10px auto 6px !important;
-                color: var(--game-teal-dark) !important;
-                font-size: 0.72rem;
-                text-align: left;
-                text-transform: uppercase;
-                letter-spacing: 0.02em;
-            }
-            html.phone-layout #start-screen .ctrl-row,
-            html.phone-layout #start-screen .diff-controls,
-            html.phone-layout #start-screen .history-actions,
-            html.phone-layout .settings-toggles {
-                max-width: 366px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            html.phone-layout .exam-select-wrap,
-            html.phone-layout #quiztype-select,
-            html.phone-layout #exam-select {
-                border-radius: 14px;
-            }
-            html.phone-layout #exam-select,
-            html.phone-layout #quiztype-select {
-                min-height: 48px;
-                border: 1px solid rgba(0, 105, 92, 0.24);
-                background: rgba(255, 255, 255, 0.88);
-                color: var(--game-ink);
-                box-shadow: var(--game-soft-shadow);
-                padding: 0 12px;
-                font-weight: 750;
-            }
-            html.phone-layout .pdf-icon-btn {
-                width: 48px;
-                height: 48px;
-                border-radius: 16px;
-                border: 1px solid rgba(0, 105, 92, 0.28);
-                background: linear-gradient(145deg, #ffffff, #e9fff5);
-                box-shadow: var(--game-soft-shadow);
-            }
-            html.phone-layout #start-screen .diff-controls {
-                gap: 8px;
-            }
-            html.phone-layout #start-screen .diff-btn {
-                min-height: 46px;
-                border-radius: 999px;
-                border: 1px solid rgba(0, 105, 92, 0.24);
-                background: rgba(255,255,255,0.88);
-                color: var(--game-teal-dark);
-                box-shadow: var(--game-soft-shadow);
-                font-size: 0.8rem;
-                font-weight: 900;
-                transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-            }
-            html.phone-layout #start-screen .diff-btn.active {
-                border-color: transparent;
-                background: linear-gradient(135deg, var(--game-teal), var(--game-teal-mid));
-                color: #ffffff;
-                box-shadow: 0 8px 18px rgba(0, 105, 92, 0.24);
-            }
-            html.phone-layout #start-screen .diff-btn:active,
-            html.phone-layout .choice-btn:active,
-            html.phone-layout .action-btn:active,
-            html.phone-layout .start-btn:active {
-                transform: translateY(2px) scale(0.98);
-            }
-            html.phone-layout .settings-toggles {
-                gap: 8px;
-            }
-            html.phone-layout .toggle-row {
-                min-height: 48px;
-                border-radius: 16px;
-                border: 1px solid rgba(0, 105, 92, 0.1);
-                background: rgba(255, 255, 255, 0.88);
-                box-shadow: var(--game-soft-shadow);
-                font-weight: 750;
-            }
-            html.phone-layout .toggle-row input {
-                appearance: none;
-                width: 44px;
-                height: 26px;
-                border-radius: 999px;
-                border: 0;
-                background: #cdd8d5;
-                position: relative;
-                box-shadow: inset 0 2px 4px rgba(0,0,0,0.16);
-            }
-            html.phone-layout .toggle-row input::after {
-                content: "";
-                position: absolute;
-                width: 20px;
-                height: 20px;
-                top: 3px;
-                left: 3px;
-                border-radius: 50%;
-                background: #ffffff;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                transition: transform 0.18s ease;
-            }
-            html.phone-layout .toggle-row input:checked {
-                background: linear-gradient(135deg, var(--game-teal), #47b881);
-            }
-            html.phone-layout .toggle-row input:checked::after {
-                transform: translateX(18px);
-            }
-            html.phone-layout .advanced-options summary {
-                color: var(--game-teal);
-                background: rgba(255, 255, 255, 0.5);
-                border-radius: 999px;
-            }
-            html.phone-layout .overlay button.start-btn {
-                min-height: 56px;
-                border-radius: 999px;
-                background: linear-gradient(135deg, var(--game-orange), #ff9f43);
-                color: #ffffff;
-                box-shadow: 0 12px 24px rgba(255, 117, 72, 0.28);
-                font-size: 1rem;
-                font-weight: 950;
-                text-shadow: 0 1px 0 rgba(0,0,0,0.12);
-            }
-            html.phone-layout #start-shift-btn,
-            html.phone-layout #resume-shift-btn:not(.hidden) {
-                position: fixed;
-                left: 16px;
-                bottom: calc(14px + env(safe-area-inset-bottom));
-                z-index: 95;
-                width: min(calc(100vw - 32px), 358px);
-                max-width: 358px;
-            }
-            html.phone-layout #session-history {
-                display: none;
-                border-radius: 16px;
-                border: 1px solid rgba(0,105,92,0.12);
-                background: rgba(255,255,255,0.78);
-                box-shadow: var(--game-soft-shadow);
-            }
-            html.phone-layout #exam-panel {
-                background:
-                    linear-gradient(180deg, rgba(223,245,235,0.85), rgba(243,251,245,0.92)),
-                    var(--game-bg);
-            }
-            html.phone-layout .mobile-case-strip {
-                margin: 10px 10px 0;
-                padding: 9px 10px 9px 12px;
-                grid-template-columns: minmax(0, 1fr) auto;
-                border-radius: 20px;
-                background: linear-gradient(135deg, #ffffff, #ddfbef);
-                border: 1px solid rgba(0,105,92,0.14);
-                box-shadow: var(--game-shadow);
-            }
-            html.phone-layout .mobile-case-title {
-                color: var(--game-teal-dark);
-                font-size: 0.98rem;
-                font-weight: 950;
-            }
-            html.phone-layout .mobile-case-meta {
-                color: var(--game-muted);
-                font-weight: 650;
-            }
-            html.phone-layout .mobile-case-timer {
-                min-width: 50px;
-                min-height: 34px;
-                background: linear-gradient(135deg, var(--game-teal-dark), var(--game-teal));
-                box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 6px 12px rgba(0,105,92,0.22);
-            }
-            html.phone-layout .exam-info {
-                gap: 10px;
-                padding: 12px 12px calc(var(--phone-answer-reserve, 220px) + env(safe-area-inset-bottom));
-            }
-            html.phone-layout .exam-info > div,
-            html.phone-layout #risk-display .risk-box {
-                border: 1px solid rgba(0,105,92,0.1);
-                border-left: 6px solid var(--game-teal-mid);
-                border-radius: 18px;
-                background: rgba(255,255,255,0.9);
-                box-shadow: var(--game-soft-shadow);
-                padding: 12px 13px;
-            }
-            html.phone-layout .exam-info strong {
-                color: var(--game-teal);
-                font-size: 0.66rem;
-                font-weight: 950;
-                letter-spacing: 0.03em;
-            }
-            html.phone-layout #row-allergies {
-                border-left-color: var(--game-danger);
-                background: linear-gradient(135deg, #fff8f6, #ffffff);
-            }
-            html.phone-layout #row-cautions {
-                border-left-color: var(--game-orange);
-                background: linear-gradient(135deg, #fff9ec, #ffffff);
-            }
-            html.phone-layout #risk-display {
-                padding: 0 12px;
-            }
-            html.phone-layout #risk-display .risk-box {
-                margin: 10px 0 0;
-                border-left-color: var(--game-danger);
-                color: #7a2118;
-            }
-            html.phone-layout .prescription-area {
-                padding: 12px 12px calc(14px + env(safe-area-inset-bottom));
-                background: rgba(255,255,255,0.96);
-                border-top: 1px solid rgba(0,105,92,0.12);
-                box-shadow: 0 -12px 28px rgba(10, 76, 64, 0.16);
-                backdrop-filter: blur(12px);
-            }
-            html.phone-layout .prescription-area label {
-                color: var(--game-teal-dark);
-                font-weight: 950;
-            }
-            html.phone-layout .choice-grid {
-                gap: 10px;
-            }
-            html.phone-layout .choice-btn {
-                position: relative;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                min-height: 58px;
-                max-height: none;
-                padding: 10px 10px;
-                border: 1px solid rgba(0,105,92,0.14);
-                border-radius: 18px;
-                background: linear-gradient(145deg, #ffffff, #f2fff8);
-                color: var(--game-ink);
-                box-shadow: var(--game-soft-shadow);
-                font-size: 0.78rem;
-                font-weight: 850;
-                line-height: 1.18;
-                transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-            }
-            html.phone-layout .choice-btn::before {
-                content: attr(data-choice-index);
-                position: static;
-                transform: none;
-                flex: 0 0 24px;
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                background: linear-gradient(135deg, var(--game-yellow), #ff9f43);
-                color: #4a2f00;
-                font-size: 0.78rem;
-                font-weight: 950;
-                box-shadow: 0 3px 8px rgba(255,159,67,0.22);
-            }
-            html.phone-layout .choice-btn:hover,
-            html.phone-layout .choice-btn:focus {
-                border-color: rgba(0,105,92,0.35);
-                outline: none;
-                box-shadow: 0 9px 18px rgba(10,76,64,0.14);
-            }
-            html.phone-layout .mobile-result {
-                gap: 12px;
-            }
-            html.phone-layout .mobile-result-hero,
-            html.phone-layout .mobile-result-section {
-                border-radius: 18px;
-                border: 1px solid rgba(0,105,92,0.1);
-                box-shadow: var(--game-soft-shadow);
-            }
-            html.phone-layout .mobile-result-hero {
-                padding: 18px 14px;
-                background: linear-gradient(145deg, #f3ffe8, #ffffff);
-                border-color: rgba(71, 184, 129, 0.36);
-            }
-            html.phone-layout .mobile-result-hero.error {
-                background: linear-gradient(145deg, #fff2ee, #ffffff);
-                border-color: rgba(216, 67, 47, 0.28);
-            }
-            html.phone-layout .mobile-result-icon {
-                width: 38px;
-                height: 38px;
-                margin: 0 auto 8px;
-                border-radius: 50%;
-                background: linear-gradient(135deg, #47b881, #a7f3d0);
-                color: #ffffff;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                box-shadow: 0 8px 18px rgba(71,184,129,0.26);
-            }
-            html.phone-layout .mobile-result-hero.error .mobile-result-icon {
-                background: linear-gradient(135deg, var(--game-danger), #ff9f7a);
-            }
-            html.phone-layout .mobile-drug-badge {
-                border-radius: 999px;
-                padding: 6px 9px;
-                background: var(--game-mint);
-                color: var(--game-teal-dark);
-                border: 1px solid rgba(0,105,92,0.12);
-            }
-            html.phone-layout .mobile-drug-badge.unsafe {
-                background: #fff1ee;
-                color: #b3261e;
-                border-color: rgba(216,67,47,0.22);
-            }
-            html.phone-layout #solution-modal .solution-box > div:last-child .action-btn {
-                min-height: 54px;
-                border-radius: 999px;
-                background: linear-gradient(135deg, var(--game-orange), #ff9f43);
-                box-shadow: 0 12px 24px rgba(255,117,72,0.24);
-                font-weight: 950;
-            }
-            html.phone-layout #active-exam.table-quiz-screen .exam-info {
-                display: none;
-            }
-            html.phone-layout #active-exam.table-quiz-screen #risk-display {
-                padding: 10px 12px calc(var(--phone-answer-reserve, 220px) + env(safe-area-inset-bottom));
-            }
-            html.phone-layout .mobile-table-quiz {
-                display: grid;
-                gap: 9px;
-                margin-top: 10px;
-            }
-            html.phone-layout .mobile-table-field {
-                border-radius: 18px;
-                border: 1px solid rgba(0,105,92,0.12);
-                background: rgba(255,255,255,0.92);
-                box-shadow: var(--game-soft-shadow);
-                padding: 11px 12px;
-                min-width: 0;
-            }
-            html.phone-layout .mobile-table-field.given {
-                border-left: 6px solid var(--game-yellow);
-            }
-            html.phone-layout .mobile-table-field.active {
-                border-left: 6px solid var(--game-teal-mid);
-                background: linear-gradient(145deg, #ffffff, #effff7);
-            }
-            html.phone-layout .mobile-table-field.done {
-                border-left: 6px solid #47b881;
-            }
-            html.phone-layout .mobile-table-field.locked {
-                border-left: 6px solid #c5d0cc;
-                opacity: 0.76;
-            }
-            html.phone-layout .mobile-table-label {
-                display: flex;
-                justify-content: space-between;
-                gap: 8px;
-                color: var(--game-teal);
-                font-size: 0.66rem;
-                font-weight: 950;
-                text-transform: uppercase;
-                letter-spacing: 0.03em;
-                margin-bottom: 5px;
-            }
-            html.phone-layout .mobile-table-value {
-                color: var(--game-ink);
-                font-size: 0.86rem;
-                font-weight: 800;
-                line-height: 1.28;
-                overflow-wrap: anywhere;
-            }
-            html.phone-layout .mobile-table-field.locked .mobile-table-value {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 34px;
-                font-size: 1.2rem;
-            }
-            html.phone-layout #active-exam.table-quiz-screen .prescription-area {
-                padding-top: 11px;
-                max-height: 46dvh;
-                overflow-y: auto;
-                overscroll-behavior: contain;
-            }
-            html.phone-layout #active-exam.table-quiz-screen .choice-grid {
-                display: block;
-                overflow: visible;
-            }
-            html.phone-layout #active-exam.table-quiz-screen .pill-pool {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 10px;
-                margin: 0;
-                padding: 2px 0 2px;
-                overflow: visible;
-            }
-            html.phone-layout #active-exam.table-quiz-screen .pill-choice {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                min-width: 0;
-                width: 100%;
-                min-height: 64px;
-                border-radius: 18px;
-                border: 1px solid rgba(0,105,92,0.18);
-                background: linear-gradient(145deg, #ffffff, #f2fff8);
-                color: var(--game-ink);
-                box-shadow: var(--game-soft-shadow);
-                padding: 10px 9px;
-                font-size: 0.76rem;
-                font-weight: 850;
-                line-height: 1.18;
-                overflow-wrap: anywhere;
-            }
-            html.phone-layout #active-exam.table-quiz-screen .pill-choice::before {
-                content: attr(data-choice-index);
-                flex: 0 0 24px;
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                background: linear-gradient(135deg, var(--game-yellow), #ff9f43);
-                color: #4a2f00;
-                font-size: 0.78rem;
-                font-weight: 950;
-                box-shadow: 0 3px 8px rgba(255,159,67,0.22);
-            }
-            html.phone-layout #active-exam.table-quiz-screen .pill-choice:active {
-                transform: translateY(2px) scale(0.98);
-            }
-            html.phone-layout #exam-pdf-fab {
-                position: fixed;
-                top: auto;
-                right: 14px;
-                bottom: calc(var(--phone-answer-reserve, 220px) + 12px + env(safe-area-inset-bottom));
-                z-index: 35;
-                width: 38px;
-                height: 38px;
-                border-radius: 14px;
-            }
-            html.phone-layout:has(#start-screen:not(.hidden)) #exam-pdf-fab {
-                display: none;
-            }
-            html.phone-layout #exam-pdf-modal {
-                z-index: 140 !important;
-                align-items: center;
-                justify-content: flex-start;
-                padding-top: calc(10px + env(safe-area-inset-top));
-                background: rgba(6, 39, 35, 0.62) !important;
-            }
-            html.phone-layout #exam-pdf-box {
-                width: calc(100% - 24px);
-                max-width: 366px;
-                height: calc(100vh - 24px);
-                height: calc(100dvh - 24px);
-                box-sizing: border-box;
-                border-radius: 18px;
-                border: 1px solid rgba(255,255,255,0.22);
-                box-shadow: 0 16px 36px rgba(0,0,0,0.28);
-            }
-            html.phone-layout #exam-pdf-box .pdf-toolbar-actions {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-            html.phone-layout #exam-pdf-box .pdf-mini-btn {
-                min-height: 38px;
-                padding: 6px 7px;
-                font-size: 0.72rem;
-                line-height: 1.1;
-            }
-            html.phone-layout #exam-pdf-box .pdf-toolbar-actions .pdf-help {
-                grid-column: 1 / -1;
-                text-align: center;
-            }
-            html.phone-layout .pdf-open-link {
-                display: inline-flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 44px;
-                margin-top: 8px;
-                padding: 0 14px;
-                border-radius: 999px;
-                background: #00695c;
-                color: #ffffff;
-                font-weight: 900;
-                text-decoration: none;
-            }
-            html.phone-layout #restart-table-btn:not(.hidden) {
-                display: block;
-                width: 100%;
-                max-width: 360px;
-                min-height: 48px;
-                border-radius: 999px;
-                background: linear-gradient(135deg, var(--game-teal), var(--game-teal-mid)) !important;
-                box-shadow: var(--game-soft-shadow);
-            }
-        }
     </style>
 <script type="text/javascript">
     (function(c,l,a,r,i,t,y,retried){
@@ -1766,7 +269,7 @@
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
-<body data-build="codexhelp13-2026-05-05">
+<body data-build="codexhelp12-2026-05-04">
 <div id="game-container">
     <div id="start-screen" class="overlay">
         <h1>&#x1F48A; Pharmacy Rush</h1>
@@ -1784,13 +287,13 @@
             </div>
         </div>
         <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Shift Difficulty:</div>
-        <div class="diff-controls difficulty-controls">
+        <div class="diff-controls">
             <button class="diff-btn" id="btn-easy" onclick="setDifficulty('easy')">Easy</button>
             <button class="diff-btn active" id="btn-med" onclick="setDifficulty('med')">Standard</button>
             <button class="diff-btn" id="btn-hard" onclick="setDifficulty('hard')">Hard</button>
         </div>
         <div style="font-weight: bold; color: #00695c; margin-bottom: 8px;">Select Mode:</div>
-        <div class="diff-controls mode-controls">
+        <div class="diff-controls">
             <button class="diff-btn active" id="mode-rush" onclick="setGameMode('rush')">Pharmacy Rush</button>
             <button class="diff-btn" id="mode-tradequiz" onclick="setGameMode('tradequiz')">Mini Quiz: Trade Name</button>
             <button class="diff-btn" id="mode-mistakes" onclick="setGameMode('mistakes')">Review Mistakes</button>
@@ -1815,17 +318,15 @@
                     <button type="button" class="segment-btn" id="queue-preset-onecase" aria-pressed="false" onclick="setQueuePreset('onecase')">One Case At A Time</button>
                     <button type="button" class="segment-btn" id="queue-preset-unlimited" aria-pressed="false" onclick="setQueuePreset('unlimited')">Unlimited</button>
                 </div>
+                <p class="queue-help">Normal: classic queue. One Case: one active case. Unlimited: no queue/strike game over.</p>
             </div>
         </div>
-        <div class="ctrl-row settings-toggles">
-            <label class="toggle-row"><input type="checkbox" id="tutor-toggle" checked> Tutor mode explanations</label>
-            <label class="toggle-row"><input type="checkbox" id="strict-toggle" checked> Strict safety checks</label>
-            <label class="toggle-row"><input type="checkbox" id="notimed-toggle"> No timer mode</label>
-            <details class="advanced-options" open>
-                <summary>More options (drill / sudden death)</summary>
-                <label class="toggle-row advanced-toggle"><input type="checkbox" id="drill-toggle"> Drill weakest category</label>
-                <label class="toggle-row advanced-toggle"><input type="checkbox" id="suddendeath-toggle"> Sudden death</label>
-            </details>
+        <div class="ctrl-row">
+            <label><input type="checkbox" id="tutor-toggle" checked> Tutor mode explanations</label>
+            <label><input type="checkbox" id="strict-toggle" checked> Strict safety checks</label>
+            <label><input type="checkbox" id="notimed-toggle"> No timer mode</label>
+            <label><input type="checkbox" id="drill-toggle"> Drill weakest category</label>
+            <label><input type="checkbox" id="suddendeath-toggle"> Sudden death</label>
         </div>
         <div class="history-actions">
             <button class="start-btn" id="start-shift-btn" onclick="startGame()">Start New Shift</button>
@@ -1943,27 +444,8 @@
         <div id="exam-panel">
             <div id="empty-exam">
                 <h2 style="color:#b0bec5; text-align:center; margin-top:100px;">Select a patient from the queue to examine them.</h2>
-                <p class="mobile-only mobile-empty-help">On phone, the next case opens automatically. Use the cards above only when you want to switch cases.</p>
             </div>
             <div id="active-exam" class="hidden">
-                <div id="mobile-case-strip" class="mobile-case-strip">
-                    <div>
-                        <div class="mobile-case-title" id="mobile-case-title">Case</div>
-                        <div class="mobile-case-meta" id="mobile-case-meta">Select a case</div>
-                    </div>
-                    <div class="mobile-case-actions">
-                        <button class="mobile-case-action-btn" id="mobile-case-picker-btn" type="button" onclick="toggleMobileCasePicker()">Cases</button>
-                        <button class="mobile-case-action-btn skip" id="mobile-skip-case-btn" type="button" onclick="skipCurrentCase()">Skip</button>
-                        <div class="mobile-case-timer" id="mobile-case-timer">--</div>
-                    </div>
-                </div>
-                <div id="mobile-flow-guide" class="mobile-only mobile-flow-guide">
-                    <div class="mobile-flow-steps" aria-label="Mobile case flow">
-                        <div class="mobile-flow-step"><strong>1</strong>Read case</div>
-                        <div class="mobile-flow-step"><strong>2</strong>Check safety</div>
-                        <div class="mobile-flow-step"><strong>3</strong>Choose answer</div>
-                    </div>
-                </div>
                 <h2 class="exam-title" id="pat-name">Patient Name</h2>
                 <div id="risk-display"></div>
                 <div class="exam-info">
@@ -1974,7 +456,7 @@
                     <div id="row-cautions"><strong>Cautions:</strong> <span id="pat-cautions" style="color:#e65100;"></span></div>
                 </div>
                 <div class="prescription-area">
-                    <label style="font-weight:bold; color:#455a64; display:block; margin-bottom:8px;">Choose One Answer:</label>
+                    <label style="font-weight:bold; color:#455a64; display:block; margin-bottom:8px;">Select Valid Medication:</label>
                     <div class="choice-grid" id="choice-grid"></div>
                 </div>
             </div>
@@ -2190,7 +672,6 @@
     let currentMode = 'rush', totalAttempts = 0, totalCorrect = 0;
     let mistakeReviewItems = [], mistakeReviewIndex = 0;
     let tableQuizState = null;
-    let mobileTableDrugSearch = '';
     let quizType = 'trade';
     const sessionLog = [];
     const progressByCategory = {};
@@ -2353,29 +834,6 @@
     }
 
     function setGameMode(mode) {
-        const previousMode = currentMode;
-        if (mode === 'tablequiz') closeMobileCasePicker();
-        if (isShiftPaused && mode !== previousMode) {
-            if (previousMode === 'tablequiz') saveTableQuizState();
-            gameActive = false;
-            isShiftPaused = false;
-            queue = [];
-            selectedPatientId = null;
-            clearInterval(spawnTimer);
-            stopCaseTimer();
-            stopHeartbeat();
-            document.getElementById('resume-shift-btn').classList.add('hidden');
-            document.getElementById('start-shift-btn').innerText = 'Start New Shift';
-            document.getElementById('solution-modal').classList.add('hidden');
-            document.getElementById('pause-modal').classList.add('hidden');
-            document.getElementById('history-modal').classList.add('hidden');
-            document.getElementById('empty-exam').classList.remove('hidden');
-            document.getElementById('active-exam').classList.add('hidden');
-            document.getElementById('active-exam').classList.remove('table-quiz-screen');
-            document.getElementById('risk-display').innerHTML = '';
-            if (mode !== 'tablequiz') tableQuizState = null;
-            renderQueue();
-        }
         currentMode = mode;
         document.getElementById('mode-rush').classList.remove('active');
         document.getElementById('mode-tradequiz').classList.remove('active');
@@ -2398,190 +856,6 @@
             btn.setAttribute('aria-pressed', String(selected));
         });
         updateStats();
-    }
-
-    function isPhoneLayout() {
-        return document.documentElement.classList.contains('phone-layout');
-    }
-
-    function applyMobileDefaults() {
-        if (!isPhoneLayout()) return;
-        const advanced = document.querySelector('.advanced-options');
-        if (advanced) advanced.removeAttribute('open');
-        updateMobileLayoutMeasurements();
-    }
-
-    function closeMobileCasePicker() {
-        const container = document.getElementById('game-container');
-        if (container) container.classList.remove('mobile-case-picker-open');
-    }
-
-    function toggleMobileCasePicker(force) {
-        if (!isPhoneLayout()) return;
-        const container = document.getElementById('game-container');
-        if (!container) return;
-        const shouldOpen = typeof force === 'boolean' ? force : !container.classList.contains('mobile-case-picker-open');
-        container.classList.toggle('mobile-case-picker-open', shouldOpen);
-        if (shouldOpen) {
-            if (currentMode === 'tablequiz') renderTableQuizDrugList();
-            else renderQueue();
-        }
-        updateMobileCaseControls();
-        updateMobileLayoutMeasurements();
-    }
-
-    function updateMobileCaseControls() {
-        const pickerBtn = document.getElementById('mobile-case-picker-btn');
-        const skipBtn = document.getElementById('mobile-skip-case-btn');
-        if (!pickerBtn || !skipBtn) return;
-        const isTableQuiz = currentMode === 'tablequiz';
-        pickerBtn.textContent = isTableQuiz ? 'Medicines' : (queue.length ? `Cases ${queue.length}` : 'Cases');
-        pickerBtn.disabled = isTableQuiz ? (!tableQuizState || !database.length) : queue.length === 0;
-        skipBtn.classList.toggle('hidden-control', isTableQuiz);
-        skipBtn.disabled = isTableQuiz || !selectedPatientId || !gameActive;
-        if (!isTableQuiz && !queue.length) closeMobileCasePicker();
-    }
-
-    function removePatientFromQueue(id) {
-        const index = queue.findIndex(p => p.id === id);
-        if (index < 0) return { patient: null, nextPatient: null };
-        const [patient] = queue.splice(index, 1);
-        const nextPatient = queue[Math.min(index, queue.length - 1)] || queue[0] || null;
-        return { patient, nextPatient };
-    }
-
-    function updateMobilePickerHeading(title, suffix) {
-        if (!isPhoneLayout()) return;
-        const heading = document.querySelector('#queue-panel h3');
-        if (!heading) return;
-        heading.textContent = title;
-        heading.setAttribute('data-mobile-suffix', suffix || '');
-    }
-
-    function removeMobileMedicineSearch() {
-        const search = document.getElementById('mobile-medicine-search-wrap');
-        if (search) search.remove();
-    }
-
-    function ensureMobileMedicineSearch() {
-        if (!isPhoneLayout()) return null;
-        const queueList = document.getElementById('queue-list');
-        if (!queueList || !queueList.parentNode) return null;
-        let wrap = document.getElementById('mobile-medicine-search-wrap');
-        if (!wrap) {
-            wrap = document.createElement('div');
-            wrap.id = 'mobile-medicine-search-wrap';
-            wrap.className = 'mobile-medicine-search';
-            wrap.innerHTML = '<input id="mobile-medicine-search" type="search" placeholder="Search medicine to practice..." aria-label="Search medicine to practice">';
-            queueList.parentNode.insertBefore(wrap, queueList);
-            const input = wrap.querySelector('input');
-            input.addEventListener('input', (event) => {
-                mobileTableDrugSearch = event.target.value || '';
-                renderTableQuizDrugList();
-                const nextInput = document.getElementById('mobile-medicine-search');
-                if (nextInput) {
-                    nextInput.focus();
-                    nextInput.setSelectionRange(nextInput.value.length, nextInput.value.length);
-                }
-            });
-        }
-        const input = wrap.querySelector('input');
-        if (input && input.value !== mobileTableDrugSearch) input.value = mobileTableDrugSearch;
-        return wrap;
-    }
-
-    function updateMobileLayoutMeasurements() {
-        if (!isPhoneLayout()) return;
-        const root = document.documentElement;
-        const header = document.getElementById('header');
-        if (header) {
-            root.style.setProperty('--phone-header-offset', `${Math.ceil(header.getBoundingClientRect().bottom)}px`);
-        }
-        const activeExam = document.getElementById('active-exam');
-        const prescription = document.querySelector('#active-exam:not(.hidden) .prescription-area');
-        const viewportH = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0, 640);
-        const panelHeight = prescription && activeExam && !activeExam.classList.contains('hidden')
-            ? prescription.getBoundingClientRect().height
-            : 170;
-        const reserve = Math.min(Math.max(Math.ceil(panelHeight + 34), 168), Math.round(viewportH * 0.58));
-        root.style.setProperty('--phone-answer-reserve', `${reserve}px`);
-    }
-
-    function shouldAutoOpenCases() {
-        return isPhoneLayout() && currentMode !== 'tablequiz';
-    }
-
-    function autoOpenMobilePatient(patient) {
-        if (!shouldAutoOpenCases() || !patient) return;
-        const selectedStillExists = selectedPatientId && queue.some(p => p.id === selectedPatientId);
-        if (selectedStillExists) return;
-        displayPatient(patient);
-    }
-
-    function setMobileCaseTimerText(text) {
-        const el = document.getElementById('mobile-case-timer');
-        if (el) el.innerText = text || '--';
-    }
-
-    function updateMobileCaseStrip(patient) {
-        if (!isPhoneLayout()) return;
-        const title = document.getElementById('mobile-case-title');
-        const meta = document.getElementById('mobile-case-meta');
-        if (!title || !meta) return;
-        if (!patient) {
-            title.innerText = 'No active case';
-            meta.innerText = 'Tap Start New Shift';
-            setMobileCaseTimerText('--');
-            updateMobileCaseControls();
-            return;
-        }
-        if (String(patient.id || '').startsWith('table_')) {
-            title.innerText = 'Table Quiz';
-            meta.innerText = `Drug ${(tableQuizState?.drugIndex || 0) + 1}/${database.length} - ${patient.condition}`;
-            setMobileCaseTimerText('Quiz');
-            updateMobileCaseControls();
-            return;
-        }
-        const index = Math.max(0, queue.findIndex(p => p.id === patient.id)) + 1;
-        title.innerText = patient.quizMode ? `Quiz ${index}` : patient.name;
-        meta.innerText = patient.quizMode
-            ? `${quizTypeLabel(patient.quizType)} - ${getModeLabel()}`
-            : `Case ${index} of ${isEndlessMode() || isPracticeReviewMode() ? '∞' : '10'} - ${patient.condition}`;
-        updateMobileCaseControls();
-    }
-
-    function mobileDrugBadges(validDrugs, patient) {
-        if (!validDrugs || !validDrugs.length) return '<span class="mobile-drug-badge">No listed match</span>';
-        return validDrugs.map(d => {
-            const unsafe = strictSafety && patient && evaluateSafety(patient, d).penalty > 0;
-            return `<span class="mobile-drug-badge ${unsafe ? 'unsafe' : ''}">${escapeHtml(formatDrugLabel(d))}${unsafe ? ' x unsafe' : ''}</span>`;
-        }).join('');
-    }
-
-    function renderMobileResult({ success, heading, subline, selected, why, validHtml, mechanism, cautions, extraHtml }) {
-        return `
-            <div class="mobile-result">
-                <div class="mobile-result-hero ${success ? '' : 'error'}">
-                    <span class="mobile-result-icon">${success ? '✓' : '!'}</span>
-                    <strong>${escapeHtml(heading)}</strong>
-                    ${subline ? `<br><small>${escapeHtml(subline)}</small>` : ''}
-                </div>
-                <div class="mobile-result-section">
-                    <div class="mobile-result-kicker">You selected</div>
-                    <strong>${escapeHtml(selected || 'No answer')}</strong>
-                </div>
-                <div class="mobile-result-section">
-                    <div class="mobile-result-kicker">${success ? 'Why this is correct' : 'Why this needs review'}</div>
-                    ${escapeHtml(why || 'Review the condition, history, allergies, and cautions before choosing.')}
-                </div>
-                <div class="mobile-result-section">
-                    <div class="mobile-result-kicker">All valid options for this condition</div>
-                    <div class="mobile-badge-list">${validHtml || '<span class="mobile-drug-badge">See reference</span>'}</div>
-                </div>
-                ${(mechanism || cautions) ? `<div class="mobile-result-section"><div class="mobile-result-kicker">Mechanism - Dosage</div>${escapeHtml(mechanism || '')}${cautions ? `<br><br><strong>Cautions:</strong> ${escapeHtml(cautions)}` : ''}</div>` : ''}
-                ${extraHtml || ''}
-            </div>
-        `;
     }
 
     function isEndlessMode() {
@@ -2935,58 +1209,41 @@
         const sizeToggle = document.getElementById('pdf-size-toggle');
         if (!modal || !canvasWrap || !fallbackFrame || !empty || !error || !title) return;
 
-        resetPdfViewerState();
         title.innerText = `${exam.label} - Table PDF`;
         if (box) box.classList.remove('expanded');
         if (sizeToggle) sizeToggle.innerText = 'Expand';
-        modal.classList.remove('hidden');
         empty.classList.add('hidden');
         error.classList.add('hidden');
-        canvasWrap.classList.add('hidden');
+        canvasWrap.classList.remove('hidden');
         fallbackFrame.classList.add('hidden');
         fallbackFrame.removeAttribute('src');
         if (exam.pdfFile) {
-            empty.innerHTML = '<strong>Loading PDF...</strong><br><small>If the preview is blocked, an open-file button will appear.</small>';
-            empty.classList.remove('hidden');
             loadPdfDocument(exam.pdfFile);
         } else {
-            empty.innerHTML = 'No PDF is available for this exam yet.';
+            resetPdfViewerState();
             canvasWrap.classList.add('hidden');
             fallbackFrame.classList.add('hidden');
             empty.classList.remove('hidden');
         }
+        modal.classList.remove('hidden');
     }
 
-    function showPdfFallback(url, reason) {
+    function showPdfFallback(url) {
         const wrap = document.getElementById('pdf-canvas-wrap');
         const frame = document.getElementById('pdf-fallback-frame');
         const indicator = document.getElementById('pdf-page-indicator');
         const error = document.getElementById('exam-pdf-error');
-        const empty = document.getElementById('exam-pdf-empty');
-        const fallbackHtml = `<strong>Open medicine reference PDF</strong><br><small>The in-page preview is blocked in this browser. Tap below to open the PDF directly.</small><br><a class="pdf-open-link" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open PDF</a>`;
         if (wrap) wrap.classList.add('hidden');
-        if (empty) {
-            empty.innerHTML = fallbackHtml;
-            empty.classList.remove('hidden');
-        }
         if (frame) {
-            if (isPhoneLayout()) {
-                frame.classList.add('hidden');
-                frame.removeAttribute('src');
-            } else {
-                frame.src = url;
-                frame.classList.remove('hidden');
-                frame.onerror = () => {
-                    const err = document.getElementById('exam-pdf-error');
-                    if (err) {
-                        err.innerHTML = `<strong>PDF embed blocked</strong><br>${escapeHtml(reason || 'The browser could not embed this PDF.')}<br><a class="pdf-open-link" href="${escapeHtml(url)}" target="_blank" rel="noopener">Open PDF</a>`;
-                        err.classList.remove('hidden');
-                    }
-                };
-            }
+            frame.src = url;
+            frame.classList.remove('hidden');
+            frame.onerror = () => {
+                const err = document.getElementById('exam-pdf-error');
+                if (err) err.classList.remove('hidden');
+            };
         }
         if (error) error.classList.add('hidden');
-        if (indicator) indicator.innerText = 'Open PDF';
+        if (indicator) indicator.innerText = 'Built-in PDF mode';
     }
 
     async function ensurePdfJsLoaded() {
@@ -3002,61 +1259,31 @@
     }
 
     function resolvePdfUrl(pdfFile) {
-        return getPdfUrlCandidates(pdfFile)[0];
-    }
-
-    function getPdfUrlCandidates(pdfFile) {
-        if (/^https?:\/\//i.test(pdfFile)) return [pdfFile];
-        if (!pdfFile) return [];
-        const pageBaseUrl = new URL('.', window.location.href).href;
-        const cleanPath = pdfFile.replace(/^\/+/, '');
-        const fileName = cleanPath.split('/').pop();
-        const candidates = [];
-
-        if (pdfFile.startsWith('/') && /^https?:/i.test(window.location.protocol)) {
-            candidates.push(new URL(encodeURI(pdfFile), window.location.origin).href);
-        }
-
-        candidates.push(new URL(encodeURI(fileName), pageBaseUrl).href);
-        candidates.push(new URL(encodeURI(cleanPath), pageBaseUrl).href);
-
-        return [...new Set(candidates)];
+        const basePath = window.location.pathname.replace(/[^/]*$/, '');
+        return new URL(encodeURI(pdfFile), `${window.location.origin}${basePath}`).href;
     }
 
     async function loadPdfDocument(url) {
         const error = document.getElementById('exam-pdf-error');
         const indicator = document.getElementById('pdf-page-indicator');
-        const empty = document.getElementById('exam-pdf-empty');
-        const canvasWrap = document.getElementById('pdf-canvas-wrap');
-        const candidates = getPdfUrlCandidates(url);
-        let lastError = null;
+        const resolvedUrl = resolvePdfUrl(url);
         try {
+            const probe = await fetch(resolvedUrl, { method: 'HEAD', cache: 'no-store' });
+            if (!probe.ok) throw new Error('PDF not found');
             const loaded = await ensurePdfJsLoaded();
             if (!loaded) throw new Error('PDF.js not loaded');
             if (window.pdfjsLib.GlobalWorkerOptions) {
                 window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
             }
-            for (const candidateUrl of candidates) {
-                try {
-                    const loadingTask = window.pdfjsLib.getDocument({ url: candidateUrl, disableWorker: true });
-                    pdfDoc = await loadingTask.promise;
-                    lastError = null;
-                    break;
-                } catch (err) {
-                    lastError = err;
-                    pdfDoc = null;
-                }
-            }
-            if (!pdfDoc) throw lastError || new Error('PDF not found');
+            const loadingTask = window.pdfjsLib.getDocument({ url: resolvedUrl, disableWorker: true });
+            pdfDoc = await loadingTask.promise;
             pdfPage = 1;
             pdfScale = 1;
-            if (empty) empty.classList.add('hidden');
-            if (error) error.classList.add('hidden');
-            if (canvasWrap) canvasWrap.classList.remove('hidden');
             if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages}`;
             renderPdfPage(pdfPage);
-        } catch (err) {
-            showPdfFallback(candidates[0] || resolvePdfUrl(url), err && err.message ? err.message : 'Unable to load PDF in this environment.');
+        } catch (_) {
+            if (error) error.classList.remove('hidden');
+            showPdfFallback(resolvedUrl);
         }
     }
 
@@ -3080,10 +1307,6 @@
             context.imageSmoothingEnabled = true;
             context.imageSmoothingQuality = 'high';
             await page.render({ canvasContext: context, viewport }).promise;
-            const empty = document.getElementById('exam-pdf-empty');
-            const error = document.getElementById('exam-pdf-error');
-            if (empty) empty.classList.add('hidden');
-            if (error) error.classList.add('hidden');
             if (indicator) indicator.innerText = `Page ${pdfPage} / ${pdfDoc.numPages} | Zoom ${Math.round(pdfScale * 100)}%`;
             const wrap = document.getElementById('pdf-canvas-wrap');
             if (wrap) { wrap.scrollTop = 0; wrap.scrollLeft = 0; }
@@ -3131,8 +1354,6 @@
         const indicator = document.getElementById('pdf-page-indicator');
         const error = document.getElementById('exam-pdf-error');
         const frame = document.getElementById('pdf-fallback-frame');
-        const empty = document.getElementById('exam-pdf-empty');
-        const wrap = document.getElementById('pdf-canvas-wrap');
         if (canvas) {
             const ctx = canvas.getContext('2d');
             if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -3141,8 +1362,6 @@
         }
         if (indicator) indicator.innerText = 'Page -- / --';
         if (error) error.classList.add('hidden');
-        if (empty) empty.classList.add('hidden');
-        if (wrap) wrap.classList.add('hidden');
         if (frame) {
             frame.classList.add('hidden');
             frame.removeAttribute('src');
@@ -3264,7 +1483,6 @@
         if (!applyExamSelection({ allowUnavailable: true }) || !database.length) {
             return;
         }
-        closeMobileCasePicker();
         document.getElementById('pause-modal').classList.add('hidden');
         if (currentMode === 'tablequiz') {
             launchTableQuizMode();
@@ -3319,7 +1537,6 @@
     function launchTableQuizMode() {
         gameActive = true;
         isShiftPaused = false;
-        closeMobileCasePicker();
         queue = [];
         selectedPatientId = null;
         clearInterval(spawnTimer);
@@ -3353,48 +1570,18 @@
         else setupTableQuizDrug();
     }
 
-    function selectTableQuizDrug(index) {
-        if (!tableQuizState || index < 0 || index >= database.length) return;
-        tableQuizState.drugIndex = index;
-        setupTableQuizDrug();
-        saveTableQuizState();
-        if (isPhoneLayout()) {
-            closeMobileCasePicker();
-            updateMobileLayoutMeasurements();
-        }
-    }
-
     function renderTableQuizDrugList() {
         const el = document.getElementById('queue-list');
         if (!tableQuizState) return;
-        updateMobilePickerHeading('Medicine Picker', ' - choose practice drug');
-        if (isPhoneLayout()) ensureMobileMedicineSearch();
         el.innerHTML = '';
-        const search = normalize(mobileTableDrugSearch);
-        const visibleRows = database
-            .map((d, i) => ({ d, i }))
-            .filter(({ d }) => {
-                if (!isPhoneLayout() || !search) return true;
-                return [d.generic, d.trade, d.condition, d.action, d.category].some(v => normalize(v).includes(search));
-            });
-        if (!visibleRows.length) {
-            const empty = document.createElement('div');
-            empty.className = 'mini-panel empty-queue-panel';
-            empty.innerHTML = '<strong>No medicines found.</strong><br><small>Try a generic, trade, condition, or category.</small>';
-            el.appendChild(empty);
-            updateMobileCaseControls();
-            return;
-        }
-        visibleRows.forEach(({ d, i }) => {
+        database.forEach((d, i) => {
             const card = document.createElement('div');
-            card.className = 'patient-card medicine-card' + (i === tableQuizState.drugIndex ? ' selected' : '');
+            card.className = 'patient-card' + (i === tableQuizState.drugIndex ? ' selected' : '');
             const done = tableQuizState.memorizedSet.has(i);
-            const status = i === tableQuizState.drugIndex ? 'Now' : done ? 'Done' : 'Pick';
-            card.innerHTML = `<span class="queue-chip">${status}</span><strong style="${done ? 'text-decoration:line-through;color:#2e7d32;' : ''}">${escapeHtml(d.generic)}</strong><br><small>${done ? 'memorized' : 'not memorized'}${d.trade && d.trade !== 'None' ? ` - ${escapeHtml(d.trade)}` : ''}</small>`;
-            card.onclick = () => selectTableQuizDrug(i);
+            card.innerHTML = `<strong style="${done ? 'text-decoration:line-through;color:#2e7d32;' : ''}">${d.generic}</strong><br><small>${done ? 'memorized' : 'not memorized'}</small>`;
+            card.onclick = () => { tableQuizState.drugIndex = i; setupTableQuizDrug(); saveTableQuizState(); };
             el.appendChild(card);
         });
-        updateMobileCaseControls();
     }
 
     function setupTableQuizDrug() {
@@ -3416,7 +1603,6 @@
     function renderTableQuizScreen(drug) {
         document.getElementById('empty-exam').classList.add('hidden');
         document.getElementById('active-exam').classList.remove('hidden');
-        document.getElementById('active-exam').classList.add('table-quiz-screen');
         document.getElementById('pat-name').innerText = `Table Quiz: ${drug.generic}`;
         document.getElementById('pat-age').innerText = '-';
         document.getElementById('pat-condition').innerText = 'One field is given. Complete the remaining topics with MCQ.';
@@ -3431,43 +1617,6 @@
 
         const solvedKeys = new Set(tableQuizState.pendingKeys.slice(0, tableQuizState.solvedCount));
         const currentKey = tableQuizState.pendingKeys[tableQuizState.solvedCount] || null;
-        if (isPhoneLayout()) {
-            updateMobileCaseStrip({
-                id: `table_${tableQuizState.drugIndex}`,
-                quizMode: true,
-                quizType: 'Table Quiz',
-                condition: drug.generic
-            });
-            const mobileCards = tableQuizState.fields.map(k => {
-                let state = 'locked';
-                let value = '&#128274;';
-                let icon = '';
-                if (k === tableQuizState.fixedKey) {
-                    state = 'given';
-                    value = escapeHtml(drug[k] || 'None');
-                    icon = 'Given';
-                } else if (solvedKeys.has(k)) {
-                    state = 'done';
-                    value = `${escapeHtml(drug[k] || 'None')} ✓`;
-                    icon = 'Done';
-                } else if (k === currentKey) {
-                    state = 'active';
-                    value = `<div class="drop-slot active" data-key="${k}">Tap an answer below</div>`;
-                    icon = 'Now';
-                }
-                return `<div class="mobile-table-field ${state}">
-                    <div class="mobile-table-label"><span>${escapeHtml(tableQuizState.labels[k])}</span><span>${icon}</span></div>
-                    <div class="mobile-table-value">${value}</div>
-                </div>`;
-            }).join('');
-            document.getElementById('risk-display').innerHTML =
-                `<div class="risk-box"><strong>Memorized ${tableQuizState.memorizedSet.size}/${database.length}</strong> | <strong>Table Quiz</strong></div>
-                 <div class="mobile-table-quiz">${mobileCards}</div>`;
-            renderTableQuizChoices(drug, currentKey);
-            renderTableQuizDrugList();
-            updateMobileLayoutMeasurements();
-            return;
-        }
         const cols = tableQuizState.fields.map(k => `<th>${tableQuizState.labels[k]}</th>`).join('');
         const cells = tableQuizState.fields.map(k => {
             if (k === tableQuizState.fixedKey) return `<td><strong>${drug[k] || 'None'}</strong></td>`;
@@ -3481,7 +1630,6 @@
              <table class="dnd-table"><tr>${cols}</tr><tr>${cells}</tr></table>`;
         renderTableQuizChoices(drug, currentKey);
         renderTableQuizDrugList();
-        updateMobileLayoutMeasurements();
     }
 
     function flashWrongTableQuizAnswer(slot, pill) {
@@ -3542,7 +1690,6 @@
             } else {
                 grid.innerHTML = '<div class="mini-panel">Review mode: this row is already memorized. Select another drug from the left panel to continue.</div>';
             }
-            updateMobileLayoutMeasurements();
             return;
         }
         const key = currentKey;
@@ -3557,13 +1704,12 @@
         document.getElementById('risk-display').innerHTML += `<div class="mini-panel"><strong>Now answer:</strong> ${tableQuizState.labels[key]}</div>`;
         const poolWrap = document.createElement('div');
         poolWrap.className = 'pill-pool';
-        options.forEach((opt, index) => {
+        options.forEach(opt => {
             const pill = document.createElement('div');
             pill.className = 'pill-choice';
             pill.innerText = opt;
             pill.draggable = true;
             pill.dataset.value = opt;
-            pill.dataset.choiceIndex = String(index + 1);
             pill.setAttribute('role', 'button');
             pill.setAttribute('tabindex', '0');
             pill.setAttribute('aria-label', `Answer ${opt}`);
@@ -3589,18 +1735,11 @@
                 submitTableQuizAnswer(dropped, drug, key);
             });
         }
-        updateMobileLayoutMeasurements();
     }
 
     function restartTableQuiz() {
         clearTableQuizState();
-        if (!tableQuizState) {
-            if (currentMode === 'tablequiz' && database.length) {
-                launchTableQuizMode();
-                trackEvent('tablequiz_restart_clicked', { mode: currentMode, restartedFromHome: true });
-            }
-            return;
-        }
+        if (!tableQuizState) return;
         tableQuizState.drugIndex = 0;
         tableQuizState.memorizedSet = new Set();
         tableQuizState.progressByDrug = {};
@@ -3610,7 +1749,6 @@
 
     function resumeShift() {
         if (!isShiftPaused) return;
-        closeMobileCasePicker();
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
         document.getElementById('pause-modal').classList.add('hidden');
@@ -3649,7 +1787,6 @@
         if (!document.getElementById('game-over-screen').classList.contains('hidden')) return;
         gameActive = false;
         isShiftPaused = true;
-        closeMobileCasePicker();
         clearInterval(spawnTimer);
         pauseCaseTimer();
         stopHeartbeat();
@@ -3660,7 +1797,6 @@
 
     function resumePausedGame() {
         if (!isShiftPaused) return;
-        closeMobileCasePicker();
         document.getElementById('pause-modal').classList.add('hidden');
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-over-screen').classList.add('hidden');
@@ -3689,7 +1825,6 @@
     function resetGame() {
         gameActive = false;
         isShiftPaused = false;
-        closeMobileCasePicker();
         clearInterval(spawnTimer);
         stopCaseTimer();
         stopHeartbeat();
@@ -3704,7 +1839,6 @@
     function returnToHome() {
         gameActive = false;
         isShiftPaused = true;
-        closeMobileCasePicker();
         clearInterval(spawnTimer);
         stopCaseTimer();
         stopHeartbeat();
@@ -3795,7 +1929,6 @@
             queue.push(newPatient);
             renderQueue();
             updateStats();
-            autoOpenMobilePatient(newPatient);
             return;
         }
         let sourcePool = database;
@@ -3819,7 +1952,6 @@
         queue.push(newPatient);
         renderQueue();
         updateStats();
-        autoOpenMobilePatient(newPatient);
     }
 
     function requestPatientNow() {
@@ -3833,41 +1965,8 @@
         trackEvent('manual_patient_requested', { mode: currentMode, queueSize: queue.length });
     }
 
-    function skipCurrentCase() {
-        if (!isPhoneLayout() || !gameActive || currentMode === 'tablequiz') return;
-        const idToSkip = selectedPatientId || (queue[0] && queue[0].id);
-        if (!idToSkip) {
-            requestPatientNow();
-            return;
-        }
-
-        const { patient, nextPatient } = removePatientFromQueue(idToSkip);
-        if (!patient) return;
-
-        selectedPatientId = null;
-        stopCaseTimer();
-        closeMobileCasePicker();
-        document.getElementById('solution-modal').classList.add('hidden');
-        document.getElementById('empty-exam').classList.remove('hidden');
-        document.getElementById('active-exam').classList.add('hidden');
-        document.getElementById('active-exam').classList.remove('table-quiz-screen');
-        document.getElementById('risk-display').innerHTML = '';
-        updateMobileCaseStrip(null);
-        renderQueue();
-        updateStats();
-        trackEvent('case_skipped', { mode: currentMode, queueSize: queue.length, skippedCondition: patient.condition });
-
-        if (nextPatient) {
-            displayPatient(nextPatient);
-            return;
-        }
-        if (canContinueShift()) spawnPatient();
-    }
-
     function renderQueue() {
         const el = document.getElementById('queue-list');
-        updateMobilePickerHeading('Waiting Area', ' - tap to switch');
-        removeMobileMedicineSearch();
         el.innerHTML = '';
         if (queue.length === 0 && gameActive && currentMode !== 'tablequiz' && canContinueShift()) {
             const emptyPanel = document.createElement('div');
@@ -3881,7 +1980,6 @@
             button.addEventListener('click', requestPatientNow);
             emptyPanel.appendChild(button);
             el.appendChild(emptyPanel);
-            updateMobileCaseControls();
             return;
         }
         queue.forEach((pat, index) => {
@@ -3890,14 +1988,13 @@
             if (pat.id === selectedPatientId) card.classList.add('selected');
             if (!isEndlessMode() && !noTimerMode && index === 0 && queue.length >= 7) card.classList.add('urgent');
             if (pat.quizMode) {
-                card.innerHTML = `<span class="queue-chip">${pat.id === selectedPatientId ? 'Now' : 'Tap'}</span><strong>Mini Quiz #${index + 1}</strong><br><small>${quizTypeLabel(pat.quizType)} question</small>`;
+                card.innerHTML = `<strong>Mini Quiz #${index + 1}</strong><br><small>${quizTypeLabel(pat.quizType)} question</small>`;
             } else {
-                card.innerHTML = `<span class="queue-chip">${pat.id === selectedPatientId ? 'Now' : 'Tap'}</span><strong>${pat.name} (Age: ${pat.age})</strong><br><small>${pat.condition.substring(0, 34)}...</small>`;
+                card.innerHTML = `<strong>${pat.name} (Age: ${pat.age})</strong><br><small>${pat.condition.substring(0, 34)}...</small>`;
             }
             card.onclick = () => selectPatient(pat.id);
             el.appendChild(card);
         });
-        updateMobileCaseControls();
     }
 
     function getPatientRiskHints(patient) {
@@ -3923,14 +2020,12 @@
         if (!patient) return;
         document.getElementById('empty-exam').classList.add('hidden');
         document.getElementById('active-exam').classList.remove('hidden');
-        document.getElementById('active-exam').classList.remove('table-quiz-screen');
         document.getElementById('pat-name').innerText = patient.quizMode ? `Mini Quiz: ${quizTypeLabel(patient.quizType)}` : patient.name;
         document.getElementById('pat-age').innerText = patient.age;
         document.getElementById('pat-condition').innerText = patient.condition;
         document.getElementById('pat-history').innerText = patient.history;
         document.getElementById('pat-allergies').innerText = patient.allergies;
         document.getElementById('pat-cautions').innerText = patient.cautions;
-        updateMobileCaseStrip(patient);
 
         const quizHiddenRows = ['row-age', 'row-allergies', 'row-cautions'];
         quizHiddenRows.forEach(id => {
@@ -3958,33 +2053,17 @@
         }
 
         generateChoices(patient);
-        if (isPhoneLayout()) {
-            closeMobileCasePicker();
-            requestAnimationFrame(() => {
-                updateMobileLayoutMeasurements();
-                const examPanel = document.getElementById('exam-panel');
-                const selectedCard = document.querySelector('.patient-card.selected');
-                if (examPanel) examPanel.scrollTo({ top: 0, behavior: 'smooth' });
-                if (selectedCard) selectedCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            });
-        }
         const sec = getCaseSeconds();
         if (sec > 0) startCaseTimer(sec);
-        else {
-            document.getElementById('case-timer').innerText = 'OFF';
-            setMobileCaseTimerText('OFF');
-        }
+        else document.getElementById('case-timer').innerText = 'OFF';
     }
 
     function clearExamPanel() {
         selectedPatientId = null;
         stopCaseTimer();
-        closeMobileCasePicker();
         document.getElementById('empty-exam').classList.remove('hidden');
         document.getElementById('active-exam').classList.add('hidden');
         document.getElementById('risk-display').innerHTML = '';
-        document.getElementById('active-exam').classList.remove('table-quiz-screen');
-        updateMobileCaseStrip(null);
         renderQueue();
     }
 
@@ -3996,11 +2075,9 @@
         stopCaseTimer();
         caseTimeLeft = seconds;
         document.getElementById('case-timer').innerText = `${caseTimeLeft}s`;
-        setMobileCaseTimerText(`${caseTimeLeft}s`);
         caseTimer = setInterval(() => {
             caseTimeLeft -= 1;
             document.getElementById('case-timer').innerText = `${caseTimeLeft}s`;
-            setMobileCaseTimerText(`${caseTimeLeft}s`);
             if (caseTimeLeft <= 0) {
                 stopCaseTimer();
                 if (!selectedPatientId || !gameActive) return;
@@ -4037,7 +2114,6 @@
         if (caseTimer) clearInterval(caseTimer);
         caseTimer = null;
         document.getElementById('case-timer').innerText = '--';
-        setMobileCaseTimerText('--');
     }
 
     function showTimeoutModal() {
@@ -4048,22 +2124,13 @@
         box.classList.remove('success-box');
         box.classList.add('error-box');
         document.getElementById('sol-title').innerHTML = "\u23F1\uFE0F <span style='color:#e65100;'>Time Out</span>";
-        document.getElementById('sol-content').innerHTML = isPhoneLayout()
-            ? renderMobileResult({
-                success: false,
-                heading: 'Time Out',
-                subline: '1 strike added',
-                selected: 'No answer before timer ended',
-                why: 'Match the condition first, then check history, allergies, and cautions before choosing.',
-                validHtml: '<span class="mobile-drug-badge">Review case</span>'
-            })
-            : `<p>You ran out of time for this patient. 1 strike added.</p><p><strong>Tip:</strong> Match the condition first, then check history and allergy.</p>`;
+        document.getElementById('sol-content').innerHTML = `<p>You ran out of time for this patient. 1 strike added.</p><p><strong>Tip:</strong> Match the condition first, then check history and allergy.</p>`;
         modal.classList.remove('hidden');
     }
 
     function uniqueByLabel(items) {
         const seen = new Set();
-        return items.filter(Boolean).filter(item => {
+        return items.filter(item => {
             const key = normalize(formatDrugLabel(item));
             if (seen.has(key)) return false;
             seen.add(key);
@@ -4113,41 +2180,32 @@
                 seen.add(k);
                 uniquePool.push(p);
             });
-            const mobileChoiceCount = isPhoneLayout() ? 4 : 5;
-            let distractors = shuffle(uniquePool.filter(x => normalize(x.quizValue) !== normalize(correctValue))).slice(0, mobileChoiceCount - 1);
-            if (distractors.length < mobileChoiceCount - 1) {
+            let distractors = shuffle(uniquePool.filter(x => normalize(x.quizValue) !== normalize(correctValue))).slice(0, 4);
+            if (distractors.length < 4) {
                 const extra = shuffle(uniquePool)
                     .filter(x => normalize(x.quizValue) !== normalize(correctValue) && !distractors.some(d => normalize(d.quizValue) === normalize(x.quizValue)))
-                    .slice(0, (mobileChoiceCount - 1) - distractors.length);
+                    .slice(0, 4 - distractors.length);
                 distractors = [...distractors, ...extra];
             }
-            const options = shuffle([{ quizValue: correctValue, sourceDrug: null }, ...distractors]).slice(0, mobileChoiceCount);
+            const options = shuffle([{ quizValue: correctValue, sourceDrug: null }, ...distractors]).slice(0, 5);
             const grid = document.getElementById('choice-grid');
             grid.innerHTML = '';
-            options.forEach((opt, index) => {
+            options.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
-                btn.dataset.choiceIndex = String(index + 1);
                 btn.innerText = opt.quizValue;
                 btn.onclick = () => processAnswer(opt, patient);
                 grid.appendChild(btn);
             });
-            updateMobileLayoutMeasurements();
             return;
         }
-        let valid = database.filter(d => sameCondition(d.condition, patient.condition));
-        if (!valid.length && patient.generic) {
-            valid = database.filter(d => normalize(d.generic) === normalize(patient.generic) || normalize(d.trade) === normalize(patient.trade));
-        }
-        if (!valid.length && patient.generic && patient.action && patient.cautions) {
-            valid = [patient];
-        }
-        const choiceCount = isPhoneLayout() ? 4 : diffSettings[getAdaptiveDifficulty()].choices;
+        const valid = database.filter(d => sameCondition(d.condition, patient.condition));
+        const choiceCount = diffSettings[getAdaptiveDifficulty()].choices;
         const safeValid = strictSafety ? valid.filter(v => evaluateSafety(patient, v).penalty === 0) : valid;
         const unsafeValid = strictSafety ? valid.filter(v => evaluateSafety(patient, v).penalty > 0) : [];
 
         const correctPool = safeValid.length ? safeValid : valid;
-        const correct = correctPool[Math.floor(Math.random() * correctPool.length)] || database[0];
+        const correct = correctPool[Math.floor(Math.random() * correctPool.length)];
         const optionsSeed = [correct];
 
         if (unsafeValid.length) {
@@ -4164,15 +2222,13 @@
         }
         const grid = document.getElementById('choice-grid');
         grid.innerHTML = '';
-        options.forEach((opt, index) => {
+        options.forEach(opt => {
             const btn = document.createElement('button');
             btn.className = 'choice-btn';
-            btn.dataset.choiceIndex = String(index + 1);
             btn.innerText = formatDrugLabel(opt);
             btn.onclick = () => processAnswer(opt, patient);
             grid.appendChild(btn);
         });
-        updateMobileLayoutMeasurements();
     }
 
     function evaluateSafety(patient, drug) {
@@ -4268,33 +2324,13 @@
                 streak += 1;
                 queue = queue.filter(p => p.id !== selectedPatientId);
                 title.innerHTML = "\u2705 <span style='color:#2e7d32;'>Correct Quiz Answer</span>";
-                content.innerHTML = isPhoneLayout()
-                    ? renderMobileResult({
-                        success: true,
-                        heading: 'Correct Quiz Answer',
-                        subline: '+1 point',
-                        selected: submittedDrug.quizValue,
-                        why: quizExplanationText(patient, label, correctValue, true),
-                        validHtml: `<span class="mobile-drug-badge">${escapeHtml(correctValue)}</span>`,
-                        mechanism: `Drug: ${patient.quizAnswerGeneric}`
-                    })
-                    : `<strong>Drug:</strong> ${escapeHtml(patient.quizAnswerGeneric)}<br><strong>Correct ${escapeHtml(label)}:</strong> ${escapeHtml(correctValue)}<br><strong>Your answer:</strong> ${escapeHtml(submittedDrug.quizValue)}<div class="why-box"><strong>Why this is best:</strong><br>${escapeHtml(quizExplanationText(patient, label, correctValue, true))}</div>`;
+                content.innerHTML = `<strong>Drug:</strong> ${escapeHtml(patient.quizAnswerGeneric)}<br><strong>Correct ${escapeHtml(label)}:</strong> ${escapeHtml(correctValue)}<br><strong>Your answer:</strong> ${escapeHtml(submittedDrug.quizValue)}<div class="why-box"><strong>Why this is best:</strong><br>${escapeHtml(quizExplanationText(patient, label, correctValue, true))}</div>`;
             } else {
                 box.classList.add('error-box');
                 strikes += 1;
                 streak = 0;
                 title.innerHTML = "\u274C <span style='color:#c62828;'>Incorrect Quiz Answer</span>";
-                content.innerHTML = isPhoneLayout()
-                    ? renderMobileResult({
-                        success: false,
-                        heading: 'Incorrect Quiz Answer',
-                        subline: '1 strike added',
-                        selected: submittedDrug.quizValue,
-                        why: quizExplanationText(patient, label, correctValue, false),
-                        validHtml: `<span class="mobile-drug-badge">${escapeHtml(correctValue)}</span>`,
-                        mechanism: `Drug: ${patient.quizAnswerGeneric}`
-                    })
-                    : `<strong>Drug:</strong> ${escapeHtml(patient.quizAnswerGeneric)}<br><strong>Correct ${escapeHtml(label)}:</strong> ${escapeHtml(correctValue)}<br><strong>Your answer:</strong> ${escapeHtml(submittedDrug.quizValue)}<div class="why-box"><strong>Why this is best:</strong><br>${escapeHtml(quizExplanationText(patient, label, correctValue, false))}</div>`;
+                content.innerHTML = `<strong>Drug:</strong> ${escapeHtml(patient.quizAnswerGeneric)}<br><strong>Correct ${escapeHtml(label)}:</strong> ${escapeHtml(correctValue)}<br><strong>Your answer:</strong> ${escapeHtml(submittedDrug.quizValue)}<div class="why-box"><strong>Why this is best:</strong><br>${escapeHtml(quizExplanationText(patient, label, correctValue, false))}</div>`;
             }
             updateProgress(patient.category || 'quiz', isCorrectQuiz);
             saveQuestionHistory({
@@ -4350,30 +2386,18 @@
             adaptiveDifficultyOffset = Math.min(3, adaptiveDifficultyOffset + (safetyFlagged ? 0 : (isBestChoice ? 1 : 0)));
             queue = queue.filter(p => p.id !== selectedPatientId);
             title.innerHTML = "\u2705 <span style='color:#2e7d32;'>Correct Dispensation</span>";
-            content.innerHTML = isPhoneLayout()
-                ? renderMobileResult({
-                    success: true,
-                    heading: 'Correct Dispensation',
-                    subline: `+${earned} point - Strike ${strikes}`,
-                    selected: formatDrugLabel(submittedDrug),
-                    why: whyThisDrugText(patient, submittedDrug, isBestChoice, safetyFlagged, unavoidableSafety),
-                    validHtml: mobileDrugBadges(validDrugs, patient),
-                    mechanism: submittedDrug.action,
-                    cautions: submittedDrug.cautions,
-                    extraHtml: unavoidableSafety ? '<div class="mobile-result-section"><div class="mobile-result-kicker">Safety note</div>This case has unavoidable safety flags for all valid options, so it was accepted as a necessary choice.</div>' : ''
-                })
-                : `
-                    <strong>Selected:</strong> ${escapeHtml(formatDrugLabel(submittedDrug))}<br>
-                    <strong>Choice quality:</strong> ${isBestChoice ? 'Best choice' : 'Acceptable choice'}<br>
-                    <strong>Points gained:</strong> ${earned}<br><br>
-                    <div class="why-box"><strong>Why this is best:</strong><br>${escapeHtml(whyThisDrugText(patient, submittedDrug, isBestChoice, safetyFlagged, unavoidableSafety))}</div>
-                    <strong>Valid Drugs for this condition:</strong><br>
-                    <div class='drug-list'>${escapeHtml(validNames)}</div><br>
-                    <strong>Mechanism of selected drug:</strong> ${escapeHtml(submittedDrug.action)}<br><br>
-                    <strong>Cautions of selected drug:</strong> ${escapeHtml(submittedDrug.cautions)}
-                    ${safetyFlagged ? `<br><br><strong>Safety warning:</strong> Your drug is valid for this condition, but has caution flags in this patient context.` : ''}
-                    ${unavoidableSafety ? `<br><br><strong>Safety note:</strong> This case has unavoidable safety flags for all valid options, so it was accepted as a necessary choice.` : ''}
-                `;
+            content.innerHTML = `
+                <strong>Selected:</strong> ${escapeHtml(formatDrugLabel(submittedDrug))}<br>
+                <strong>Choice quality:</strong> ${isBestChoice ? 'Best choice' : 'Acceptable choice'}<br>
+                <strong>Points gained:</strong> ${earned}<br><br>
+                <div class="why-box"><strong>Why this is best:</strong><br>${escapeHtml(whyThisDrugText(patient, submittedDrug, isBestChoice, safetyFlagged, unavoidableSafety))}</div>
+                <strong>Valid Drugs for this condition:</strong><br>
+                <div class='drug-list'>${escapeHtml(validNames)}</div><br>
+                <strong>Mechanism of selected drug:</strong> ${escapeHtml(submittedDrug.action)}<br><br>
+                <strong>Cautions of selected drug:</strong> ${escapeHtml(submittedDrug.cautions)}
+                ${safetyFlagged ? `<br><br><strong>Safety warning:</strong> Your drug is valid for this condition, but has caution flags in this patient context.` : ''}
+                ${unavoidableSafety ? `<br><br><strong>Safety note:</strong> This case has unavoidable safety flags for all valid options, so it was accepted as a necessary choice.` : ''}
+            `;
         } else {
             box.classList.add('error-box');
             const strikeAdd = Math.max(1, safety.penalty || 1);
@@ -4398,19 +2422,7 @@
                    <strong>Correct references (click to expand):</strong>
                    ${validDrugs.map(d => `<details><summary><strong>${escapeHtml(formatDrugLabel(d))}</strong></summary><small>Mechanism: ${escapeHtml(d.action)}<br>Cautions: ${escapeHtml(d.cautions)}</small></details>`).join('')}`
                 : '';
-            content.innerHTML = isPhoneLayout()
-                ? renderMobileResult({
-                    success: false,
-                    heading: 'Clinical Error',
-                    subline: `${strikeAdd} strike${strikeAdd > 1 ? 's' : ''} added`,
-                    selected: formatDrugLabel(submittedDrug),
-                    why: conditionReason,
-                    validHtml: mobileDrugBadges(validDrugs, patient),
-                    mechanism: submittedDrug.action,
-                    cautions: submittedDrug.cautions,
-                    extraHtml: safety.reasons.length ? `<div class="mobile-result-section"><div class="mobile-result-kicker">Safety findings</div>${safety.reasons.map(r => escapeHtml(r)).join('<br>')}</div>` : ''
-                })
-                : `<strong>Selected:</strong> ${escapeHtml(formatDrugLabel(submittedDrug))}<br><strong>Strikes added:</strong> ${strikeAdd}<br><div class='drug-list'>Valid drugs: ${escapeHtml(validNames)}</div>${tutorExtra}`;
+            content.innerHTML = `<strong>Selected:</strong> ${escapeHtml(formatDrugLabel(submittedDrug))}<br><strong>Strikes added:</strong> ${strikeAdd}<br><div class='drug-list'>Valid drugs: ${escapeHtml(validNames)}</div>${tutorExtra}`;
         }
 
         updateProgress(patient.category, isCorrect);
@@ -4452,7 +2464,6 @@
         clearExamPanel();
         if (canContinueShift()) {
             if ((isOneCaseMode() || currentMode === 'mistakes') && queue.length === 0) spawnPatient();
-            if (shouldAutoOpenCases() && queue.length > 0 && !selectedPatientId) displayPatient(queue[0]);
             startSpawner();
         }
     }
@@ -4468,8 +2479,6 @@
         document.getElementById('queue-limit-display').innerText = (isEndlessMode() || isPracticeReviewMode()) ? '/∞' : '/10';
         q.style.color = !isEndlessMode() && !isPracticeReviewMode() && queue.length >= 7 ? '#ffeb3b' : 'inherit';
         updateMastery();
-        updateMobileCaseControls();
-        updateMobileLayoutMeasurements();
     }
 
     function renderAnalytics() {
@@ -4494,7 +2503,6 @@
 
     function triggerGameOver(reason) {
         gameActive = false;
-        closeMobileCasePicker();
         clearInterval(spawnTimer);
         stopCaseTimer();
         stopHeartbeat();
@@ -4552,21 +2560,6 @@
         const buttons = Array.from(document.querySelectorAll('#choice-grid .choice-btn'));
         if (buttons[n - 1]) buttons[n - 1].click();
     });
-    const mobileLayoutQuery = window.matchMedia ? window.matchMedia('(max-width: 540px), (max-device-width: 540px)') : null;
-    function handleLayoutModeChange() {
-        requestAnimationFrame(() => {
-            if (!isPhoneLayout()) return;
-            applyMobileDefaults();
-            if (gameActive && queue.length && !selectedPatientId) autoOpenMobilePatient(queue[0]);
-            updateMobileLayoutMeasurements();
-        });
-    }
-    if (mobileLayoutQuery && mobileLayoutQuery.addEventListener) {
-        mobileLayoutQuery.addEventListener('change', handleLayoutModeChange);
-    }
-    window.addEventListener('orientationchange', handleLayoutModeChange, { passive: true });
-    window.addEventListener('resize', handleLayoutModeChange, { passive: true });
-    applyMobileDefaults();
     applyExamSelection({ allowUnavailable: true });
     updateExamPdfButton();
     validateDatabase();
