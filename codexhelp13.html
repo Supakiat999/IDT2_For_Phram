@@ -640,6 +640,11 @@
             }
             html.phone-layout .overlay{
                 position: fixed;
+                left: 0;
+                right: auto;
+                width: min(100vw, 390px);
+                max-width: 390px;
+                box-sizing: border-box;
                 padding: calc(12px + env(safe-area-inset-top)) 10px calc(12px + env(safe-area-inset-bottom));
             }
             html.phone-layout #start-screen{
@@ -771,12 +776,16 @@
             }
             html.phone-layout #solution-modal{
                 background: rgba(245, 249, 248, 0.98) !important;
+                z-index: 130 !important;
                 justify-content: flex-start;
+                padding-top: calc(12px + env(safe-area-inset-top));
             }
             html.phone-layout #solution-modal .solution-box{
-                width: min(calc(100vw - 24px), 366px);
+                width: calc(100% - 24px);
+                max-width: 366px;
                 max-height: calc(100vh - 24px);
                 max-height: calc(100dvh - 24px);
+                box-sizing: border-box;
                 border: 1px solid #d7e5e1;
                 box-shadow: 0 10px 24px rgba(0,0,0,0.14);
                 overflow-y: auto;
@@ -1278,6 +1287,144 @@
                 background: linear-gradient(135deg, var(--game-orange), #ff9f43);
                 box-shadow: 0 12px 24px rgba(255,117,72,0.24);
                 font-weight: 950;
+            }
+            html.phone-layout #active-exam.table-quiz-screen .exam-info {
+                display: none;
+            }
+            html.phone-layout #active-exam.table-quiz-screen #risk-display {
+                padding: 10px 12px 132px;
+            }
+            html.phone-layout .mobile-table-quiz {
+                display: grid;
+                gap: 9px;
+                margin-top: 10px;
+            }
+            html.phone-layout .mobile-table-field {
+                border-radius: 18px;
+                border: 1px solid rgba(0,105,92,0.12);
+                background: rgba(255,255,255,0.92);
+                box-shadow: var(--game-soft-shadow);
+                padding: 11px 12px;
+                min-width: 0;
+            }
+            html.phone-layout .mobile-table-field.given {
+                border-left: 6px solid var(--game-yellow);
+            }
+            html.phone-layout .mobile-table-field.active {
+                border-left: 6px solid var(--game-teal-mid);
+                background: linear-gradient(145deg, #ffffff, #effff7);
+            }
+            html.phone-layout .mobile-table-field.done {
+                border-left: 6px solid #47b881;
+            }
+            html.phone-layout .mobile-table-field.locked {
+                border-left: 6px solid #c5d0cc;
+                opacity: 0.76;
+            }
+            html.phone-layout .mobile-table-label {
+                display: flex;
+                justify-content: space-between;
+                gap: 8px;
+                color: var(--game-teal);
+                font-size: 0.66rem;
+                font-weight: 950;
+                text-transform: uppercase;
+                letter-spacing: 0.03em;
+                margin-bottom: 5px;
+            }
+            html.phone-layout .mobile-table-value {
+                color: var(--game-ink);
+                font-size: 0.86rem;
+                font-weight: 800;
+                line-height: 1.28;
+                overflow-wrap: anywhere;
+            }
+            html.phone-layout .mobile-table-field.locked .mobile-table-value {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 34px;
+                font-size: 1.2rem;
+            }
+            html.phone-layout #active-exam.table-quiz-screen .prescription-area {
+                padding-top: 11px;
+            }
+            html.phone-layout #active-exam.table-quiz-screen .choice-grid {
+                display: block;
+                overflow: hidden;
+            }
+            html.phone-layout #active-exam.table-quiz-screen .pill-pool {
+                display: flex;
+                flex-wrap: nowrap;
+                gap: 10px;
+                margin: 0;
+                padding: 2px 2px 8px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                scroll-snap-type: x proximity;
+                -webkit-overflow-scrolling: touch;
+            }
+            html.phone-layout #active-exam.table-quiz-screen .pill-choice {
+                flex: 0 0 auto;
+                min-height: 52px;
+                max-width: 82vw;
+                border-radius: 999px;
+                border: 1px solid rgba(0,105,92,0.18);
+                background: linear-gradient(145deg, #ffffff, #f2fff8);
+                color: var(--game-ink);
+                box-shadow: var(--game-soft-shadow);
+                padding: 12px 16px;
+                font-size: 0.84rem;
+                font-weight: 850;
+                line-height: 1.18;
+                scroll-snap-align: start;
+                overflow-wrap: anywhere;
+            }
+            html.phone-layout #active-exam.table-quiz-screen .pill-choice:active {
+                transform: translateY(2px) scale(0.98);
+            }
+            html.phone-layout #exam-pdf-fab {
+                position: fixed;
+                top: calc(54px + env(safe-area-inset-top));
+                right: 12px;
+                bottom: auto;
+                z-index: 35;
+                width: 46px;
+                height: 46px;
+                border-radius: 16px;
+            }
+            html.phone-layout #exam-pdf-modal {
+                z-index: 140 !important;
+                align-items: center;
+                justify-content: flex-start;
+                padding-top: calc(10px + env(safe-area-inset-top));
+                background: rgba(6, 39, 35, 0.62) !important;
+            }
+            html.phone-layout #exam-pdf-box {
+                width: calc(100% - 24px);
+                max-width: 366px;
+                height: calc(100vh - 24px);
+                height: calc(100dvh - 24px);
+                box-sizing: border-box;
+                border-radius: 18px;
+                border: 1px solid rgba(255,255,255,0.22);
+                box-shadow: 0 16px 36px rgba(0,0,0,0.28);
+            }
+            html.phone-layout #exam-pdf-box .pdf-toolbar-actions {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            html.phone-layout #exam-pdf-box .pdf-toolbar-actions .pdf-help {
+                grid-column: 1 / -1;
+                text-align: center;
+            }
+            html.phone-layout #restart-table-btn:not(.hidden) {
+                display: block;
+                width: 100%;
+                max-width: 360px;
+                min-height: 48px;
+                border-radius: 999px;
+                background: linear-gradient(135deg, var(--game-teal), var(--game-teal-mid)) !important;
+                box-shadow: var(--game-soft-shadow);
             }
         }
     </style>
@@ -1895,6 +2042,28 @@
     }
 
     function setGameMode(mode) {
+        const previousMode = currentMode;
+        if (isShiftPaused && mode !== previousMode) {
+            if (previousMode === 'tablequiz') saveTableQuizState();
+            gameActive = false;
+            isShiftPaused = false;
+            queue = [];
+            selectedPatientId = null;
+            clearInterval(spawnTimer);
+            stopCaseTimer();
+            stopHeartbeat();
+            document.getElementById('resume-shift-btn').classList.add('hidden');
+            document.getElementById('start-shift-btn').innerText = 'Start New Shift';
+            document.getElementById('solution-modal').classList.add('hidden');
+            document.getElementById('pause-modal').classList.add('hidden');
+            document.getElementById('history-modal').classList.add('hidden');
+            document.getElementById('empty-exam').classList.remove('hidden');
+            document.getElementById('active-exam').classList.add('hidden');
+            document.getElementById('active-exam').classList.remove('table-quiz-screen');
+            document.getElementById('risk-display').innerHTML = '';
+            if (mode !== 'tablequiz') tableQuizState = null;
+            renderQueue();
+        }
         currentMode = mode;
         document.getElementById('mode-rush').classList.remove('active');
         document.getElementById('mode-tradequiz').classList.remove('active');
@@ -1955,6 +2124,12 @@
             title.innerText = 'No active case';
             meta.innerText = 'Tap Start New Shift';
             setMobileCaseTimerText('--');
+            return;
+        }
+        if (String(patient.id || '').startsWith('table_')) {
+            title.innerText = 'Table Quiz';
+            meta.innerText = `Drug ${(tableQuizState?.drugIndex || 0) + 1}/${database.length} - ${patient.condition}`;
+            setMobileCaseTimerText('Quiz');
             return;
         }
         const index = Math.max(0, queue.findIndex(p => p.id === patient.id)) + 1;
@@ -2743,6 +2918,7 @@
     function renderTableQuizScreen(drug) {
         document.getElementById('empty-exam').classList.add('hidden');
         document.getElementById('active-exam').classList.remove('hidden');
+        document.getElementById('active-exam').classList.add('table-quiz-screen');
         document.getElementById('pat-name').innerText = `Table Quiz: ${drug.generic}`;
         document.getElementById('pat-age').innerText = '-';
         document.getElementById('pat-condition').innerText = 'One field is given. Complete the remaining topics with MCQ.';
@@ -2757,6 +2933,42 @@
 
         const solvedKeys = new Set(tableQuizState.pendingKeys.slice(0, tableQuizState.solvedCount));
         const currentKey = tableQuizState.pendingKeys[tableQuizState.solvedCount] || null;
+        if (isPhoneLayout()) {
+            updateMobileCaseStrip({
+                id: `table_${tableQuizState.drugIndex}`,
+                quizMode: true,
+                quizType: 'Table Quiz',
+                condition: drug.generic
+            });
+            const mobileCards = tableQuizState.fields.map(k => {
+                let state = 'locked';
+                let value = '&#128274;';
+                let icon = '';
+                if (k === tableQuizState.fixedKey) {
+                    state = 'given';
+                    value = escapeHtml(drug[k] || 'None');
+                    icon = 'Given';
+                } else if (solvedKeys.has(k)) {
+                    state = 'done';
+                    value = `${escapeHtml(drug[k] || 'None')} ✓`;
+                    icon = 'Done';
+                } else if (k === currentKey) {
+                    state = 'active';
+                    value = `<div class="drop-slot active" data-key="${k}">Tap an answer below</div>`;
+                    icon = 'Now';
+                }
+                return `<div class="mobile-table-field ${state}">
+                    <div class="mobile-table-label"><span>${escapeHtml(tableQuizState.labels[k])}</span><span>${icon}</span></div>
+                    <div class="mobile-table-value">${value}</div>
+                </div>`;
+            }).join('');
+            document.getElementById('risk-display').innerHTML =
+                `<div class="risk-box"><strong>Memorized ${tableQuizState.memorizedSet.size}/${database.length}</strong> | <strong>Table Quiz</strong></div>
+                 <div class="mobile-table-quiz">${mobileCards}</div>`;
+            renderTableQuizChoices(drug, currentKey);
+            renderTableQuizDrugList();
+            return;
+        }
         const cols = tableQuizState.fields.map(k => `<th>${tableQuizState.labels[k]}</th>`).join('');
         const cells = tableQuizState.fields.map(k => {
             if (k === tableQuizState.fixedKey) return `<td><strong>${drug[k] || 'None'}</strong></td>`;
@@ -2879,7 +3091,13 @@
 
     function restartTableQuiz() {
         clearTableQuizState();
-        if (!tableQuizState) return;
+        if (!tableQuizState) {
+            if (currentMode === 'tablequiz' && database.length) {
+                launchTableQuizMode();
+                trackEvent('tablequiz_restart_clicked', { mode: currentMode, restartedFromHome: true });
+            }
+            return;
+        }
         tableQuizState.drugIndex = 0;
         tableQuizState.memorizedSet = new Set();
         tableQuizState.progressByDrug = {};
@@ -3162,6 +3380,7 @@
         if (!patient) return;
         document.getElementById('empty-exam').classList.add('hidden');
         document.getElementById('active-exam').classList.remove('hidden');
+        document.getElementById('active-exam').classList.remove('table-quiz-screen');
         document.getElementById('pat-name').innerText = patient.quizMode ? `Mini Quiz: ${quizTypeLabel(patient.quizType)}` : patient.name;
         document.getElementById('pat-age').innerText = patient.age;
         document.getElementById('pat-condition').innerText = patient.condition;
@@ -3218,6 +3437,7 @@
         document.getElementById('empty-exam').classList.remove('hidden');
         document.getElementById('active-exam').classList.add('hidden');
         document.getElementById('risk-display').innerHTML = '';
+        document.getElementById('active-exam').classList.remove('table-quiz-screen');
         updateMobileCaseStrip(null);
         renderQueue();
     }
