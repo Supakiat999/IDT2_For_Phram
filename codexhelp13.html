@@ -860,6 +860,426 @@
                 font-size: 0.8rem;
             }
         }
+        @media all {
+            html.phone-layout {
+                --game-bg: #f3fbf5;
+                --game-panel: #ffffff;
+                --game-panel-soft: #f8fff9;
+                --game-teal: #006b5f;
+                --game-teal-dark: #06483f;
+                --game-teal-mid: #0f8b78;
+                --game-mint: #dff5eb;
+                --game-orange: #ff7548;
+                --game-orange-dark: #e95e35;
+                --game-yellow: #ffd166;
+                --game-danger: #d8432f;
+                --game-ink: #17352f;
+                --game-muted: #5f7b75;
+                --game-shadow: 0 10px 24px rgba(10, 76, 64, 0.13);
+                --game-soft-shadow: 0 6px 14px rgba(10, 76, 64, 0.1);
+            }
+            html.phone-layout body {
+                background:
+                    radial-gradient(circle at 18% 0%, rgba(255, 209, 102, 0.32), transparent 28%),
+                    radial-gradient(circle at 92% 16%, rgba(0, 137, 123, 0.16), transparent 30%),
+                    var(--game-bg);
+                color: var(--game-ink);
+            }
+            html.phone-layout #game-container {
+                background: transparent;
+                overflow: hidden;
+            }
+            html.phone-layout #header {
+                display: flex;
+                align-items: center;
+                flex-wrap: nowrap;
+                padding: calc(8px + env(safe-area-inset-top)) 9px 8px;
+                background: linear-gradient(135deg, var(--game-teal-dark), var(--game-teal));
+                border-bottom: 0;
+                box-shadow: 0 8px 20px rgba(4, 55, 49, 0.22);
+            }
+            html.phone-layout .header-brand {
+                flex: 1 1 auto;
+                min-width: 0;
+                color: #ffffff;
+                font-size: 0.84rem;
+                font-weight: 900;
+                letter-spacing: 0;
+            }
+            html.phone-layout .stats {
+                flex: 0 0 auto;
+                display: inline-flex;
+                gap: 5px;
+                width: auto;
+            }
+            html.phone-layout .stats > span {
+                min-height: 28px;
+                padding: 5px 8px;
+                border-radius: 999px;
+                background: rgba(255, 255, 255, 0.16);
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+                color: #ffffff;
+                font-size: 0.72rem;
+                font-weight: 900;
+                white-space: nowrap;
+            }
+            html.phone-layout .stats .stat-primary:first-child {
+                background: linear-gradient(135deg, #ffc857, #ff9f43);
+                color: #3d2a00;
+            }
+            html.phone-layout .stats .stat-primary:nth-child(2) {
+                background: rgba(255, 255, 255, 0.14);
+            }
+            html.phone-layout .stats .stat-primary:nth-child(3),
+            html.phone-layout .stats .stat-secondary {
+                display: none;
+            }
+            html.phone-layout .header-action-menu summary.action-btn {
+                min-height: 30px;
+                border-radius: 999px;
+                padding: 6px 9px;
+                background: rgba(255, 255, 255, 0.18);
+                color: #ffffff;
+                font-size: 0.7rem;
+                font-weight: 900;
+            }
+            html.phone-layout .header-action-menu summary.action-btn::before {
+                content: "≡ ";
+            }
+            html.phone-layout .header-action-list {
+                border-radius: 14px;
+                border: 1px solid rgba(0, 105, 92, 0.22);
+                box-shadow: var(--game-shadow);
+            }
+            html.phone-layout #start-screen {
+                width: min(100%, 390px);
+                background:
+                    radial-gradient(circle at 12% 4%, rgba(255, 209, 102, 0.28), transparent 28%),
+                    radial-gradient(circle at 92% 10%, rgba(0, 137, 123, 0.14), transparent 32%),
+                    var(--game-bg);
+                color: var(--game-ink);
+                padding: calc(12px + env(safe-area-inset-top)) 12px calc(92px + env(safe-area-inset-bottom));
+            }
+            html.phone-layout #start-screen h1 {
+                color: var(--game-teal-dark);
+                font-size: 1.52rem;
+                font-weight: 950;
+                margin: 0 0 5px;
+                text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+            }
+            html.phone-layout #start-screen > p {
+                color: var(--game-muted);
+                font-size: 0.83rem;
+                line-height: 1.35;
+                margin: 0 auto 10px;
+                max-width: 330px;
+            }
+            html.phone-layout #start-screen > div[style*="font-weight"] {
+                width: 100%;
+                max-width: 366px;
+                margin: 10px auto 6px !important;
+                color: var(--game-teal-dark) !important;
+                font-size: 0.72rem;
+                text-align: left;
+                text-transform: uppercase;
+                letter-spacing: 0.02em;
+            }
+            html.phone-layout #start-screen .ctrl-row,
+            html.phone-layout #start-screen .diff-controls,
+            html.phone-layout #start-screen .history-actions,
+            html.phone-layout .settings-toggles {
+                max-width: 366px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            html.phone-layout .exam-select-wrap,
+            html.phone-layout #quiztype-select,
+            html.phone-layout #exam-select {
+                border-radius: 14px;
+            }
+            html.phone-layout #exam-select,
+            html.phone-layout #quiztype-select {
+                min-height: 48px;
+                border: 1px solid rgba(0, 105, 92, 0.24);
+                background: rgba(255, 255, 255, 0.88);
+                color: var(--game-ink);
+                box-shadow: var(--game-soft-shadow);
+                padding: 0 12px;
+                font-weight: 750;
+            }
+            html.phone-layout .pdf-icon-btn {
+                width: 48px;
+                height: 48px;
+                border-radius: 16px;
+                border: 1px solid rgba(0, 105, 92, 0.28);
+                background: linear-gradient(145deg, #ffffff, #e9fff5);
+                box-shadow: var(--game-soft-shadow);
+            }
+            html.phone-layout #start-screen .diff-controls {
+                gap: 8px;
+            }
+            html.phone-layout #start-screen .diff-btn {
+                min-height: 46px;
+                border-radius: 999px;
+                border: 1px solid rgba(0, 105, 92, 0.24);
+                background: rgba(255,255,255,0.88);
+                color: var(--game-teal-dark);
+                box-shadow: var(--game-soft-shadow);
+                font-size: 0.8rem;
+                font-weight: 900;
+                transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+            }
+            html.phone-layout #start-screen .diff-btn.active {
+                border-color: transparent;
+                background: linear-gradient(135deg, var(--game-teal), var(--game-teal-mid));
+                color: #ffffff;
+                box-shadow: 0 8px 18px rgba(0, 105, 92, 0.24);
+            }
+            html.phone-layout #start-screen .diff-btn:active,
+            html.phone-layout .choice-btn:active,
+            html.phone-layout .action-btn:active,
+            html.phone-layout .start-btn:active {
+                transform: translateY(2px) scale(0.98);
+            }
+            html.phone-layout .settings-toggles {
+                gap: 8px;
+            }
+            html.phone-layout .toggle-row {
+                min-height: 48px;
+                border-radius: 16px;
+                border: 1px solid rgba(0, 105, 92, 0.1);
+                background: rgba(255, 255, 255, 0.88);
+                box-shadow: var(--game-soft-shadow);
+                font-weight: 750;
+            }
+            html.phone-layout .toggle-row input {
+                appearance: none;
+                width: 44px;
+                height: 26px;
+                border-radius: 999px;
+                border: 0;
+                background: #cdd8d5;
+                position: relative;
+                box-shadow: inset 0 2px 4px rgba(0,0,0,0.16);
+            }
+            html.phone-layout .toggle-row input::after {
+                content: "";
+                position: absolute;
+                width: 20px;
+                height: 20px;
+                top: 3px;
+                left: 3px;
+                border-radius: 50%;
+                background: #ffffff;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                transition: transform 0.18s ease;
+            }
+            html.phone-layout .toggle-row input:checked {
+                background: linear-gradient(135deg, var(--game-teal), #47b881);
+            }
+            html.phone-layout .toggle-row input:checked::after {
+                transform: translateX(18px);
+            }
+            html.phone-layout .advanced-options summary {
+                color: var(--game-teal);
+                background: rgba(255, 255, 255, 0.5);
+                border-radius: 999px;
+            }
+            html.phone-layout .overlay button.start-btn {
+                min-height: 56px;
+                border-radius: 999px;
+                background: linear-gradient(135deg, var(--game-orange), #ff9f43);
+                color: #ffffff;
+                box-shadow: 0 12px 24px rgba(255, 117, 72, 0.28);
+                font-size: 1rem;
+                font-weight: 950;
+                text-shadow: 0 1px 0 rgba(0,0,0,0.12);
+            }
+            html.phone-layout #start-shift-btn,
+            html.phone-layout #resume-shift-btn:not(.hidden) {
+                position: fixed;
+                left: 16px;
+                bottom: calc(14px + env(safe-area-inset-bottom));
+                z-index: 95;
+                width: min(calc(100vw - 32px), 358px);
+                max-width: 358px;
+            }
+            html.phone-layout #session-history {
+                display: none;
+                border-radius: 16px;
+                border: 1px solid rgba(0,105,92,0.12);
+                background: rgba(255,255,255,0.78);
+                box-shadow: var(--game-soft-shadow);
+            }
+            html.phone-layout #exam-panel {
+                background:
+                    linear-gradient(180deg, rgba(223,245,235,0.85), rgba(243,251,245,0.92)),
+                    var(--game-bg);
+            }
+            html.phone-layout .mobile-case-strip {
+                margin: 10px 10px 0;
+                border-radius: 20px;
+                background: linear-gradient(135deg, #ffffff, #ddfbef);
+                border: 1px solid rgba(0,105,92,0.14);
+                box-shadow: var(--game-shadow);
+            }
+            html.phone-layout .mobile-case-title {
+                color: var(--game-teal-dark);
+                font-size: 0.98rem;
+                font-weight: 950;
+            }
+            html.phone-layout .mobile-case-meta {
+                color: var(--game-muted);
+                font-weight: 650;
+            }
+            html.phone-layout .mobile-case-timer {
+                min-width: 50px;
+                min-height: 34px;
+                background: linear-gradient(135deg, var(--game-teal-dark), var(--game-teal));
+                box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 6px 12px rgba(0,105,92,0.22);
+            }
+            html.phone-layout .exam-info {
+                gap: 10px;
+                padding: 12px 12px 126px;
+            }
+            html.phone-layout .exam-info > div,
+            html.phone-layout #risk-display .risk-box {
+                border: 1px solid rgba(0,105,92,0.1);
+                border-left: 6px solid var(--game-teal-mid);
+                border-radius: 18px;
+                background: rgba(255,255,255,0.9);
+                box-shadow: var(--game-soft-shadow);
+                padding: 12px 13px;
+            }
+            html.phone-layout .exam-info strong {
+                color: var(--game-teal);
+                font-size: 0.66rem;
+                font-weight: 950;
+                letter-spacing: 0.03em;
+            }
+            html.phone-layout #row-allergies {
+                border-left-color: var(--game-danger);
+                background: linear-gradient(135deg, #fff8f6, #ffffff);
+            }
+            html.phone-layout #row-cautions {
+                border-left-color: var(--game-orange);
+                background: linear-gradient(135deg, #fff9ec, #ffffff);
+            }
+            html.phone-layout #risk-display {
+                padding: 0 12px;
+            }
+            html.phone-layout #risk-display .risk-box {
+                margin: 10px 0 0;
+                border-left-color: var(--game-danger);
+                color: #7a2118;
+            }
+            html.phone-layout .prescription-area {
+                padding: 12px 12px calc(14px + env(safe-area-inset-bottom));
+                background: rgba(255,255,255,0.96);
+                border-top: 1px solid rgba(0,105,92,0.12);
+                box-shadow: 0 -12px 28px rgba(10, 76, 64, 0.16);
+                backdrop-filter: blur(12px);
+            }
+            html.phone-layout .prescription-area label {
+                color: var(--game-teal-dark);
+                font-weight: 950;
+            }
+            html.phone-layout .choice-grid {
+                gap: 10px;
+            }
+            html.phone-layout .choice-btn {
+                position: relative;
+                min-height: 58px;
+                max-height: none;
+                padding: 10px 10px 10px 42px;
+                border: 1px solid rgba(0,105,92,0.14);
+                border-radius: 18px;
+                background: linear-gradient(145deg, #ffffff, #f2fff8);
+                color: var(--game-ink);
+                box-shadow: var(--game-soft-shadow);
+                font-size: 0.78rem;
+                font-weight: 850;
+                line-height: 1.18;
+                transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+            }
+            html.phone-layout .choice-btn::before {
+                content: attr(data-choice-index);
+                position: absolute;
+                left: 10px;
+                top: 50%;
+                transform: translateY(-50%);
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, var(--game-yellow), #ff9f43);
+                color: #4a2f00;
+                font-size: 0.78rem;
+                font-weight: 950;
+                box-shadow: 0 3px 8px rgba(255,159,67,0.22);
+            }
+            html.phone-layout .choice-btn:hover,
+            html.phone-layout .choice-btn:focus {
+                border-color: rgba(0,105,92,0.35);
+                outline: none;
+                box-shadow: 0 9px 18px rgba(10,76,64,0.14);
+            }
+            html.phone-layout .mobile-result {
+                gap: 12px;
+            }
+            html.phone-layout .mobile-result-hero,
+            html.phone-layout .mobile-result-section {
+                border-radius: 18px;
+                border: 1px solid rgba(0,105,92,0.1);
+                box-shadow: var(--game-soft-shadow);
+            }
+            html.phone-layout .mobile-result-hero {
+                padding: 18px 14px;
+                background: linear-gradient(145deg, #f3ffe8, #ffffff);
+                border-color: rgba(71, 184, 129, 0.36);
+            }
+            html.phone-layout .mobile-result-hero.error {
+                background: linear-gradient(145deg, #fff2ee, #ffffff);
+                border-color: rgba(216, 67, 47, 0.28);
+            }
+            html.phone-layout .mobile-result-icon {
+                width: 38px;
+                height: 38px;
+                margin: 0 auto 8px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #47b881, #a7f3d0);
+                color: #ffffff;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 8px 18px rgba(71,184,129,0.26);
+            }
+            html.phone-layout .mobile-result-hero.error .mobile-result-icon {
+                background: linear-gradient(135deg, var(--game-danger), #ff9f7a);
+            }
+            html.phone-layout .mobile-drug-badge {
+                border-radius: 999px;
+                padding: 6px 9px;
+                background: var(--game-mint);
+                color: var(--game-teal-dark);
+                border: 1px solid rgba(0,105,92,0.12);
+            }
+            html.phone-layout .mobile-drug-badge.unsafe {
+                background: #fff1ee;
+                color: #b3261e;
+                border-color: rgba(216,67,47,0.22);
+            }
+            html.phone-layout #solution-modal .solution-box > div:last-child .action-btn {
+                min-height: 54px;
+                border-radius: 999px;
+                background: linear-gradient(135deg, var(--game-orange), #ff9f43);
+                box-shadow: 0 12px 24px rgba(255,117,72,0.24);
+                font-weight: 950;
+            }
+        }
     </style>
 <script type="text/javascript">
     (function(c,l,a,r,i,t,y,retried){
@@ -942,7 +1362,6 @@
                     <button type="button" class="segment-btn" id="queue-preset-onecase" aria-pressed="false" onclick="setQueuePreset('onecase')">One Case At A Time</button>
                     <button type="button" class="segment-btn" id="queue-preset-unlimited" aria-pressed="false" onclick="setQueuePreset('unlimited')">Unlimited</button>
                 </div>
-                <p class="queue-help">Normal: classic queue. One Case: one active case. Unlimited: no queue/strike game over.</p>
             </div>
         </div>
         <div class="ctrl-row settings-toggles">
@@ -2939,9 +3358,10 @@
             const options = shuffle([{ quizValue: correctValue, sourceDrug: null }, ...distractors]).slice(0, mobileChoiceCount);
             const grid = document.getElementById('choice-grid');
             grid.innerHTML = '';
-            options.forEach(opt => {
+            options.forEach((opt, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'choice-btn';
+                btn.dataset.choiceIndex = String(index + 1);
                 btn.innerText = opt.quizValue;
                 btn.onclick = () => processAnswer(opt, patient);
                 grid.appendChild(btn);
@@ -2971,9 +3391,10 @@
         }
         const grid = document.getElementById('choice-grid');
         grid.innerHTML = '';
-        options.forEach(opt => {
+        options.forEach((opt, index) => {
             const btn = document.createElement('button');
             btn.className = 'choice-btn';
+            btn.dataset.choiceIndex = String(index + 1);
             btn.innerText = formatDrugLabel(opt);
             btn.onclick = () => processAnswer(opt, patient);
             grid.appendChild(btn);
